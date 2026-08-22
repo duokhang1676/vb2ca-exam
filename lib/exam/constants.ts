@@ -56,6 +56,21 @@ export const SAMPLE_TITLES: Record<ExamCode, string> = {
   CA4: "Đề minh họa 2026 — CA4",
 };
 
+export function generatedSampleTitle(examCode: ExamCode, number: number): string {
+  return `Đề minh họa ${examCode} - số ${number}`;
+}
+
+export function parseGeneratedSampleNumber(
+  title: string,
+  examCode: ExamCode,
+): number | null {
+  const prefix = `Đề minh họa ${examCode} - số `;
+  if (!title.startsWith(prefix)) return null;
+  const n = Number(title.slice(prefix.length));
+  if (!Number.isInteger(n) || n < 2) return null;
+  return n;
+}
+
 export const SAMPLE_FILES: Record<ExamCode, { pdf: string; answers: string }> = {
   CA1: { pdf: "de-ca1.pdf", answers: "dapanca1.txt" },
   CA4: { pdf: "de-ca4.pdf", answers: "dapanca4.txt" },

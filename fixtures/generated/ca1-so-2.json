@@ -1,0 +1,458 @@
+{
+  "examCode": "CA1",
+  "diversity": 5,
+  "essayPrompt": "Đọc đoạn văn bản sau:\n\nNhững năm gần đây, việc “mua trước, trả sau” và vay tiêu dùng ngắn hạn trở thành lựa chọn quen thuộc của không ít người trẻ. Chỉ vài thao tác trên điện thoại, một món đồ thời trang, một chuyến du lịch hay một suất ăn sang đã có thể được thanh toán bằng khoản vay nhỏ, lãi suất được trình bày khéo léo thành “phí tiện lợi”. Nhiều bạn trẻ lý giải rằng đó là cách tự thưởng sau những tháng ngày học tập, làm việc căng thẳng; một số khác cho rằng nếu thu nhập tháng sau đủ trả thì việc tiêu trước không có gì đáng ngại. Trong khi đó, các chuyên gia tài chính cảnh báo: khi thói quen chi tiêu bị tách khỏi khả năng tích lũy và quỹ dự phòng, rủi ro không chỉ dừng ở một khoản nợ, mà còn lan sang kỷ luật nghề nghiệp, trách nhiệm với gia đình và sự chủ động của mỗi người trước những biến cố.\n\nAnh/chị hãy sử dụng thể loại văn nghị luận (tối thiểu 500 chữ) để trình bày, đánh giá, phân tích, bình luận về vấn đề tiêu dùng và trách nhiệm tài chính của thế hệ trẻ được đặt ra trong đoạn văn bản trên.",
+  "questions": [
+    {
+      "originalNumber": 1,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho hai ma trận $A = \\begin{pmatrix} 2 & -1 \\\\ 3 & 4 \\end{pmatrix}$ và $B = \\begin{pmatrix} 1 & 2 \\\\ 0 & -1 \\end{pmatrix}$. Phần tử hàng hai cột một của ma trận $A-B$ bằng",
+      "options": { "A": "$3$", "B": "$1$", "C": "$-3$", "D": "$5$" }
+    },
+    {
+      "originalNumber": 2,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Giá trị của $\\lim_{x \\to 0} \\dfrac{\\sin 3x}{x}$ bằng",
+      "options": { "A": "$1$", "B": "$0$", "C": "$3$", "D": "Không tồn tại" }
+    },
+    {
+      "originalNumber": 3,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho ma trận $A = \\begin{pmatrix} 4 & 1 \\\\ 2 & 3 \\end{pmatrix}$. Định thức $\\det(A)$ bằng",
+      "options": { "A": "$10$", "B": "$14$", "C": "$8$", "D": "$-10$" }
+    },
+    {
+      "originalNumber": 4,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho hàm số $f(x,y) = x^2 \\sin y$. Giá trị $f_y'(2;0)$ bằng",
+      "options": { "A": "$0$", "B": "$4$", "C": "$2$", "D": "$-4$" }
+    },
+    {
+      "originalNumber": 5,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong các chuỗi số dương sau, chuỗi nào hội tụ?",
+      "options": {
+        "A": "$\\sum_{n=1}^{+\\infty} \\dfrac{1}{n}$",
+        "B": "$\\sum_{n=1}^{+\\infty} \\dfrac{1}{\\sqrt{n}}$",
+        "C": "$\\sum_{n=1}^{+\\infty} \\dfrac{1}{n^3}$",
+        "D": "$\\sum_{n=2}^{+\\infty} \\dfrac{1}{\\ln n}$"
+      }
+    },
+    {
+      "originalNumber": 6,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Hệ phương trình $\\begin{cases} x-y=1 \\\\ 2x-2y=3 \\end{cases}$ (ẩn $x,y$)",
+      "options": { "A": "vô nghiệm", "B": "có nghiệm duy nhất", "C": "có vô số nghiệm", "D": "có đúng hai nghiệm" }
+    },
+    {
+      "originalNumber": 7,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho hàm số $f(x) = e^{2x}$. Giá trị $f'(0)$ bằng",
+      "options": { "A": "$0$", "B": "$1$", "C": "$e^2$", "D": "$2$" }
+    },
+    {
+      "originalNumber": 8,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho $D=\\{(x,y): 0 \\leq x \\leq 1;\\, 0 \\leq y \\leq 2\\}$. Giá trị $\\iint_D x\\,dxdy$ bằng",
+      "options": { "A": "$2$", "B": "$1$", "C": "$\\dfrac{1}{2}$", "D": "$0$" }
+    },
+    {
+      "originalNumber": 9,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong $R^3$, cho $u=(1;0;2)$ và $v=(0;1;-1)$. Tổ hợp $3u+2v$ bằng",
+      "options": { "A": "$(3;0;4)$", "B": "$(3;2;6)$", "C": "$(3;2;4)$", "D": "$(1;2;4)$" }
+    },
+    {
+      "originalNumber": 10,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Nghiệm tổng quát của phương trình $y'+2y=0$ là",
+      "options": {
+        "A": "$y=Ce^{-2x}$",
+        "B": "$y=Ce^{2x}$",
+        "C": "$y=C+e^{-2x}$",
+        "D": "$y=2Ce^{-x}$"
+      }
+    },
+    {
+      "originalNumber": 11,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Bán kính hội tụ của chuỗi lũy thừa $\\sum_{n=1}^{+\\infty} \\dfrac{x^n}{n^2}$ bằng",
+      "options": { "A": "$0$", "B": "$1$", "C": "$2$", "D": "$+\\infty$" }
+    },
+    {
+      "originalNumber": 12,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Giá trị $\\displaystyle\\int_0^1 (2x+1)\\,dx$ bằng",
+      "options": { "A": "$2$", "B": "$1$", "C": "$3$", "D": "$\\dfrac{3}{2}$" }
+    },
+    {
+      "originalNumber": 13,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho $V=\\{(x,y,z): 0\\leq x\\leq 1;\\, 0\\leq y\\leq 1;\\, 0\\leq z\\leq 2\\}$. Thể tích của $V$, tức $\\iiint_V 1\\,dxdydz$, bằng",
+      "options": { "A": "$1$", "B": "$\\dfrac{1}{2}$", "C": "$2$", "D": "$4$" }
+    },
+    {
+      "originalNumber": 14,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong ba chuỗi $\\sum\\dfrac{(-1)^n}{n}$, $\\sum\\dfrac{(-1)^n}{n^2}$ và $\\sum\\dfrac{(-1)^n}{\\sqrt{n}}$ (từ $n=1$ đến $+\\infty$), có bao nhiêu chuỗi hội tụ tuyệt đối?",
+      "options": { "A": "$0$", "B": "$2$", "C": "$3$", "D": "$1$" }
+    },
+    {
+      "originalNumber": 15,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Hàm số $f(x,y)=x^2+y^2-2x$ có bao nhiêu điểm dừng?",
+      "options": { "A": "$1$", "B": "$0$", "C": "$2$", "D": "$3$" }
+    },
+    {
+      "originalNumber": 16,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho $A=\\begin{pmatrix} 3 & m \\\\ 2 & 4 \\end{pmatrix}$. Số giá trị nguyên của $m$ thuộc khoảng $(1;7)$ để $A$ khả nghịch là",
+      "options": { "A": "$5$", "B": "$3$", "C": "$4$", "D": "$6$" }
+    },
+    {
+      "originalNumber": 17,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong mặt phẳng $Oxy$, gọi $L$ là đoạn thẳng từ $O(0;0)$ đến $A(1;0)$. Giá trị $\\int_L x\\,ds$ bằng",
+      "options": { "A": "$1$", "B": "$\\dfrac{1}{2}$", "C": "$0$", "D": "$2$" }
+    },
+    {
+      "originalNumber": 18,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Nghiệm tổng quát của phương trình $y''+4y=0$ là",
+      "options": {
+        "A": "$y=C_1\\cos 2x+C_2\\sin 2x$",
+        "B": "$y=C_1e^{2x}+C_2e^{-2x}$",
+        "C": "$y=C_1\\cos 4x+C_2\\sin 4x$",
+        "D": "$y=(C_1+C_2x)e^{2x}$"
+      }
+    },
+    {
+      "originalNumber": 19,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho $f(x)=\\begin{cases} \\dfrac{x^2-1}{x-1} & \\text{khi } x\\neq 1 \\\\ a & \\text{khi } x=1 \\end{cases}$. Hàm số liên tục tại $x=1$ khi và chỉ khi",
+      "options": { "A": "$a=0$", "B": "$a=1$", "C": "$a=2$", "D": "$a=-1$" }
+    },
+    {
+      "originalNumber": 20,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho ma trận chéo $A=\\begin{pmatrix} 1 & 0 & 0 \\\\ 0 & 2 & 0 \\\\ 0 & 0 & 3 \\end{pmatrix}$. Định thức $\\det(A)$ bằng",
+      "options": { "A": "$6$", "B": "$0$", "C": "$5$", "D": "$1$" }
+    },
+    {
+      "originalNumber": 21,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho $f(x,y)=x^2 y$. Vi phân cấp một $df$ bằng",
+      "options": {
+        "A": "$2xy\\,dx+x^2\\,dy$",
+        "B": "$x^2\\,dx+2xy\\,dy$",
+        "C": "$2x\\,dx+y\\,dy$",
+        "D": "$xy\\,dx+x\\,dy$"
+      }
+    },
+    {
+      "originalNumber": 22,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Giá trị $\\displaystyle\\int_0^{\\pi/2} \\sin x\\,dx$ bằng",
+      "options": { "A": "$1$", "B": "$0$", "C": "$2$", "D": "$\\dfrac{\\pi}{2}$" }
+    },
+    {
+      "originalNumber": 23,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong $R^2$, hệ véc tơ $\\{(1;2),\\,(2;4)\\}$",
+      "options": {
+        "A": "độc lập tuyến tính",
+        "B": "phụ thuộc tuyến tính",
+        "C": "là một cơ sở của $R^2$",
+        "D": "có hạng bằng $2$"
+      }
+    },
+    {
+      "originalNumber": 24,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho $D=\\{(x,y): x^2+y^2\\leq 4\\}$. Giá trị $\\iint_D (x^2+y^2)\\,dxdy$ bằng",
+      "options": { "A": "$4\\pi$", "B": "$8\\pi$", "C": "$2\\pi$", "D": "$16\\pi$" }
+    },
+    {
+      "originalNumber": 25,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Tổng của chuỗi $\\sum_{n=1}^{+\\infty} \\left(\\dfrac{1}{3}\\right)^n$ bằng",
+      "options": { "A": "$\\dfrac{1}{2}$", "B": "$\\dfrac{1}{3}$", "C": "$\\dfrac{3}{2}$", "D": "$1$" }
+    },
+    {
+      "originalNumber": 26,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Hệ $\\begin{cases} x+y=5 \\\\ x-y=1 \\end{cases}$ có nghiệm $(x;y)$ thỏa $x$ bằng",
+      "options": { "A": "$2$", "B": "$3$", "C": "$4$", "D": "$1$" }
+    },
+    {
+      "originalNumber": 27,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho $f(x)=x\\ln x$ $(x>0)$. Giá trị $f'(e)$ bằng",
+      "options": { "A": "$2$", "B": "$1$", "C": "$e$", "D": "$1+e$" }
+    },
+    {
+      "originalNumber": 28,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Giá trị $\\iiint_V xyz\\,dxdydz$ với $V=[0;1]\\times[0;1]\\times[0;1]$ bằng",
+      "options": { "A": "$1$", "B": "$\\dfrac{1}{4}$", "C": "$\\dfrac{1}{8}$", "D": "$\\dfrac{1}{2}$" }
+    },
+    {
+      "originalNumber": 29,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Với $|x|<1$, biết $\\sum_{n=0}^{+\\infty} x^n=\\dfrac{1}{1-x}$. Tổng $\\sum_{n=0}^{+\\infty} \\left(\\dfrac{1}{2}\\right)^n$ bằng",
+      "options": { "A": "$2$", "B": "$1$", "C": "$\\dfrac{1}{2}$", "D": "$4$" }
+    },
+    {
+      "originalNumber": 30,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Gọi $L$ là đoạn thẳng từ $(0;0)$ đến $(1;1)$ trên đường $y=x$. Giá trị $\\int_L (y\\,dx+x\\,dy)$ bằng",
+      "options": { "A": "$1$", "B": "$2$", "C": "$0$", "D": "$\\sqrt{2}$" }
+    },
+    {
+      "originalNumber": 31,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Nghiệm của bài toán $y'=2y$, $y(0)=1$ là",
+      "options": { "A": "$y=e^{x}$", "B": "$y=e^{2x}$", "C": "$y=2e^{x}$", "D": "$y=e^{-2x}$" }
+    },
+    {
+      "originalNumber": 32,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Hàm số $f(x,y)=(x-1)^2+(y+2)^2$ có bao nhiêu điểm cực trị?",
+      "options": { "A": "$1$", "B": "$0$", "C": "$2$", "D": "vô số" }
+    },
+    {
+      "originalNumber": 33,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Giá trị $\\displaystyle\\int_0^1 xe^{x}\\,dx$ bằng",
+      "options": { "A": "$1$", "B": "$e$", "C": "$e-1$", "D": "$0$" }
+    },
+    {
+      "originalNumber": 34,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Giá trị $\\lim_{x\\to +\\infty} \\dfrac{3x+1}{2x-5}$ bằng",
+      "options": { "A": "$0$", "B": "$\\dfrac{3}{2}$", "C": "$\\dfrac{2}{3}$", "D": "$+\\infty$" }
+    },
+    {
+      "originalNumber": 35,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Nghiệm tổng quát của phương trình $y''+2y'+y=0$ là",
+      "options": {
+        "A": "$y=(C_1+C_2 x)e^{-x}$",
+        "B": "$y=C_1 e^{-x}+C_2 e^{x}$",
+        "C": "$y=C_1 e^{-x}+C_2 e^{-2x}$",
+        "D": "$y=C_1\\cos x+C_2\\sin x$"
+      }
+    },
+    {
+      "originalNumber": 36,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho $A=\\begin{pmatrix} 1 & 1 \\\\ 0 & 1 \\end{pmatrix}$. Phần tử hàng một cột hai của $A^2$ bằng",
+      "options": { "A": "$2$", "B": "$1$", "C": "$0$", "D": "$3$" }
+    },
+    {
+      "originalNumber": 37,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho $A=\\begin{pmatrix} 1 & 2 & 0 \\\\ 0 & 1 & 3 \\\\ 0 & 0 & 2 \\end{pmatrix}$. Định thức $\\det(A)$ bằng",
+      "options": { "A": "$2$", "B": "$0$", "C": "$6$", "D": "$1$" }
+    },
+    {
+      "originalNumber": 38,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cho $f(x)=\\ln(1+x)$ $(x>-1)$. Giá trị $f'(0)$ bằng",
+      "options": { "A": "$0$", "B": "$e$", "C": "$1$", "D": "$-1$" }
+    },
+    {
+      "originalNumber": 39,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Hệ $\\begin{cases} x+y+z=1 \\\\ 2x+2y+2z=2 \\\\ 3x+3y+3z=3 \\end{cases}$ (ẩn $x,y,z$)",
+      "options": { "A": "có vô số nghiệm", "B": "vô nghiệm", "C": "có nghiệm duy nhất", "D": "có đúng ba nghiệm" }
+    },
+    {
+      "originalNumber": 40,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c1",
+      "clusterPosition": 1,
+      "clusterKind": "passage",
+      "passage": "Cho hàm số $g(x,y)=x^2+2xy+3y^2-4x+2y$.",
+      "stem": "Giá trị $g_x'(1;0)$ bằng",
+      "options": { "A": "$2$", "B": "$-2$", "C": "$0$", "D": "$4$" }
+    },
+    {
+      "originalNumber": 41,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c1",
+      "clusterPosition": 2,
+      "clusterKind": "passage",
+      "passage": "Cho hàm số $g(x,y)=x^2+2xy+3y^2-4x+2y$.",
+      "stem": "Giá trị $g_y'(1;0)$ bằng",
+      "options": { "A": "$4$", "B": "$2$", "C": "$-2$", "D": "$0$" }
+    },
+    {
+      "originalNumber": 42,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c1",
+      "clusterPosition": 3,
+      "clusterKind": "passage",
+      "passage": "Cho hàm số $g(x,y)=x^2+2xy+3y^2-4x+2y$.",
+      "stem": "Số điểm dừng của hàm số đã cho bằng",
+      "options": { "A": "$1$", "B": "$0$", "C": "$2$", "D": "$3$" }
+    },
+    {
+      "originalNumber": 43,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c2",
+      "clusterPosition": 1,
+      "clusterKind": "passage",
+      "passage": "Cho ma trận $B=\\begin{pmatrix} 1 & 2 & 0 \\\\ 0 & 1 & 1 \\\\ 0 & 0 & 2 \\end{pmatrix}$.",
+      "stem": "Định thức $\\det(B)$ bằng",
+      "options": { "A": "$2$", "B": "$0$", "C": "$3$", "D": "$4$" }
+    },
+    {
+      "originalNumber": 44,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c2",
+      "clusterPosition": 2,
+      "clusterKind": "passage",
+      "passage": "Cho ma trận $B=\\begin{pmatrix} 1 & 2 & 0 \\\\ 0 & 1 & 1 \\\\ 0 & 0 & 2 \\end{pmatrix}$.",
+      "stem": "Hạng của ma trận $B$ bằng",
+      "options": { "A": "$1$", "B": "$2$", "C": "$3$", "D": "$0$" }
+    },
+    {
+      "originalNumber": 45,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c2",
+      "clusterPosition": 3,
+      "clusterKind": "passage",
+      "passage": "Cho ma trận $B=\\begin{pmatrix} 1 & 2 & 0 \\\\ 0 & 1 & 1 \\\\ 0 & 0 & 2 \\end{pmatrix}$.",
+      "stem": "Vết của $B$ (tổng các phần tử trên đường chéo chính) bằng",
+      "options": { "A": "$2$", "B": "$4$", "C": "$3$", "D": "$6$" }
+    },
+    {
+      "originalNumber": 46,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Cho $A=\\begin{pmatrix} 2 & 0 & 0 \\\\ 1 & 3 & 0 \\\\ 4 & 5 & 1 \\end{pmatrix}$. Tính $\\det(A)$."
+    },
+    {
+      "originalNumber": 47,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Gọi $M(a;b)$ là điểm cực tiểu của $f(x,y)=(x-2)^2+(y+1)^2$. Tính $3a+b$."
+    },
+    {
+      "originalNumber": 48,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Biết chuỗi $\\sum_{n=1}^{+\\infty} \\dfrac{(4x)^n}{n}$ có bán kính hội tụ $R$. Tính $\\dfrac{1}{R}$."
+    },
+    {
+      "originalNumber": 49,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Gọi $y=y(x)$ là nghiệm của $y''-3y'+2y=0$ với $y(0)=2$, $y'(0)=3$. Tính $y(\\ln 2)$."
+    },
+    {
+      "originalNumber": 50,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Trong $Oxyz$, cho $V$ xác định bởi $0\\leq x\\leq 2$, $0\\leq y\\leq x$, $0\\leq z\\leq 1$. Tính thể tích của $V$."
+    }
+  ],
+  "answerKey": {
+    "1": "A",
+    "2": "C",
+    "3": "A",
+    "4": "B",
+    "5": "C",
+    "6": "A",
+    "7": "D",
+    "8": "B",
+    "9": "C",
+    "10": "A",
+    "11": "B",
+    "12": "A",
+    "13": "C",
+    "14": "D",
+    "15": "A",
+    "16": "C",
+    "17": "B",
+    "18": "A",
+    "19": "C",
+    "20": "A",
+    "21": "A",
+    "22": "A",
+    "23": "B",
+    "24": "B",
+    "25": "A",
+    "26": "B",
+    "27": "A",
+    "28": "C",
+    "29": "A",
+    "30": "A",
+    "31": "B",
+    "32": "A",
+    "33": "A",
+    "34": "B",
+    "35": "A",
+    "36": "A",
+    "37": "A",
+    "38": "C",
+    "39": "A",
+    "40": "B",
+    "41": "A",
+    "42": "A",
+    "43": "A",
+    "44": "C",
+    "45": "B",
+    "46": "6",
+    "47": "5",
+    "48": "4",
+    "49": "6",
+    "50": "2"
+  }
+}

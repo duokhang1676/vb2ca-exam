@@ -12,22 +12,46 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { EXAM_SPECS } from "@/lib/exam/constants";
-import type { ExamCode } from "@/lib/exam/types";
+import type { ExamCode, SampleExamOption } from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
-export function HomeExamPanel({ signedIn }: { signedIn: boolean }) {
+const OFFICIAL_SAMPLE_VALUE = "official";
+
+function sampleValue(sample: SampleExamOption): string {
+  return sample.id ?? OFFICIAL_SAMPLE_VALUE;
+}
+
+export function HomeExamPanel({
+  signedIn,
+  samples,
+}: {
+  signedIn: boolean;
+  samples: Record<ExamCode, SampleExamOption[]>;
+}) {
   const router = useRouter();
   const [examCode, setExamCode] = useState<ExamCode>("CA1");
+  const [selectedByCode, setSelectedByCode] = useState<Record<ExamCode, string>>(
+    {
+      CA1: samples.CA1[0] ? sampleValue(samples.CA1[0]) : OFFICIAL_SAMPLE_VALUE,
+      CA4: samples.CA4[0] ? sampleValue(samples.CA4[0]) : OFFICIAL_SAMPLE_VALUE,
+    },
+  );
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [sampling, setSampling] = useState(false);
 
-  async function postExam(url: string) {
+  const options = samples[examCode];
+  const selectedId =
+    selectedByCode[examCode] ??
+    (options[0] ? sampleValue(options[0]) : OFFICIAL_SAMPLE_VALUE);
+
+  async function postExam(url: string, extra?: { examId?: string }) {
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ examCode }),
+      body: JSON.stringify({ examCode, ...extra }),
     });
     if (response.status === 401) {
       router.push("/login?next=/");
@@ -50,7 +74,8 @@ export function HomeExamPanel({ signedIn }: { signedIn: boolean }) {
         <CardDescription>
           Chọn mã đề, hệ thống lấy ngẫu nhiên 1 câu nghị luận và phần 2 từ ngân
           hàng ({spec.independentMcq} trắc nghiệm + {spec.clusters} cụm ×{" "}
-          {spec.clusterSize} + {spec.fill} điền, {spec.total} câu).
+          {spec.clusterSize} + {spec.fill} điền, {spec.total} câu). Hoặc chọn một
+          đề minh họa có sẵn.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
@@ -82,45 +107,68 @@ export function HomeExamPanel({ signedIn }: { signedIn: boolean }) {
             <Link href="/login?next=/">Đăng nhập để tạo bài làm</Link>
           </Button>
         ) : (
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button
-            className="sm:flex-1"
-            disabled={busy}
-            onClick={async () => {
-              setError(null);
-              setGenerating(true);
-              try {
-                await postExam("/api/exams/generate");
-              } catch (err) {
-                setError(err instanceof Error ? err.message : "Lỗi không xác định.");
-              } finally {
-                setGenerating(false);
-              }
-            }}
-          >
-            {generating ? <LoaderCircle className="animate-spin" /> : null}
-            {generating ? "Đang soạn đề..." : "Tạo bài làm"}
-          </Button>
-          <Button
-            variant="outline"
-            className="sm:flex-1"
-            disabled={busy}
-            onClick={async () => {
-              setError(null);
-              setSampling(true);
-              try {
-                await postExam("/api/exams/sample");
-              } catch (err) {
-                setError(err instanceof Error ? err.message : "Lỗi không xác định.");
-              } finally {
-                setSampling(false);
-              }
-            }}
-          >
-            {sampling ? <LoaderCircle className="animate-spin" /> : null}
-            {sampling ? "Đang tải đề minh họa..." : "Dùng đề minh họa 2026"}
-          </Button>
-        </div>
+          <div className="grid gap-3">
+            <Button
+              disabled={busy}
+              onClick={async () => {
+                setError(null);
+                setGenerating(true);
+                try {
+                  await postExam("/api/exams/generate");
+                } catch (err) {
+                  setError(
+                    err instanceof Error ? err.message : "Lỗi không xác định.",
+                  );
+                } finally {
+                  setGenerating(false);
+                }
+              }}
+            >
+              {generating ? <LoaderCircle className="animate-spin" /> : null}
+              {generating ? "Đang soạn đề..." : "Tạo bài làm"}
+            </Button>
+            <div className="grid gap-2">
+              <Label htmlFor="sample-exam">Đề minh họa</Label>
+              <select
+                id="sample-exam"
+                disabled={busy}
+                value={selectedId}
+                onChange={(event) =>
+                  setSelectedByCode((current) => ({
+                    ...current,
+                    [examCode]: event.target.value,
+                  }))
+                }
+                className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+              >
+                {options.map((sample) => (
+                  <option key={sampleValue(sample)} value={sampleValue(sample)}>
+                    {sample.title}
+                  </option>
+                ))}
+              </select>
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={async () => {
+                  setError(null);
+                  setSampling(true);
+                  try {
+                    await postExam("/api/exams/sample", { examId: selectedId });
+                  } catch (err) {
+                    setError(
+                      err instanceof Error ? err.message : "Lỗi không xác định.",
+                    );
+                  } finally {
+                    setSampling(false);
+                  }
+                }}
+              >
+                {sampling ? <LoaderCircle className="animate-spin" /> : null}
+                {sampling ? "Đang tải đề minh họa..." : "Dùng đề minh họa"}
+              </Button>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

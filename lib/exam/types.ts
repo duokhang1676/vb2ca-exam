@@ -5,6 +5,13 @@ export type ExamSource = "random" | "sample";
 export type ClusterKind = "passage" | "situation";
 export type QuestionSection = "independent" | "cluster" | "fill";
 
+export type SampleExamOption = {
+  id: string | null;
+  title: string;
+  kind: "official" | "generated";
+  number: number;
+};
+
 export type McqOptions = Record<OptionLetter, string>;
 
 export type Question = {
