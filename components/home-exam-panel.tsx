@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,7 @@ import { EXAM_SPECS } from "@/lib/exam/constants";
 import type { ExamCode } from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
-export function HomeExamPanel() {
+export function HomeExamPanel({ signedIn }: { signedIn: boolean }) {
   const router = useRouter();
   const [examCode, setExamCode] = useState<ExamCode>("CA1");
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,10 @@ export function HomeExamPanel() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ examCode }),
     });
+    if (response.status === 401) {
+      router.push("/login?next=/");
+      throw new Error("Cần đăng nhập để tạo bài làm.");
+    }
     const data = (await response.json()) as { examId?: string; error?: string };
     if (!response.ok || !data.examId) {
       throw new Error(data.error || "Không tạo được đề.");
@@ -44,7 +49,8 @@ export function HomeExamPanel() {
         <CardTitle>Tạo bài làm</CardTitle>
         <CardDescription>
           Chọn mã đề, hệ thống lấy ngẫu nhiên 1 câu nghị luận và phần 2 từ ngân
-          hàng ({spec.mcq} trắc nghiệm + {spec.fill} điền, {spec.total} câu).
+          hàng ({spec.independentMcq} trắc nghiệm + {spec.clusters} cụm ×{" "}
+          {spec.clusterSize} + {spec.fill} điền, {spec.total} câu).
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
@@ -71,6 +77,11 @@ export function HomeExamPanel() {
             {error}
           </p>
         ) : null}
+        {!signedIn ? (
+          <Button asChild>
+            <Link href="/login?next=/">Đăng nhập để tạo bài làm</Link>
+          </Button>
+        ) : (
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button
             className="sm:flex-1"
@@ -110,6 +121,7 @@ export function HomeExamPanel() {
             {sampling ? "Đang tải đề minh họa..." : "Dùng đề minh họa 2026"}
           </Button>
         </div>
+        )}
       </CardContent>
     </Card>
   );

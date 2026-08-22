@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAuthUser } from "@/lib/auth/session";
 import { asJson, parseQuestions } from "@/lib/exam/json";
 import { createShuffle } from "@/lib/exam/shuffle";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
@@ -8,6 +9,9 @@ export const runtime = "nodejs";
 type Params = { params: Promise<{ id: string }> };
 
 export async function POST(_request: Request, { params }: Params) {
+  const { user, response } = await requireAuthUser();
+  if (!user) return response;
+
   const { id } = await params;
   const supabase = getSupabaseAdmin();
 
@@ -28,6 +32,7 @@ export async function POST(_request: Request, { params }: Params) {
     .from("attempts")
     .insert({
       exam_id: exam.id,
+      user_id: user.id,
       shuffle: asJson(shuffle),
       answers: asJson({}),
     })

@@ -69,6 +69,9 @@ export function gradeMultipleChoice(params: {
       correctDisplayAnswer: correctDisplay,
       isCorrect,
       points: isCorrect ? Number(perQuestion.toFixed(2)) : 0,
+      clusterId: question.clusterId,
+      clusterKind: question.clusterKind,
+      passage: question.passage,
     };
   });
 

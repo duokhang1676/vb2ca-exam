@@ -26,6 +26,7 @@ export type Database = {
           started_at: string
           submitted_at: string | null
           total_score: number | null
+          user_id: string | null
         }
         Insert: {
           answers?: Json
@@ -40,6 +41,7 @@ export type Database = {
           started_at?: string
           submitted_at?: string | null
           total_score?: number | null
+          user_id?: string | null
         }
         Update: {
           answers?: Json
@@ -54,6 +56,7 @@ export type Database = {
           started_at?: string
           submitted_at?: string | null
           total_score?: number | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -65,29 +68,115 @@ export type Database = {
           },
         ]
       }
+      contribution_drafts: {
+        Row: {
+          answer_filename: string | null
+          created_at: string
+          exam_code: string | null
+          expires_at: string
+          id: string
+          kind: string
+          payload: Json
+          source_filename: string | null
+          user_id: string
+        }
+        Insert: {
+          answer_filename?: string | null
+          created_at?: string
+          exam_code?: string | null
+          expires_at?: string
+          id?: string
+          kind: string
+          payload: Json
+          source_filename?: string | null
+          user_id: string
+        }
+        Update: {
+          answer_filename?: string | null
+          created_at?: string
+          exam_code?: string | null
+          expires_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          source_filename?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      contributions: {
+        Row: {
+          added_count: number
+          answer_filename: string | null
+          created_at: string
+          exam_code: string | null
+          id: string
+          kind: string
+          skipped_count: number
+          source_filename: string | null
+          user_id: string
+        }
+        Insert: {
+          added_count?: number
+          answer_filename?: string | null
+          created_at?: string
+          exam_code?: string | null
+          id?: string
+          kind: string
+          skipped_count?: number
+          source_filename?: string | null
+          user_id: string
+        }
+        Update: {
+          added_count?: number
+          answer_filename?: string | null
+          created_at?: string
+          exam_code?: string | null
+          id?: string
+          kind?: string
+          skipped_count?: number
+          source_filename?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       essays: {
         Row: {
+          contribution_id: string | null
           created_at: string
+          created_by: string | null
           fingerprint: string
           id: string
           prompt: string
           source_filename: string | null
         }
         Insert: {
+          contribution_id?: string | null
           created_at?: string
+          created_by?: string | null
           fingerprint: string
           id?: string
           prompt: string
           source_filename?: string | null
         }
         Update: {
+          contribution_id?: string | null
           created_at?: string
+          created_by?: string | null
           fingerprint?: string
           id?: string
           prompt?: string
           source_filename?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "essays_contribution_id_fkey"
+            columns: ["contribution_id"]
+            isOneToOne: false
+            referencedRelation: "contributions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exams: {
         Row: {
@@ -128,10 +217,38 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_path: string | null
+          created_at: string
+          display_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_path?: string | null
+          created_at?: string
+          display_name?: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_path?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           answer: string
+          cluster_id: string | null
+          cluster_position: number | null
+          contribution_id: string | null
           created_at: string
+          created_by: string | null
           exam_code: string
           fingerprint: string
           id: string
@@ -141,7 +258,11 @@ export type Database = {
         }
         Insert: {
           answer: string
+          cluster_id?: string | null
+          cluster_position?: number | null
+          contribution_id?: string | null
           created_at?: string
+          created_by?: string | null
           exam_code: string
           fingerprint: string
           id?: string
@@ -151,13 +272,62 @@ export type Database = {
         }
         Update: {
           answer?: string
+          cluster_id?: string | null
+          cluster_position?: number | null
+          contribution_id?: string | null
           created_at?: string
+          created_by?: string | null
           exam_code?: string
           fingerprint?: string
           id?: string
           options?: Json | null
           stem?: string
           type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_cluster_id_fkey"
+            columns: ["cluster_id"]
+            isOneToOne: false
+            referencedRelation: "question_clusters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_contribution_id_fkey"
+            columns: ["contribution_id"]
+            isOneToOne: false
+            referencedRelation: "contributions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      question_clusters: {
+        Row: {
+          created_at: string
+          exam_code: string
+          fingerprint: string
+          header_template: string
+          id: string
+          kind: string
+          passage: string
+        }
+        Insert: {
+          created_at?: string
+          exam_code: string
+          fingerprint: string
+          header_template: string
+          id?: string
+          kind: string
+          passage: string
+        }
+        Update: {
+          created_at?: string
+          exam_code?: string
+          fingerprint?: string
+          header_template?: string
+          id?: string
+          kind?: string
+          passage?: string
         }
         Relationships: []
       }

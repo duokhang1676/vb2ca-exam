@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { AUTOSAVE_INTERVAL_MS, OPTION_LETTERS, questionTypeLabel } from "@/lib/exam/constants";
+import { toDisplayBlocks } from "@/lib/exam/shuffle";
 import { isMcq, type AttemptAnswers, type DisplayQuestion } from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
@@ -141,6 +142,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
   }
 
   const totalItems = data.exam.questions.length + 1;
+  const blocks = toDisplayBlocks(data.exam.questions);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_220px]">
@@ -177,7 +179,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
           </CardHeader>
           <CardContent className="space-y-4">
             <MathText
-              className="font-exam rounded-lg bg-muted/50 p-4 text-sm leading-7"
+              className="font-exam rounded-lg bg-muted/50 p-4 text-lg leading-8"
               text={data.exam.essayPrompt}
             />
             <div className="grid gap-2">
@@ -187,7 +189,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
                 value={essayText}
                 onChange={(event) => setEssayText(event.target.value)}
                 placeholder="Nhập bài nghị luận tại đây..."
-                className="min-h-64"
+                className="min-h-64 font-exam text-lg leading-8"
                 disabled={submitting}
               />
             </div>
@@ -198,19 +200,37 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
           <h2 className="text-lg font-semibold">
             Phần 2 · {data.exam.questions.length} câu (70 điểm)
           </h2>
-          {data.exam.questions.map((question) => (
-            <QuestionCard
-              key={question.originalNumber}
-              question={question}
-              value={answers[String(question.originalNumber)] ?? ""}
-              disabled={submitting}
-              onChange={(value) =>
-                setAnswers((current) => ({
-                  ...current,
-                  [String(question.originalNumber)]: value,
-                }))
-              }
-            />
+          {blocks.map((block, blockIndex) => (
+            <div key={`block-${blockIndex}`} className="space-y-4">
+              {block.kind === "cluster" ? (
+                <div className="space-y-3 rounded-xl border bg-card p-4">
+                  <p className="font-exam text-lg font-semibold">{block.header}</p>
+                  {block.passage ? (
+                    <MathText
+                      className="font-exam rounded-lg bg-muted/50 p-4 text-lg leading-8"
+                      text={block.passage}
+                    />
+                  ) : null}
+                </div>
+              ) : null}
+              {block.kind === "fill" ? (
+                <p className="font-exam text-lg font-semibold">{block.header}</p>
+              ) : null}
+              {block.questions.map((question) => (
+                <QuestionCard
+                  key={question.originalNumber}
+                  question={question}
+                  value={answers[String(question.originalNumber)] ?? ""}
+                  disabled={submitting}
+                  onChange={(value) =>
+                    setAnswers((current) => ({
+                      ...current,
+                      [String(question.originalNumber)]: value,
+                    }))
+                  }
+                />
+              ))}
+            </div>
           ))}
         </section>
       </div>
@@ -264,15 +284,15 @@ function QuestionCard({
   return (
     <Card id={`q-${question.displayIndex}`}>
       <CardHeader>
-        <CardTitle className="text-sm">
+        <CardTitle className="text-lg">
           Câu {question.displayIndex}
-          <span className="ml-2 text-xs font-normal text-muted-foreground">
+          <span className="ml-2 text-sm font-normal text-muted-foreground">
             {questionTypeLabel(question.type)}
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <MathText className="font-exam text-sm leading-7" text={question.stem} />
+        <MathText className="font-exam text-lg leading-8" text={question.stem} />
         {isMcq(question.type) && question.options ? (
           <div className="grid gap-2">
             {OPTION_LETTERS.map((letter) => (
@@ -292,9 +312,9 @@ function QuestionCard({
                   disabled={disabled}
                   onChange={() => onChange(letter)}
                 />
-                <span className="font-exam text-sm font-medium">{letter}.</span>
+                <span className="font-exam text-lg font-medium">{letter}.</span>
                 <MathText
-                  className="font-exam text-sm"
+                  className="font-exam text-lg leading-8"
                   text={question.options![letter]}
                 />
               </label>
@@ -309,6 +329,7 @@ function QuestionCard({
               disabled={disabled}
               onChange={(event) => onChange(event.target.value)}
               placeholder="Nhập đáp án"
+              className="font-exam text-lg"
             />
           </div>
         )}

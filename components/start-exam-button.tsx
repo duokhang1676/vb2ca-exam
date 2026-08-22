@@ -17,6 +17,10 @@ export function StartExamButton({ examId }: { examId: string }) {
       const response = await fetch(`/api/exams/${examId}/start`, {
         method: "POST",
       });
+      if (response.status === 401) {
+        router.push("/login");
+        throw new Error("Cần đăng nhập để bắt đầu bài thi.");
+      }
       const data = (await response.json()) as {
         attemptId?: string;
         error?: string;

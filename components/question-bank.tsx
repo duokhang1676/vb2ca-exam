@@ -4,8 +4,19 @@ import { useMemo, useState } from "react";
 import { MathText } from "@/components/math-text";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { OPTION_LETTERS, questionTypeLabel } from "@/lib/exam/constants";
-import { isMcq, type ExamCode, type McqOptions, type QuestionType } from "@/lib/exam/types";
+import {
+  CLUSTER_HEADER_TEMPLATES,
+  OPTION_LETTERS,
+  formatRangeHeader,
+  questionTypeLabel,
+} from "@/lib/exam/constants";
+import {
+  isMcq,
+  type ClusterKind,
+  type ExamCode,
+  type McqOptions,
+  type QuestionType,
+} from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
 export type BankEssayView = {
@@ -21,6 +32,16 @@ export type BankQuestionView = {
   stem: string;
   options?: McqOptions;
   answer: string;
+  clusterId: string | null;
+  clusterPosition: number | null;
+};
+
+export type BankClusterView = {
+  id: string;
+  examCode: ExamCode;
+  kind: ClusterKind;
+  passage: string;
+  questions: BankQuestionView[];
 };
 
 type Tab = "essay" | ExamCode;
@@ -28,9 +49,11 @@ type Tab = "essay" | ExamCode;
 export function QuestionBank({
   essays,
   questions,
+  clusters,
 }: {
   essays: BankEssayView[];
   questions: BankQuestionView[];
+  clusters: BankClusterView[];
 }) {
   const [tab, setTab] = useState<Tab>("essay");
   const counts = useMemo(
@@ -41,7 +64,10 @@ export function QuestionBank({
     }),
     [essays.length, questions],
   );
-  const visible = questions.filter((item) => item.examCode === tab);
+  const standalone = questions.filter(
+    (item) => item.examCode === tab && !item.clusterId,
+  );
+  const visibleClusters = clusters.filter((item) => item.examCode === tab);
 
   return (
     <div className="space-y-6">
@@ -96,11 +122,47 @@ export function QuestionBank({
             ))}
           </div>
         )
-      ) : visible.length === 0 ? (
+      ) : standalone.length === 0 && visibleClusters.length === 0 ? (
         <Empty text={`Chưa có câu hỏi mã ${tab}.`} />
       ) : (
         <div className="grid gap-4">
-          {visible.map((question, index) => (
+          {visibleClusters.map((cluster, index) => (
+            <Card key={cluster.id}>
+              <CardHeader>
+                <CardTitle className="flex flex-wrap items-center gap-2 text-sm">
+                  <span>
+                    {cluster.examCode}-CUM-{cluster.id.slice(0, 8).toUpperCase()}
+                  </span>
+                  <Badge variant="secondary">Cụm {index + 1}</Badge>
+                  <Badge variant="outline">
+                    {cluster.kind === "situation" ? "Tình huống" : "Thông tin"} ·{" "}
+                    {cluster.questions.length} câu
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="font-exam text-sm font-medium">
+                  {formatRangeHeader(
+                    CLUSTER_HEADER_TEMPLATES[cluster.kind],
+                    1,
+                    cluster.questions.length || 3,
+                  )}
+                </p>
+                <MathText
+                  className="font-exam rounded-lg bg-muted/50 p-3 text-sm leading-7"
+                  text={cluster.passage}
+                />
+                {cluster.questions.map((question, questionIndex) => (
+                  <QuestionBody
+                    key={question.id}
+                    question={question}
+                    indexLabel={`Câu ${questionIndex + 1}`}
+                  />
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+          {standalone.map((question, index) => (
             <Card key={question.id}>
               <CardHeader>
                 <CardTitle className="flex flex-wrap items-center gap-2 text-sm">
@@ -111,41 +173,58 @@ export function QuestionBank({
                   <Badge variant="outline">{questionTypeLabel(question.type)}</Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <MathText className="text-sm leading-7" text={question.stem} />
-                {isMcq(question.type) && question.options
-                  ? OPTION_LETTERS.map((letter) => (
-                      <p
-                        key={letter}
-                        className={cn(
-                          "flex items-start gap-2 text-sm",
-                          letter === question.answer
-                            ? "font-medium text-emerald-700"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        <span>{letter}.</span>
-                        <MathText
-                          inline
-                          className="flex-1"
-                          text={question.options?.[letter] ?? ""}
-                        />
-                      </p>
-                    ))
-                  : null}
-                <p className="text-sm">
-                  Đáp án:{" "}
-                  <MathText
-                    inline
-                    className="font-medium text-primary"
-                    text={question.answer}
-                  />
-                </p>
+              <CardContent>
+                <QuestionBody question={question} />
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function QuestionBody({
+  question,
+  indexLabel,
+}: {
+  question: BankQuestionView;
+  indexLabel?: string;
+}) {
+  return (
+    <div className="space-y-3">
+      {indexLabel ? (
+        <p className="text-xs font-medium text-muted-foreground">{indexLabel}</p>
+      ) : null}
+      <MathText className="font-exam text-sm leading-7" text={question.stem} />
+      {isMcq(question.type) && question.options
+        ? OPTION_LETTERS.map((letter) => (
+            <p
+              key={letter}
+              className={cn(
+                "flex items-start gap-2 text-sm",
+                letter === question.answer
+                  ? "font-medium text-emerald-700"
+                  : "text-muted-foreground",
+              )}
+            >
+              <span>{letter}.</span>
+              <MathText
+                inline
+                className="flex-1"
+                text={question.options?.[letter] ?? ""}
+              />
+            </p>
+          ))
+        : null}
+      <p className="text-sm">
+        Đáp án:{" "}
+        <MathText
+          inline
+          className="font-medium text-primary"
+          text={question.answer}
+        />
+      </p>
     </div>
   );
 }

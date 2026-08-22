@@ -1,7 +1,9 @@
 import { generateObject } from "ai";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { CLUSTER_SIZE, clusterHeaderTemplate } from "./constants";
 import { asJson } from "./json";
 import {
+  clusterFingerprint,
   essayFingerprint,
   isNearDuplicate,
   questionFingerprint,
@@ -9,9 +11,11 @@ import {
 import { GEMINI_MODEL, getGemini } from "./gemini";
 import { nearDuplicateSchema } from "./schema";
 import {
+  isClusterKind,
   isMcq,
   normalizeQuestionType,
   type AnswerKey,
+  type ClusterKind,
   type ExamCode,
   type McqOptions,
   type Question,
@@ -21,6 +25,11 @@ import {
 export type ImportSummary = {
   added: number;
   skipped: number;
+};
+
+export type ImportAttribution = {
+  createdBy?: string;
+  contributionId?: string | null;
 };
 
 type ExistingQuestion = {
@@ -35,9 +44,10 @@ type IncomingQuestion = {
   options?: McqOptions;
   answer: string;
   fingerprint: string;
+  clusterPosition?: number;
 };
 
-function splitEssayPrompts(raw: string): string[] {
+export function splitEssayPrompts(raw: string): string[] {
   return raw
     .split(/\n\s*---\s*\n/)
     .map((part) => part.trim())
@@ -74,6 +84,7 @@ Trả về duplicateNewIndexes: các index câu MỚI mà về bản chất cùn
 export async function importEssays(
   rawPrompt: string,
   sourceFilename?: string,
+  attribution?: ImportAttribution,
 ): Promise<ImportSummary> {
   const prompts = splitEssayPrompts(rawPrompt);
   if (prompts.length === 0) {
@@ -124,6 +135,8 @@ export async function importEssays(
         prompt: item.prompt,
         fingerprint: item.fingerprint,
         source_filename: sourceFilename ?? null,
+        created_by: attribution?.createdBy ?? null,
+        contribution_id: attribution?.contributionId ?? null,
       })),
       { onConflict: "fingerprint", ignoreDuplicates: true },
     );
@@ -133,43 +146,44 @@ export async function importEssays(
   return { added: toInsert.length, skipped };
 }
 
-export async function importQuestions(params: {
-  examCode: ExamCode;
-  questions: Question[];
-  answerKey: AnswerKey;
-}): Promise<ImportSummary> {
-  const prepared: IncomingQuestion[] = [];
-  for (const question of params.questions) {
-    const answer = params.answerKey[String(question.originalNumber)]?.trim();
-    if (!answer) continue;
-    const type =
-      isMcq(question.type) && /^[A-D]$/i.test(answer)
-        ? "mcq"
-        : normalizeQuestionType(question.type);
-    if (type === "mcq" && !question.options) continue;
-    prepared.push({
+function toIncoming(
+  examCode: ExamCode,
+  question: Question,
+  answer: string,
+): IncomingQuestion | null {
+  const type =
+    isMcq(question.type) && /^[A-D]$/i.test(answer)
+      ? "mcq"
+      : normalizeQuestionType(question.type);
+  if (type === "mcq" && !question.options) return null;
+  return {
+    type,
+    stem: question.stem,
+    options: type === "mcq" ? question.options : undefined,
+    answer,
+    fingerprint: questionFingerprint({
+      examCode,
       type,
       stem: question.stem,
       options: type === "mcq" ? question.options : undefined,
-      answer,
-      fingerprint: questionFingerprint({
-        examCode: params.examCode,
-        type,
-        stem: question.stem,
-        options: type === "mcq" ? question.options : undefined,
-      }),
-    });
-  }
+    }),
+    clusterPosition: question.clusterPosition,
+  };
+}
 
-  if (prepared.length === 0) {
-    throw new Error("Không ghép được câu hỏi nào với file đáp án.");
-  }
+async function insertStandaloneQuestions(params: {
+  examCode: ExamCode;
+  incoming: IncomingQuestion[];
+  attribution?: ImportAttribution;
+}): Promise<ImportSummary> {
+  if (params.incoming.length === 0) return { added: 0, skipped: 0 };
 
   const supabase = getSupabaseAdmin();
   const { data: existingRows, error } = await supabase
     .from("questions")
     .select("id, stem, fingerprint")
-    .eq("exam_code", params.examCode);
+    .eq("exam_code", params.examCode)
+    .is("cluster_id", null);
   if (error) throw new Error(error.message);
 
   const existing: ExistingQuestion[] = existingRows ?? [];
@@ -178,7 +192,7 @@ export async function importQuestions(params: {
   const uniqueNew: IncomingQuestion[] = [];
   let skipped = 0;
 
-  for (const item of prepared) {
+  for (const item of params.incoming) {
     if (existingFingerprints.has(item.fingerprint)) {
       skipped += 1;
       continue;
@@ -212,6 +226,10 @@ export async function importQuestions(params: {
         options: item.options ? asJson(item.options) : null,
         answer: item.answer,
         fingerprint: item.fingerprint,
+        cluster_id: null,
+        cluster_position: null,
+        created_by: params.attribution?.createdBy ?? null,
+        contribution_id: params.attribution?.contributionId ?? null,
       })),
       { onConflict: "exam_code,fingerprint", ignoreDuplicates: true },
     );
@@ -219,6 +237,156 @@ export async function importQuestions(params: {
   }
 
   return { added: toInsert.length, skipped };
+}
+
+async function importCluster(params: {
+  examCode: ExamCode;
+  kind: ClusterKind;
+  passage: string;
+  members: IncomingQuestion[];
+  attribution?: ImportAttribution;
+}): Promise<ImportSummary> {
+  const members = [...params.members]
+    .sort((a, b) => (a.clusterPosition ?? 0) - (b.clusterPosition ?? 0))
+    .slice(0, CLUSTER_SIZE);
+  if (members.length < 2) {
+    return insertStandaloneQuestions({
+      examCode: params.examCode,
+      incoming: members,
+      attribution: params.attribution,
+    });
+  }
+
+  const fingerprint = clusterFingerprint({
+    examCode: params.examCode,
+    kind: params.kind,
+    passage: params.passage,
+    stems: members.map((item) => item.stem),
+  });
+
+  const supabase = getSupabaseAdmin();
+  const { data: existing, error } = await supabase
+    .from("question_clusters")
+    .select("id, passage, fingerprint")
+    .eq("exam_code", params.examCode);
+  if (error) throw new Error(error.message);
+
+  const rows = existing ?? [];
+  if (rows.some((row) => row.fingerprint === fingerprint)) {
+    return { added: 0, skipped: members.length };
+  }
+
+  const nearDup = await detectNearDuplicateIndexes({
+    incoming: [{ index: 0, text: params.passage }],
+    existing: rows.map((row) => ({ id: row.id, text: row.passage })),
+  });
+  if (nearDup.has(0)) {
+    return { added: 0, skipped: members.length };
+  }
+
+  const { data: cluster, error: clusterError } = await supabase
+    .from("question_clusters")
+    .insert({
+      exam_code: params.examCode,
+      kind: params.kind,
+      header_template: clusterHeaderTemplate(params.kind),
+      passage: params.passage,
+      fingerprint,
+    })
+    .select("id")
+    .single();
+  if (clusterError || !cluster) {
+    throw new Error(clusterError?.message || "Không lưu được cụm câu hỏi.");
+  }
+
+  const { error: insertError } = await supabase.from("questions").insert(
+    members.map((item, index) => ({
+      exam_code: params.examCode,
+      type: item.type,
+      stem: item.stem,
+      options: item.options ? asJson(item.options) : null,
+      answer: item.answer,
+      fingerprint: `${item.fingerprint}:${cluster.id}:${index + 1}`,
+      cluster_id: cluster.id,
+      cluster_position: index + 1,
+      created_by: params.attribution?.createdBy ?? null,
+      contribution_id: params.attribution?.contributionId ?? null,
+    })),
+  );
+  if (insertError) throw new Error(insertError.message);
+
+  return { added: members.length, skipped: 0 };
+}
+
+export async function importQuestions(params: {
+  examCode: ExamCode;
+  questions: Question[];
+  answerKey: AnswerKey;
+  attribution?: ImportAttribution;
+}): Promise<ImportSummary> {
+  const standalone: IncomingQuestion[] = [];
+  const clusters = new Map<
+    string,
+    { kind: ClusterKind; passage: string; members: IncomingQuestion[] }
+  >();
+
+  for (const question of params.questions) {
+    const answer = params.answerKey[String(question.originalNumber)]?.trim();
+    if (!answer) continue;
+    const incoming = toIncoming(params.examCode, question, answer);
+    if (!incoming) continue;
+
+    if (question.clusterId && isMcq(incoming.type)) {
+      const current = clusters.get(question.clusterId) ?? {
+        kind: isClusterKind(question.clusterKind)
+          ? question.clusterKind
+          : "passage",
+        passage: question.passage ?? "",
+        members: [],
+      };
+      if (!current.passage && question.passage) {
+        current.passage = question.passage;
+      }
+      current.members.push(incoming);
+      clusters.set(question.clusterId, current);
+      continue;
+    }
+
+    standalone.push(incoming);
+  }
+
+  let added = 0;
+  let skipped = 0;
+
+  for (const cluster of clusters.values()) {
+    if (!cluster.passage.trim() || cluster.members.length < 2) {
+      standalone.push(...cluster.members);
+      continue;
+    }
+    const result = await importCluster({
+      examCode: params.examCode,
+      kind: cluster.kind,
+      passage: cluster.passage,
+      members: cluster.members,
+      attribution: params.attribution,
+    });
+    added += result.added;
+    skipped += result.skipped;
+  }
+
+  const standaloneResult = await insertStandaloneQuestions({
+    examCode: params.examCode,
+    incoming: standalone,
+    attribution: params.attribution,
+  });
+  added += standaloneResult.added;
+  skipped += standaloneResult.skipped;
+
+  if (added + skipped === 0) {
+    throw new Error("Không ghép được câu hỏi nào với file đáp án.");
+  }
+
+  return { added, skipped };
 }
 
 export async function importParsedIntoBank(params: {
@@ -235,4 +403,35 @@ export async function importParsedIntoBank(params: {
     answerKey: params.answerKey,
   });
   return { essays, questions };
+}
+
+export async function existingEssayFingerprints(): Promise<Set<string>> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.from("essays").select("fingerprint");
+  if (error) throw new Error(error.message);
+  return new Set((data ?? []).map((row) => row.fingerprint));
+}
+
+export async function existingQuestionContentFingerprints(
+  examCode: ExamCode,
+): Promise<Set<string>> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("questions")
+    .select("fingerprint, stem, options, type")
+    .eq("exam_code", examCode);
+  if (error) throw new Error(error.message);
+  const fingerprints = new Set<string>();
+  for (const row of data ?? []) {
+    fingerprints.add(row.fingerprint);
+    fingerprints.add(
+      questionFingerprint({
+        examCode,
+        type: normalizeQuestionType(row.type),
+        stem: row.stem,
+        options: (row.options as McqOptions | null) ?? undefined,
+      }),
+    );
+  }
+  return fingerprints;
 }

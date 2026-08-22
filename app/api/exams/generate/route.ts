@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAuthUser } from "@/lib/auth/session";
 import { assembleRandomExam } from "@/lib/exam/assemble";
 import { ensureBankReady } from "@/lib/exam/sample";
 import { isExamCode } from "@/lib/exam/types";
@@ -7,6 +8,9 @@ export const runtime = "nodejs";
 export const maxDuration = 120;
 
 export async function POST(request: Request) {
+  const { user, response } = await requireAuthUser();
+  if (!user) return response;
+
   try {
     const body = (await request.json().catch(() => ({}))) as {
       examCode?: string;

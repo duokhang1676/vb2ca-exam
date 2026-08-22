@@ -1,10 +1,13 @@
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { EXAM_SPECS } from "./constants";
+import { normalizeForHash } from "./fingerprint";
 import { persistExam } from "./persist-exam";
 import {
+  isClusterKind,
   isMcq,
   normalizeQuestionType,
   type AnswerKey,
+  type ClusterKind,
   type ExamCode,
   type McqOptions,
   type Question,
@@ -20,29 +23,62 @@ function pickRandom<T>(items: T[], count: number): T[] {
 }
 
 type BankQuestionRow = {
+  id: string;
   type: string;
   stem: string;
   options: unknown;
   answer: string;
+  cluster_id: string | null;
+  cluster_position: number | null;
 };
+
+type BankClusterRow = {
+  id: string;
+  kind: string;
+  passage: string;
+};
+
+function toQuestion(
+  row: BankQuestionRow,
+  originalNumber: number,
+  extra?: Partial<Question>,
+): { question: Question; answer: string } {
+  const type = normalizeQuestionType(row.type);
+  return {
+    question: {
+      originalNumber,
+      type,
+      stem: row.stem,
+      options: type === "mcq" ? (row.options as McqOptions) : undefined,
+      ...extra,
+    },
+    answer: row.answer,
+  };
+}
 
 export async function assembleRandomExam(examCode: ExamCode) {
   const supabase = getSupabaseAdmin();
   const spec = EXAM_SPECS[examCode];
 
-  const [essaysResult, questionsResult] = await Promise.all([
+  const [essaysResult, questionsResult, clustersResult] = await Promise.all([
     supabase.from("essays").select("prompt"),
     supabase
       .from("questions")
-      .select("type, stem, options, answer")
+      .select("id, type, stem, options, answer, cluster_id, cluster_position")
+      .eq("exam_code", examCode),
+    supabase
+      .from("question_clusters")
+      .select("id, kind, passage")
       .eq("exam_code", examCode),
   ]);
 
   if (essaysResult.error) throw new Error(essaysResult.error.message);
   if (questionsResult.error) throw new Error(questionsResult.error.message);
+  if (clustersResult.error) throw new Error(clustersResult.error.message);
 
   const essays = essaysResult.data ?? [];
   const bank = (questionsResult.data ?? []) as BankQuestionRow[];
+  const clusterRows = (clustersResult.data ?? []) as BankClusterRow[];
 
   if (essays.length === 0) {
     throw new Error(
@@ -56,37 +92,78 @@ export async function assembleRandomExam(examCode: ExamCode) {
   }
 
   const essayPrompt = pickRandom(essays, 1)[0].prompt;
-  const mcqPool = bank.filter((row) => isMcq(row.type));
+  const clusteredStems = new Set(
+    bank
+      .filter((row) => row.cluster_id)
+      .map((row) => normalizeForHash(row.stem)),
+  );
+  const independent = bank.filter(
+    (row) =>
+      !row.cluster_id &&
+      isMcq(row.type) &&
+      !clusteredStems.has(normalizeForHash(row.stem)),
+  );
   const fillPool = bank.filter((row) => !isMcq(row.type));
-  const selected = [
-    ...pickRandom(mcqPool, spec.mcq),
-    ...pickRandom(fillPool, spec.fill),
-  ];
 
-  if (selected.length === 0) {
-    throw new Error(`Không lấy được câu hỏi mã ${examCode}.`);
-  }
+  const completeClusters = clusterRows
+    .map((cluster) => {
+      const members = bank
+        .filter((row) => row.cluster_id === cluster.id)
+        .sort((a, b) => (a.cluster_position ?? 0) - (b.cluster_position ?? 0))
+        .slice(0, spec.clusterSize);
+      return { cluster, members };
+    })
+    .filter((item) => item.members.length >= spec.clusterSize);
+
+  const selectedIndependent = pickRandom(independent, spec.independentMcq);
+  const selectedClusters = pickRandom(completeClusters, spec.clusters);
+  const selectedFill = pickRandom(fillPool, spec.fill);
 
   const questions: Question[] = [];
   const answerKey: AnswerKey = {};
+  let number = 1;
 
-  selected.forEach((row, index) => {
-    const originalNumber = index + 1;
-    const type = normalizeQuestionType(row.type);
-    questions.push({
-      originalNumber,
-      type,
-      stem: row.stem,
-      options: type === "mcq" ? (row.options as McqOptions) : undefined,
+  for (const row of selectedIndependent) {
+    const mapped = toQuestion(row, number, { section: "independent" });
+    questions.push(mapped.question);
+    answerKey[String(number)] = mapped.answer;
+    number += 1;
+  }
+
+  for (const { cluster, members } of selectedClusters) {
+    const kind: ClusterKind = isClusterKind(cluster.kind)
+      ? cluster.kind
+      : spec.clusterKind;
+    members.forEach((row, index) => {
+      const mapped = toQuestion(row, number, {
+        section: "cluster",
+        clusterId: cluster.id,
+        clusterPosition: index + 1,
+        clusterKind: kind,
+        passage: cluster.passage,
+      });
+      questions.push(mapped.question);
+      answerKey[String(number)] = mapped.answer;
+      number += 1;
     });
-    answerKey[String(originalNumber)] = row.answer;
-  });
+  }
 
-  const belowSpec = selected.length < spec.total;
+  for (const row of selectedFill) {
+    const mapped = toQuestion(row, number, { section: "fill" });
+    questions.push(mapped.question);
+    answerKey[String(number)] = mapped.answer;
+    number += 1;
+  }
+
+  if (questions.length === 0) {
+    throw new Error(`Không lấy được câu hỏi mã ${examCode}.`);
+  }
+
+  const belowSpec = questions.length < spec.total;
 
   return persistExam({
     title: belowSpec
-      ? `${examCode} — Đề ngẫu nhiên (${selected.length}/${spec.total} câu)`
+      ? `${examCode} — Đề ngẫu nhiên (${questions.length}/${spec.total} câu)`
       : `${examCode} — Đề ngẫu nhiên`,
     essayPrompt,
     questions,

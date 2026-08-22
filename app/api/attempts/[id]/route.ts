@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireOwnedAttempt } from "@/lib/auth/attempt";
 import { EXAM_DURATION_MS } from "@/lib/exam/constants";
 import { parseAnswers, parseQuestions, parseShuffle } from "@/lib/exam/json";
 import { toDisplayQuestions } from "@/lib/exam/shuffle";
@@ -10,19 +11,10 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, { params }: Params) {
   const { id } = await params;
+  const { attempt, response } = await requireOwnedAttempt(id);
+  if (!attempt) return response;
+
   const supabase = getSupabaseAdmin();
-
-  const { data: attempt, error } = await supabase
-    .from("attempts")
-    .select(
-      "id, exam_id, shuffle, started_at, submitted_at, essay_text, answers",
-    )
-    .eq("id", id)
-    .single();
-
-  if (error || !attempt) {
-    return NextResponse.json({ error: "Không tìm thấy bài làm." }, { status: 404 });
-  }
 
   const { data: exam, error: examError } = await supabase
     .from("exams")

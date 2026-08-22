@@ -17,9 +17,16 @@ export function parseQuestions(value: unknown): Question[] {
   }
   return value.map((item) => {
     const question = item as Question;
+    const type = normalizeQuestionType(question.type);
+    const clusterId = question.clusterId;
+    const section =
+      question.section ??
+      (clusterId ? "cluster" : type === "fill" ? "fill" : "independent");
     return {
       ...question,
-      type: normalizeQuestionType(question.type),
+      type,
+      section,
+      clusterId,
     };
   });
 }

@@ -33,6 +33,18 @@ export function questionFingerprint(params: {
   );
 }
 
+export function clusterFingerprint(params: {
+  examCode: ExamCode;
+  kind: string;
+  passage: string;
+  stems: string[];
+}): string {
+  const stemPart = params.stems.map(normalizeForHash).join("|");
+  return sha256(
+    `${params.examCode}|${params.kind}|${normalizeForHash(params.passage)}|${stemPart}`,
+  );
+}
+
 export function tokenize(text: string): Set<string> {
   return new Set(
     normalizeForHash(text)

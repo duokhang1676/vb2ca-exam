@@ -2,6 +2,8 @@ export type QuestionType = "mcq" | "fill";
 export type OptionLetter = "A" | "B" | "C" | "D";
 export type ExamCode = "CA1" | "CA4";
 export type ExamSource = "random" | "sample";
+export type ClusterKind = "passage" | "situation";
+export type QuestionSection = "independent" | "cluster" | "fill";
 
 export type McqOptions = Record<OptionLetter, string>;
 
@@ -10,6 +12,11 @@ export type Question = {
   type: QuestionType;
   stem: string;
   options?: McqOptions;
+  section?: QuestionSection;
+  clusterId?: string;
+  clusterPosition?: number;
+  clusterKind?: ClusterKind;
+  passage?: string;
 };
 
 export type AnswerKey = Record<string, string>;
@@ -27,7 +34,23 @@ export type DisplayQuestion = {
   type: QuestionType;
   stem: string;
   options?: McqOptions;
+  section?: QuestionSection;
+  clusterId?: string;
+  clusterPosition?: number;
+  clusterKind?: ClusterKind;
+  passage?: string;
 };
+
+export type DisplayBlock =
+  | { kind: "independent"; questions: DisplayQuestion[] }
+  | {
+      kind: "cluster";
+      header: string;
+      passage: string;
+      clusterKind: ClusterKind;
+      questions: DisplayQuestion[];
+    }
+  | { kind: "fill"; header: string; questions: DisplayQuestion[] };
 
 export type McqDetailItem = {
   originalNumber: number;
@@ -40,6 +63,9 @@ export type McqDetailItem = {
   correctDisplayAnswer: string;
   isCorrect: boolean;
   points: number;
+  clusterId?: string;
+  clusterKind?: ClusterKind;
+  passage?: string;
 };
 
 export type GradeResult = {
@@ -57,7 +83,18 @@ export type BankQuestion = {
   options?: McqOptions;
   answer: string;
   fingerprint: string;
+  clusterId: string | null;
+  clusterPosition: number | null;
   createdAt: string;
+};
+
+export type BankCluster = {
+  id: string;
+  examCode: ExamCode;
+  kind: ClusterKind;
+  headerTemplate: string;
+  passage: string;
+  questions: BankQuestion[];
 };
 
 export type BankEssay = {
@@ -78,4 +115,8 @@ export function isMcq(type: string | null | undefined): boolean {
 
 export function isExamCode(value: unknown): value is ExamCode {
   return value === "CA1" || value === "CA4";
+}
+
+export function isClusterKind(value: unknown): value is ClusterKind {
+  return value === "passage" || value === "situation";
 }

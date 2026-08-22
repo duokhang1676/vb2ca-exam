@@ -1,4 +1,4 @@
-import type { ExamCode } from "./types";
+import type { ClusterKind, ExamCode } from "./types";
 
 export const EXAM_DURATION_MS = 150 * 60 * 1000;
 export const ESSAY_MAX_SCORE = 30;
@@ -8,14 +8,48 @@ export const OPTION_LETTERS = ["A", "B", "C", "D"] as const;
 export const AUTOSAVE_INTERVAL_MS = 30_000;
 export const EXAM_CODES = ["CA1", "CA4"] as const;
 export const NEAR_DUP_JACCARD = 0.55;
+export const CLUSTER_SIZE = 3;
 
-export const EXAM_SPECS: Record<
-  ExamCode,
-  { mcq: number; fill: number; total: number }
-> = {
-  CA1: { mcq: 45, fill: 5, total: 50 },
-  CA4: { mcq: 54, fill: 6, total: 60 },
+export type ExamSpec = {
+  independentMcq: number;
+  clusters: number;
+  clusterSize: number;
+  mcq: number;
+  fill: number;
+  total: number;
+  clusterKind: ClusterKind;
 };
+
+export const EXAM_SPECS: Record<ExamCode, ExamSpec> = {
+  CA1: {
+    independentMcq: 39,
+    clusters: 2,
+    clusterSize: CLUSTER_SIZE,
+    mcq: 45,
+    fill: 5,
+    total: 50,
+    clusterKind: "passage",
+  },
+  CA4: {
+    independentMcq: 48,
+    clusters: 2,
+    clusterSize: CLUSTER_SIZE,
+    mcq: 54,
+    fill: 6,
+    total: 60,
+    clusterKind: "situation",
+  },
+};
+
+export const CLUSTER_HEADER_TEMPLATES: Record<ClusterKind, string> = {
+  passage:
+    "Dựa vào thông tin dưới đây và trả lời các câu từ {start} đến {end}.",
+  situation:
+    "Đọc tình huống sau đây và trả lời các câu từ {start} đến {end}.",
+};
+
+export const FILL_HEADER_TEMPLATE =
+  "Câu trắc nghiệm trả lời ngắn. Thí sinh trả lời các câu từ {start} đến {end}.";
 
 export const SAMPLE_TITLES: Record<ExamCode, string> = {
   CA1: "Đề minh họa 2026 — CA1",
@@ -39,4 +73,18 @@ export function pointsPerQuestion(count: number): number {
 
 export function questionTypeLabel(type: string | null | undefined): string {
   return type === "mcq" ? "Trắc nghiệm" : "Điền đáp án";
+}
+
+export function formatRangeHeader(
+  template: string,
+  start: number,
+  end: number,
+): string {
+  return template
+    .replaceAll("{start}", String(start))
+    .replaceAll("{end}", String(end));
+}
+
+export function clusterHeaderTemplate(kind: ClusterKind): string {
+  return CLUSTER_HEADER_TEMPLATES[kind];
 }

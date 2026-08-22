@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireOwnedAttempt } from "@/lib/auth/attempt";
 import { asJson, parseAnswers } from "@/lib/exam/json";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -8,21 +9,14 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: Params) {
   const { id } = await params;
+  const { attempt, response } = await requireOwnedAttempt(id);
+  if (!attempt) return response;
   const body = (await request.json()) as {
     essayText?: string;
     answers?: Record<string, string>;
   };
 
   const supabase = getSupabaseAdmin();
-  const { data: attempt, error } = await supabase
-    .from("attempts")
-    .select("id, submitted_at, answers, essay_text")
-    .eq("id", id)
-    .single();
-
-  if (error || !attempt) {
-    return NextResponse.json({ error: "Không tìm thấy bài làm." }, { status: 404 });
-  }
 
   if (attempt.submitted_at) {
     return NextResponse.json({ error: "Bài đã nộp, không lưu thêm được." }, { status: 409 });

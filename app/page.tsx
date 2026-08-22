@@ -1,7 +1,13 @@
 import { ContributePanel } from "@/components/contribute-panel";
 import { HomeExamPanel } from "@/components/home-exam-panel";
+import { getAuthUser } from "@/lib/auth/session";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const user = await getAuthUser();
+  const signedIn = Boolean(user);
+
   return (
     <div className="mx-auto grid max-w-3xl gap-8">
       <div className="space-y-3 text-center">
@@ -13,14 +19,14 @@ export default function HomePage() {
           đề. 150 phút, thang điểm 100.
         </p>
       </div>
-      <HomeExamPanel />
+      <HomeExamPanel signedIn={signedIn} />
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Đóng góp vào ngân hàng</h2>
         <p className="text-sm text-muted-foreground">
-          Có thể nạp độc lập phần 1 hoặc phần 2. Hệ thống gán id, loại câu trùng,
-          chỉ giữ câu mới.
+          Nạp độc lập phần 1 hoặc phần 2. Hệ thống OCR, bạn review/sửa rồi mới
+          đưa vào ngân hàng.
         </p>
-        <ContributePanel />
+        <ContributePanel signedIn={signedIn} />
       </div>
     </div>
   );

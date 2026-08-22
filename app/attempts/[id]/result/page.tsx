@@ -1,5 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ResultsView } from "@/components/results-view";
+import { getAuthUser } from "@/lib/auth/session";
 import { parseQuestions } from "@/lib/exam/json";
 import type { McqDetailItem } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
@@ -11,13 +12,17 @@ export default async function ResultPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await getAuthUser();
+  if (!user) redirect("/login");
+
   const { id } = await params;
   const supabase = getSupabaseAdmin();
   const { data: attempt } = await supabase
     .from("attempts")
     .select("*")
     .eq("id", id)
-    .single();
+    .eq("user_id", user.id)
+    .maybeSingle();
 
   if (!attempt || !attempt.submitted_at) notFound();
 

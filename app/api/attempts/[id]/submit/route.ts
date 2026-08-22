@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireOwnedAttempt } from "@/lib/auth/attempt";
 import { pointsPerQuestion } from "@/lib/exam/constants";
 import { gradeEssay } from "@/lib/exam/grade-essay";
 import { gradeMultipleChoice, roundTotal } from "@/lib/exam/grade";
@@ -13,21 +14,14 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: Params) {
   const { id } = await params;
+  const { attempt, response } = await requireOwnedAttempt(id);
+  if (!attempt) return response;
   const body = (await request.json().catch(() => ({}))) as {
     essayText?: string;
     answers?: Record<string, string>;
   };
 
   const supabase = getSupabaseAdmin();
-  const { data: attempt, error } = await supabase
-    .from("attempts")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error || !attempt) {
-    return NextResponse.json({ error: "Không tìm thấy bài làm." }, { status: 404 });
-  }
 
   if (attempt.submitted_at) {
     return NextResponse.json({ resultUrl: `/attempts/${id}/result` });

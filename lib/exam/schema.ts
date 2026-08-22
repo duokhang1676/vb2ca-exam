@@ -14,10 +14,21 @@ const parsedQuestionSchema = z.object({
     .optional(),
 });
 
+const parsedClusterSchema = z.object({
+  kind: z.enum(["passage", "situation"]),
+  header: z.string().min(1),
+  passage: z.string().min(1),
+  startNumber: z.number().int().min(1).max(80),
+  endNumber: z.number().int().min(1).max(80),
+  questions: z.array(parsedQuestionSchema).max(3).optional(),
+});
+
 export const parsedExamSchema = z.object({
   title: z.string().min(1),
   essayPrompt: z.string().min(1),
   questions: z.array(parsedQuestionSchema).min(1),
+  clusters: z.array(parsedClusterSchema).optional(),
+  fillHeader: z.string().optional(),
 });
 
 export const parsedEssaySchema = z.object({
@@ -26,6 +37,8 @@ export const parsedEssaySchema = z.object({
 
 export const parsedQuestionsSchema = z.object({
   questions: z.array(parsedQuestionSchema).min(1),
+  clusters: z.array(parsedClusterSchema).optional(),
+  fillHeader: z.string().optional(),
 });
 
 export const essayGradeSchema = z.object({
@@ -38,6 +51,7 @@ export const nearDuplicateSchema = z.object({
 });
 
 export type ParsedExam = z.infer<typeof parsedExamSchema>;
+export type ParsedCluster = z.infer<typeof parsedClusterSchema>;
 export type ParsedEssay = z.infer<typeof parsedEssaySchema>;
 export type ParsedQuestions = z.infer<typeof parsedQuestionsSchema>;
 export type EssayGrade = z.infer<typeof essayGradeSchema>;
