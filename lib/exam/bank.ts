@@ -1,6 +1,7 @@
 import { generateObject } from "ai";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { CLUSTER_SIZE, clusterHeaderTemplate } from "./constants";
+import { CLUSTER_SIZE, clusterHeaderTemplate, OPTION_LETTERS } from "./constants";
+import { ContributeError } from "./contribute-error";
 import { asJson } from "./json";
 import {
   clusterFingerprint,
@@ -18,6 +19,7 @@ import {
   type ClusterKind,
   type ExamCode,
   type McqOptions,
+  type OptionLetter,
   type Question,
   type QuestionType,
 } from "./types";
@@ -434,4 +436,318 @@ export async function existingQuestionContentFingerprints(
     );
   }
   return fingerprints;
+}
+
+export type UpdatedEssay = {
+  id: string;
+  prompt: string;
+};
+
+export type UpdatedQuestion = {
+  id: string;
+  stem: string;
+  options?: McqOptions;
+  answer: string;
+};
+
+export type UpdatedCluster = {
+  id: string;
+  passage: string;
+};
+
+function invalidContent(message: string, steps: string[]) {
+  return new ContributeError("INVALID_CONTENT", message, "Nội dung chưa hợp lệ", steps);
+}
+
+function parseMcqOptions(value: unknown): McqOptions {
+  if (!value || typeof value !== "object") {
+    throw invalidContent("Câu trắc nghiệm cần đủ bốn lựa chọn A B C D.", [
+      "Điền đầy đủ nội dung các lựa chọn.",
+    ]);
+  }
+  const record = value as Record<string, unknown>;
+  const options = {} as McqOptions;
+  for (const letter of OPTION_LETTERS) {
+    const text = String(record[letter] ?? "").trim();
+    if (!text) {
+      throw invalidContent(`Thiếu lựa chọn ${letter}.`, [
+        "Điền đủ A, B, C, D trước khi lưu.",
+      ]);
+    }
+    options[letter] = text;
+  }
+  return options;
+}
+
+async function assertClusterFingerprintFree(params: {
+  clusterId: string;
+  examCode: ExamCode;
+  fingerprint: string;
+}) {
+  const supabase = getSupabaseAdmin();
+  const { data: clash, error } = await supabase
+    .from("question_clusters")
+    .select("id")
+    .eq("exam_code", params.examCode)
+    .eq("fingerprint", params.fingerprint)
+    .neq("id", params.clusterId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (clash) {
+    throw new ContributeError(
+      "DUPLICATE",
+      "Cụm sau khi sửa trùng với một cụm đã có trong ngân hàng.",
+      "Cụm bị trùng",
+      ["Đổi đoạn thông tin hoặc đề câu trong cụm rồi lưu lại."],
+    );
+  }
+}
+
+async function writeClusterFingerprint(clusterId: string, fingerprint: string) {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("question_clusters")
+    .update({ fingerprint })
+    .eq("id", clusterId);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateEssay(id: string, prompt: string): Promise<UpdatedEssay> {
+  const trimmed = prompt.trim();
+  if (!trimmed) {
+    throw invalidContent("Đề nghị luận không được để trống.", [
+      "Nhập nội dung đề rồi bấm Lưu.",
+    ]);
+  }
+
+  const fingerprint = essayFingerprint(trimmed);
+  const supabase = getSupabaseAdmin();
+  const { data: clash, error: clashError } = await supabase
+    .from("essays")
+    .select("id")
+    .eq("fingerprint", fingerprint)
+    .neq("id", id)
+    .maybeSingle();
+  if (clashError) throw new Error(clashError.message);
+  if (clash) {
+    throw new ContributeError(
+      "DUPLICATE",
+      "Đề này đã có trong ngân hàng.",
+      "Đề bị trùng",
+      ["Sửa nội dung cho khác đề hiện có, hoặc hủy nếu không cần đổi."],
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("essays")
+    .update({ prompt: trimmed, fingerprint })
+    .eq("id", id)
+    .select("id, prompt")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) {
+    throw new ContributeError(
+      "NOT_FOUND",
+      "Không tìm thấy đề nghị luận.",
+      "Đề không còn trong ngân hàng",
+      ["Tải lại trang rồi thử sửa đề khác."],
+    );
+  }
+  return { id: data.id, prompt: data.prompt };
+}
+
+export async function updateQuestion(
+  id: string,
+  input: { stem: string; options?: McqOptions | null; answer: string },
+): Promise<UpdatedQuestion> {
+  const supabase = getSupabaseAdmin();
+  const { data: row, error: loadError } = await supabase
+    .from("questions")
+    .select("id, exam_code, type, cluster_id, cluster_position")
+    .eq("id", id)
+    .maybeSingle();
+  if (loadError) throw new Error(loadError.message);
+  if (!row) {
+    throw new ContributeError(
+      "NOT_FOUND",
+      "Không tìm thấy câu hỏi.",
+      "Câu không còn trong ngân hàng",
+      ["Tải lại trang rồi thử sửa câu khác."],
+    );
+  }
+
+  const type = normalizeQuestionType(row.type);
+  const examCode = row.exam_code as ExamCode;
+  const stem = input.stem.trim();
+  const answer = input.answer.trim();
+  if (!stem) {
+    throw invalidContent("Đề bài không được để trống.", ["Nhập đề bài rồi bấm Lưu."]);
+  }
+
+  let options: McqOptions | undefined;
+  if (isMcq(type)) {
+    options = parseMcqOptions(input.options);
+    if (!OPTION_LETTERS.includes(answer.toUpperCase() as OptionLetter)) {
+      throw invalidContent("Đáp án trắc nghiệm phải là A, B, C hoặc D.", [
+        "Nhập đúng một chữ cái A–D.",
+      ]);
+    }
+  } else if (!answer) {
+    throw invalidContent("Câu điền cần có đáp án.", ["Nhập đáp án rồi bấm Lưu."]);
+  }
+
+  const normalizedAnswer = isMcq(type) ? answer.toUpperCase() : answer;
+  const contentHash = questionFingerprint({
+    examCode,
+    type,
+    stem,
+    options,
+  });
+  const fingerprint = row.cluster_id
+    ? `${contentHash}:${row.cluster_id}:${row.cluster_position}`
+    : contentHash;
+
+  const { data: clash, error: clashError } = await supabase
+    .from("questions")
+    .select("id")
+    .eq("exam_code", examCode)
+    .eq("fingerprint", fingerprint)
+    .neq("id", id)
+    .maybeSingle();
+  if (clashError) throw new Error(clashError.message);
+  if (clash) {
+    throw new ContributeError(
+      "DUPLICATE",
+      "Câu này đã có trong ngân hàng.",
+      "Câu bị trùng",
+      ["Sửa đề hoặc lựa chọn cho khác câu hiện có."],
+    );
+  }
+
+  let nextClusterFingerprint: string | null = null;
+  if (row.cluster_id) {
+    const { data: cluster, error: clusterError } = await supabase
+      .from("question_clusters")
+      .select("id, exam_code, kind, passage")
+      .eq("id", row.cluster_id)
+      .maybeSingle();
+    if (clusterError) throw new Error(clusterError.message);
+    if (cluster) {
+      const { data: members, error: membersError } = await supabase
+        .from("questions")
+        .select("id, stem, cluster_position")
+        .eq("cluster_id", row.cluster_id)
+        .order("cluster_position", { ascending: true });
+      if (membersError) throw new Error(membersError.message);
+      nextClusterFingerprint = clusterFingerprint({
+        examCode: cluster.exam_code as ExamCode,
+        kind: isClusterKind(cluster.kind) ? cluster.kind : "passage",
+        passage: cluster.passage,
+        stems: (members ?? []).map((member) =>
+          member.id === id ? stem : member.stem,
+        ),
+      });
+      await assertClusterFingerprintFree({
+        clusterId: cluster.id,
+        examCode: cluster.exam_code as ExamCode,
+        fingerprint: nextClusterFingerprint,
+      });
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("questions")
+    .update({
+      stem,
+      options: options ? asJson(options) : null,
+      answer: normalizedAnswer,
+      fingerprint,
+    })
+    .eq("id", id)
+    .select("id, stem, options, answer")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) {
+    throw new ContributeError(
+      "NOT_FOUND",
+      "Không tìm thấy câu hỏi.",
+      "Câu không còn trong ngân hàng",
+      ["Tải lại trang rồi thử sửa câu khác."],
+    );
+  }
+
+  if (row.cluster_id && nextClusterFingerprint) {
+    await writeClusterFingerprint(row.cluster_id, nextClusterFingerprint);
+  }
+
+  return {
+    id: data.id,
+    stem: data.stem,
+    options: (data.options as McqOptions | null) ?? undefined,
+    answer: data.answer,
+  };
+}
+
+export async function updateClusterPassage(
+  id: string,
+  passage: string,
+): Promise<UpdatedCluster> {
+  const trimmed = passage.trim();
+  if (!trimmed) {
+    throw invalidContent("Đoạn thông tin / tình huống không được để trống.", [
+      "Nhập đoạn dùng chung rồi bấm Lưu.",
+    ]);
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data: cluster, error: loadError } = await supabase
+    .from("question_clusters")
+    .select("id, exam_code, kind")
+    .eq("id", id)
+    .maybeSingle();
+  if (loadError) throw new Error(loadError.message);
+  if (!cluster) {
+    throw new ContributeError(
+      "NOT_FOUND",
+      "Không tìm thấy cụm câu hỏi.",
+      "Cụm không còn trong ngân hàng",
+      ["Tải lại trang rồi thử sửa cụm khác."],
+    );
+  }
+
+  const { data: members, error: membersError } = await supabase
+    .from("questions")
+    .select("stem, cluster_position")
+    .eq("cluster_id", id)
+    .order("cluster_position", { ascending: true });
+  if (membersError) throw new Error(membersError.message);
+
+  const fingerprint = clusterFingerprint({
+    examCode: cluster.exam_code as ExamCode,
+    kind: isClusterKind(cluster.kind) ? cluster.kind : "passage",
+    passage: trimmed,
+    stems: (members ?? []).map((member) => member.stem),
+  });
+  await assertClusterFingerprintFree({
+    clusterId: id,
+    examCode: cluster.exam_code as ExamCode,
+    fingerprint,
+  });
+
+  const { data, error } = await supabase
+    .from("question_clusters")
+    .update({ passage: trimmed, fingerprint })
+    .eq("id", id)
+    .select("id, passage")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) {
+    throw new ContributeError(
+      "NOT_FOUND",
+      "Không tìm thấy cụm câu hỏi.",
+      "Cụm không còn trong ngân hàng",
+      ["Tải lại trang rồi thử sửa cụm khác."],
+    );
+  }
+  return { id: data.id, passage: data.passage };
 }

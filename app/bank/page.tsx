@@ -1,4 +1,5 @@
 import { QuestionBank } from "@/components/question-bank";
+import { getAuthUser } from "@/lib/auth/session";
 import {
   isClusterKind,
   normalizeQuestionType,
@@ -15,6 +16,8 @@ export default async function BankPage({
   searchParams: Promise<{ added?: string; skipped?: string }>;
 }) {
   const { added, skipped } = await searchParams;
+  const user = await getAuthUser();
+  const signedIn = Boolean(user);
   const supabase = getSupabaseAdmin();
   const [essaysResult, questionsResult, clustersResult] = await Promise.all([
     supabase
@@ -73,10 +76,15 @@ export default async function BankPage({
         <p className="rounded-lg bg-primary/10 px-3 py-2 text-sm text-primary">
           Đã thêm {addedCount} mục mới
           {skippedCount > 0 ? `, bỏ qua ${skippedCount} mục trùng.` : "."}{" "}
-          Kiểm tra danh sách dưới đây; nếu còn sai, đóng góp lại file đã sửa.
+          Kiểm tra danh sách dưới đây; nếu còn sai, bấm Sửa ngay trên từng mục.
         </p>
       ) : null}
-      <QuestionBank essays={essays} questions={questions} clusters={clusters} />
+      <QuestionBank
+        essays={essays}
+        questions={questions}
+        clusters={clusters}
+        signedIn={signedIn}
+      />
     </div>
   );
 }

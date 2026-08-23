@@ -8,6 +8,7 @@ import {
   ContributeAlert,
   type ContributeAlertPayload,
 } from "@/components/contribute-alert";
+import { COMMIT_STEPS, ContributeProgress } from "@/components/contribute-progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,6 +134,7 @@ export function ContributeReview({ draftId }: { draftId: string }) {
           {busy ? "Đang nạp..." : `Xác nhận nạp (${keepCount})`}
         </Button>
       </div>
+      <ContributeProgress active={busy} steps={COMMIT_STEPS} />
       {alert ? <ContributeAlert {...alert} /> : null}
       {payload.kind === "essay" ? (
         <EssayReview

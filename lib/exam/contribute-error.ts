@@ -9,7 +9,10 @@ export type ContributeErrorCode =
   | "GEMINI_ERROR"
   | "DRAFT_EXPIRED"
   | "COMMIT_PARTIAL"
-  | "COMMIT_EMPTY";
+  | "COMMIT_EMPTY"
+  | "DUPLICATE"
+  | "NOT_FOUND"
+  | "INVALID_CONTENT";
 
 export class ContributeError extends Error {
   constructor(
@@ -23,6 +26,19 @@ export class ContributeError extends Error {
   }
 }
 
+function statusForContributeError(code: ContributeErrorCode): number {
+  switch (code) {
+    case "UNAUTHORIZED":
+      return 401;
+    case "NOT_FOUND":
+      return 404;
+    case "DUPLICATE":
+      return 409;
+    default:
+      return 400;
+  }
+}
+
 export function contributeErrorResponse(error: unknown, fallback: string) {
   if (error instanceof ContributeError) {
     return NextResponse.json(
@@ -32,7 +48,7 @@ export function contributeErrorResponse(error: unknown, fallback: string) {
         title: error.title,
         steps: error.steps,
       },
-      { status: error.code === "UNAUTHORIZED" ? 401 : 400 },
+      { status: statusForContributeError(error.code) },
     );
   }
   const message = error instanceof Error ? error.message : fallback;

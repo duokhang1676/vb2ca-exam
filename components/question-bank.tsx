@@ -1,6 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import {
+  BankEssayFields,
+  BankPassageFields,
+  BankQuestionFields,
+  EditToolbar,
+  useBankSave,
+} from "@/components/bank-item-editor";
 import { MathText } from "@/components/math-text";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,24 +57,57 @@ export function QuestionBank({
   essays,
   questions,
   clusters,
+  signedIn,
 }: {
   essays: BankEssayView[];
   questions: BankQuestionView[];
   clusters: BankClusterView[];
+  signedIn: boolean;
 }) {
+  const [essayItems, setEssayItems] = useState(essays);
+  const [questionItems, setQuestionItems] = useState(questions);
+  const [clusterItems, setClusterItems] = useState(clusters);
   const [tab, setTab] = useState<Tab>("essay");
   const counts = useMemo(
     () => ({
-      essay: essays.length,
-      CA1: questions.filter((item) => item.examCode === "CA1").length,
-      CA4: questions.filter((item) => item.examCode === "CA4").length,
+      essay: essayItems.length,
+      CA1: questionItems.filter((item) => item.examCode === "CA1").length,
+      CA4: questionItems.filter((item) => item.examCode === "CA4").length,
     }),
-    [essays.length, questions],
+    [essayItems.length, questionItems],
   );
-  const standalone = questions.filter(
+  const standalone = questionItems.filter(
     (item) => item.examCode === tab && !item.clusterId,
   );
-  const visibleClusters = clusters.filter((item) => item.examCode === tab);
+  const visibleClusters = clusterItems.filter((item) => item.examCode === tab);
+
+  function handleEssaySaved(updated: BankEssayView) {
+    setEssayItems((current) =>
+      current.map((item) => (item.id === updated.id ? updated : item)),
+    );
+  }
+
+  function handleQuestionSaved(updated: BankQuestionView) {
+    setQuestionItems((current) =>
+      current.map((item) => (item.id === updated.id ? updated : item)),
+    );
+    setClusterItems((current) =>
+      current.map((cluster) => ({
+        ...cluster,
+        questions: cluster.questions.map((item) =>
+          item.id === updated.id ? updated : item,
+        ),
+      })),
+    );
+  }
+
+  function handleClusterSaved(updated: BankClusterView) {
+    setClusterItems((current) =>
+      current.map((item) =>
+        item.id === updated.id ? { ...item, passage: updated.passage } : item,
+      ),
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -103,22 +143,18 @@ export function QuestionBank({
       </div>
 
       {tab === "essay" ? (
-        essays.length === 0 ? (
+        essayItems.length === 0 ? (
           <Empty text="Chưa có đề nghị luận. Hãy đóng góp từ trang chủ hoặc dùng đề minh họa 2026." />
         ) : (
           <div className="grid gap-4">
-            {essays.map((essay, index) => (
-              <Card key={essay.id}>
-                <CardHeader>
-                  <CardTitle className="flex flex-wrap items-center gap-2 text-sm">
-                    <span>NL-{essay.id.slice(0, 8).toUpperCase()}</span>
-                    <Badge variant="secondary">Nghị luận {index + 1}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <MathText className="text-sm leading-7" text={essay.prompt} />
-                </CardContent>
-              </Card>
+            {essayItems.map((essay, index) => (
+              <EssayCard
+                key={essay.id}
+                essay={essay}
+                index={index}
+                signedIn={signedIn}
+                onSaved={handleEssaySaved}
+              />
             ))}
           </div>
         )
@@ -127,56 +163,23 @@ export function QuestionBank({
       ) : (
         <div className="grid gap-4">
           {visibleClusters.map((cluster, index) => (
-            <Card key={cluster.id}>
-              <CardHeader>
-                <CardTitle className="flex flex-wrap items-center gap-2 text-sm">
-                  <span>
-                    {cluster.examCode}-CUM-{cluster.id.slice(0, 8).toUpperCase()}
-                  </span>
-                  <Badge variant="secondary">Cụm {index + 1}</Badge>
-                  <Badge variant="outline">
-                    {cluster.kind === "situation" ? "Tình huống" : "Thông tin"} ·{" "}
-                    {cluster.questions.length} câu
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="font-exam text-sm font-medium">
-                  {formatRangeHeader(
-                    CLUSTER_HEADER_TEMPLATES[cluster.kind],
-                    1,
-                    cluster.questions.length || 3,
-                  )}
-                </p>
-                <MathText
-                  className="font-exam rounded-lg bg-muted/50 p-3 text-sm leading-7"
-                  text={cluster.passage}
-                />
-                {cluster.questions.map((question, questionIndex) => (
-                  <QuestionBody
-                    key={question.id}
-                    question={question}
-                    indexLabel={`Câu ${questionIndex + 1}`}
-                  />
-                ))}
-              </CardContent>
-            </Card>
+            <ClusterCard
+              key={cluster.id}
+              cluster={cluster}
+              index={index}
+              signedIn={signedIn}
+              onClusterSaved={handleClusterSaved}
+              onQuestionSaved={handleQuestionSaved}
+            />
           ))}
           {standalone.map((question, index) => (
-            <Card key={question.id}>
-              <CardHeader>
-                <CardTitle className="flex flex-wrap items-center gap-2 text-sm">
-                  <span>
-                    {question.examCode}-{question.id.slice(0, 8).toUpperCase()}
-                  </span>
-                  <Badge variant="secondary">Câu {index + 1}</Badge>
-                  <Badge variant="outline">{questionTypeLabel(question.type)}</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <QuestionBody question={question} />
-              </CardContent>
-            </Card>
+            <StandaloneQuestionCard
+              key={question.id}
+              question={question}
+              index={index}
+              signedIn={signedIn}
+              onSaved={handleQuestionSaved}
+            />
           ))}
         </div>
       )}
@@ -184,18 +187,323 @@ export function QuestionBank({
   );
 }
 
-function QuestionBody({
+function EssayCard({
+  essay,
+  index,
+  signedIn,
+  onSaved,
+}: {
+  essay: BankEssayView;
+  index: number;
+  signedIn: boolean;
+  onSaved: (essay: BankEssayView) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [prompt, setPrompt] = useState(essay.prompt);
+  const { busy, alertNode, setAlert, save } = useBankSave();
+
+  async function onSave() {
+    const data = await save<{ prompt: string }>(() =>
+      fetch(`/api/bank/essays/${essay.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      }),
+    );
+    if (!data) return;
+    onSaved({ ...essay, prompt: data.prompt });
+    setEditing(false);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <span className="flex flex-wrap items-center gap-2">
+            <span>NL-{essay.id.slice(0, 8).toUpperCase()}</span>
+            <Badge variant="secondary">Nghị luận {index + 1}</Badge>
+          </span>
+          <EditToolbar
+            signedIn={signedIn}
+            editing={editing}
+            busy={busy}
+            onEdit={() => {
+              setPrompt(essay.prompt);
+              setAlert(null);
+              setEditing(true);
+            }}
+            onCancel={() => {
+              setPrompt(essay.prompt);
+              setAlert(null);
+              setEditing(false);
+            }}
+            onSave={onSave}
+          />
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {alertNode}
+        {editing ? (
+          <BankEssayFields prompt={prompt} disabled={busy} onChange={setPrompt} />
+        ) : (
+          <MathText className="text-sm leading-7" text={essay.prompt} />
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function StandaloneQuestionCard({
   question,
-  indexLabel,
+  index,
+  signedIn,
+  onSaved,
 }: {
   question: BankQuestionView;
-  indexLabel?: string;
+  index: number;
+  signedIn: boolean;
+  onSaved: (question: BankQuestionView) => void;
 }) {
   return (
+    <Card>
+      <QuestionEditBlock
+        question={question}
+        signedIn={signedIn}
+        onSaved={onSaved}
+        title={
+          <>
+            <span>
+              {question.examCode}-{question.id.slice(0, 8).toUpperCase()}
+            </span>
+            <Badge variant="secondary">Câu {index + 1}</Badge>
+            <Badge variant="outline">{questionTypeLabel(question.type)}</Badge>
+          </>
+        }
+      />
+    </Card>
+  );
+}
+
+function ClusterCard({
+  cluster,
+  index,
+  signedIn,
+  onClusterSaved,
+  onQuestionSaved,
+}: {
+  cluster: BankClusterView;
+  index: number;
+  signedIn: boolean;
+  onClusterSaved: (cluster: BankClusterView) => void;
+  onQuestionSaved: (question: BankQuestionView) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [passage, setPassage] = useState(cluster.passage);
+  const { busy, alertNode, setAlert, save } = useBankSave();
+
+  async function onSave() {
+    const data = await save<{ passage: string }>(() =>
+      fetch(`/api/bank/clusters/${cluster.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passage }),
+      }),
+    );
+    if (!data) return;
+    onClusterSaved({ ...cluster, passage: data.passage });
+    setEditing(false);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <span className="flex flex-wrap items-center gap-2">
+            <span>
+              {cluster.examCode}-CUM-{cluster.id.slice(0, 8).toUpperCase()}
+            </span>
+            <Badge variant="secondary">Cụm {index + 1}</Badge>
+            <Badge variant="outline">
+              {cluster.kind === "situation" ? "Tình huống" : "Thông tin"} ·{" "}
+              {cluster.questions.length} câu
+            </Badge>
+          </span>
+          <EditToolbar
+            signedIn={signedIn}
+            editing={editing}
+            busy={busy}
+            onEdit={() => {
+              setPassage(cluster.passage);
+              setAlert(null);
+              setEditing(true);
+            }}
+            onCancel={() => {
+              setPassage(cluster.passage);
+              setAlert(null);
+              setEditing(false);
+            }}
+            onSave={onSave}
+          />
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {alertNode}
+        <p className="font-exam text-sm font-medium">
+          {formatRangeHeader(
+            CLUSTER_HEADER_TEMPLATES[cluster.kind],
+            1,
+            cluster.questions.length || 3,
+          )}
+        </p>
+        {editing ? (
+          <BankPassageFields passage={passage} disabled={busy} onChange={setPassage} />
+        ) : (
+          <MathText
+            className="font-exam rounded-lg bg-muted/50 p-3 text-sm leading-7"
+            text={cluster.passage}
+          />
+        )}
+        {cluster.questions.map((question, questionIndex) => (
+          <div key={question.id} className="rounded-lg border p-3">
+            <QuestionEditBlock
+              question={question}
+              signedIn={signedIn}
+              onSaved={onQuestionSaved}
+              compact
+              title={
+                <span className="text-xs font-medium text-muted-foreground">
+                  Câu {questionIndex + 1}
+                </span>
+              }
+            />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function QuestionEditBlock({
+  question,
+  signedIn,
+  onSaved,
+  title,
+  compact,
+}: {
+  question: BankQuestionView;
+  signedIn: boolean;
+  onSaved: (question: BankQuestionView) => void;
+  title: ReactNode;
+  compact?: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState({
+    stem: question.stem,
+    options: question.options,
+    answer: question.answer,
+  });
+  const { busy, alertNode, setAlert, save } = useBankSave();
+
+  async function onSave() {
+    const data = await save<{
+      stem: string;
+      options?: McqOptions;
+      answer: string;
+    }>(() =>
+      fetch(`/api/bank/questions/${question.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(draft),
+      }),
+    );
+    if (!data) return;
+    onSaved({
+      ...question,
+      stem: data.stem,
+      options: data.options,
+      answer: data.answer,
+    });
+    setEditing(false);
+  }
+
+  const toolbar = (
+    <EditToolbar
+      signedIn={signedIn}
+      editing={editing}
+      busy={busy}
+      onEdit={() => {
+        setDraft({
+          stem: question.stem,
+          options: question.options,
+          answer: question.answer,
+        });
+        setAlert(null);
+        setEditing(true);
+      }}
+      onCancel={() => {
+        setDraft({
+          stem: question.stem,
+          options: question.options,
+          answer: question.answer,
+        });
+        setAlert(null);
+        setEditing(false);
+      }}
+      onSave={onSave}
+    />
+  );
+
+  const body = editing ? (
+    <BankQuestionFields
+      type={question.type}
+      stem={draft.stem}
+      options={draft.options}
+      answer={draft.answer}
+      disabled={busy}
+      onChange={(next) =>
+        setDraft({
+          stem: next.stem,
+          options: next.options,
+          answer: next.answer,
+        })
+      }
+    />
+  ) : (
+    <QuestionBody question={question} />
+  );
+
+  if (compact) {
+    return (
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {title}
+          {toolbar}
+        </div>
+        {alertNode}
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <CardHeader>
+        <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <span className="flex flex-wrap items-center gap-2">{title}</span>
+          {toolbar}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {alertNode}
+        {body}
+      </CardContent>
+    </>
+  );
+}
+
+function QuestionBody({ question }: { question: BankQuestionView }) {
+  return (
     <div className="space-y-3">
-      {indexLabel ? (
-        <p className="text-xs font-medium text-muted-foreground">{indexLabel}</p>
-      ) : null}
       <MathText className="font-exam text-sm leading-7" text={question.stem} />
       {isMcq(question.type) && question.options
         ? OPTION_LETTERS.map((letter) => (

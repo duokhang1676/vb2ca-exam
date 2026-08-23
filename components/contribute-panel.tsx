@@ -9,6 +9,11 @@ import {
   ContributeAlert,
   type ContributeAlertPayload,
 } from "@/components/contribute-alert";
+import {
+  ContributeProgress,
+  ESSAY_PARSE_STEPS,
+  QUESTION_PARSE_STEPS,
+} from "@/components/contribute-progress";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -134,6 +139,7 @@ function EssayContributeForm() {
             {busy ? <LoaderCircle className="animate-spin" /> : <FileUp />}
             {busy ? "Đang trích xuất..." : "Nạp vào ngân hàng"}
           </Button>
+          <ContributeProgress active={busy} steps={ESSAY_PARSE_STEPS} />
         </form>
       </CardContent>
     </Card>
@@ -258,6 +264,7 @@ function QuestionContributeForm() {
             {busy ? <LoaderCircle className="animate-spin" /> : <FileUp />}
             {busy ? "Đang trích xuất..." : "Nạp vào ngân hàng"}
           </Button>
+          <ContributeProgress active={busy} steps={QUESTION_PARSE_STEPS} />
         </form>
       </CardContent>
     </Card>
