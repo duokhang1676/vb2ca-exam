@@ -94,6 +94,21 @@ export function mapUnknownContributeError(
       ],
     };
   }
+  if (
+    /did not match schema|No object generated|ZodError|too_big/i.test(message)
+  ) {
+    return {
+      code: "GEMINI_ERROR",
+      title: "AI trả sai cấu trúc đề",
+      message:
+        "Hệ thống đọc được file nhưng JSON không khớp cấu trúc câu hỏi hoặc cụm.",
+      steps: [
+        "Thử nạp lại cùng file. Hệ thống sẽ cắt cụm thừa và bỏ cụm thiếu.",
+        "Nếu vẫn lỗi, tách phần trắc nghiệm và phần điền, hoặc đổi sang DOCX.",
+        "Đối chiếu file với mục Xem ví dụ format.",
+      ],
+    };
+  }
   return {
     code: "GEMINI_ERROR",
     title: "Không nạp được file",

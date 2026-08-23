@@ -20,7 +20,7 @@ const parsedClusterSchema = z.object({
   passage: z.string().min(1),
   startNumber: z.number().int().min(1).max(80),
   endNumber: z.number().int().min(1).max(80),
-  questions: z.array(parsedQuestionSchema).max(3).optional(),
+  questions: z.array(parsedQuestionSchema).max(80).optional(),
 });
 
 export const parsedExamSchema = z.object({

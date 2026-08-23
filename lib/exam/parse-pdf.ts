@@ -29,15 +29,20 @@ const LATEX_RULES = `- Công thức toán PHẢI viết LaTeX: $...$ (inline) ho
 - Câu 4 lựa chọn A/B/C/D: type = "mcq", phải có options.A/B/C/D.
 - Câu điền số/chữ (không có 4 đáp án): type = "fill", không cần options.`;
 
-const CLUSTER_RULES = `- Một số câu trắc nghiệm dùng CHUNG một đoạn thông tin/tình huống. Gom thành cụm, mặc định 3 câu/cụm.
+function clusterRules(examCode: ExamCode): string {
+  const spec = EXAM_SPECS[examCode];
+  return `- Một số câu trắc nghiệm dùng CHUNG một đoạn thông tin/tình huống. Gom thành cụm, đúng ${spec.clusterSize} câu MCQ/cụm.
 - clusters[]: kind = "passage" nếu tiêu đề dạng "Dựa vào thông tin dưới đây và trả lời các câu từ X đến Y"; kind = "situation" nếu "Đọc tình huống sau đây và trả lời các câu từ X đến Y".
 - passage: nguyên văn đoạn thông tin/tình huống (bảng, số liệu, tình huống). KHÔNG nhét passage vào stem từng câu.
 - header: nguyên văn câu dẫn (có thể giữ số X–Y trong đề gốc).
-- startNumber/endNumber: đúng khoảng câu thuộc cụm (thường X đến X+2).
-- clusters[].questions: đúng 3 câu của cụm (stem + options), cùng originalNumber với questions[].
+- startNumber/endNumber: đúng khoảng câu thuộc cụm (thường X đến X+${spec.clusterSize - 1}).
+- clusters[].questions: đúng ${spec.clusterSize} câu MCQ của cụm (stem + options), cùng originalNumber với questions[]. Không đưa câu điền vào cụm.
 - Stem từng câu chỉ là nội dung câu hỏi + 4 lựa chọn, không lặp lại passage.
 - fillHeader: nếu đề có "Câu trắc nghiệm trả lời ngắn. Thí sinh trả lời các câu từ ...", ghi nguyên văn.
-- questions[] vẫn gồm ĐỦ mọi câu phần 2 (cả câu trong cụm và câu điền), giữ originalNumber.`;
+- Câu điền: type = "fill" trong questions[], cần đúng ${spec.fill} câu. Không nhét khối điền vào clusters[].
+- questions[] vẫn gồm ĐỦ mọi câu phần 2 (cả câu trong cụm và câu điền), giữ originalNumber.
+- Nếu trả thừa, hệ thống chỉ giữ ${spec.clusterSize} câu đầu mỗi cụm MCQ và ${spec.fill} câu điền đầu; cụm hoặc phần điền thiếu sẽ bị bỏ cả nhóm.`;
+}
 
 function fullExamPrompt(examCode: ExamCode): string {
   const spec = EXAM_SPECS[examCode];
@@ -55,7 +60,7 @@ Hãy đọc file đề thi và trả về JSON đúng schema:
 
 Quy tắc:
 ${LATEX_RULES}
-${CLUSTER_RULES}
+${clusterRules(examCode)}
 - ${example}
 - Đề ${examCode} có ${spec.total} câu phần 2 (${spec.mcq} trắc nghiệm gồm ${spec.independentMcq} câu độc lập + ${spec.clusters} cụm ${spec.clusterSize} câu, rồi ${spec.fill} câu điền). Trả đủ, không bỏ câu.`;
 }
@@ -77,7 +82,7 @@ Hãy đọc tài liệu (chỉ phần 2 — trắc nghiệm/điền đáp án) v
 
 Quy tắc:
 ${LATEX_RULES}
-${CLUSTER_RULES}
+${clusterRules(examCode)}
 - Cụm mặc định ${spec.clusterSize} câu; kind mặc định "${spec.clusterKind}" nếu tiêu đề không rõ.
 - Không yêu cầu đủ một số lượng cố định; trả mọi câu đọc được.
 - Không lấy phần nghị luận xã hội.`;
@@ -129,56 +134,100 @@ async function generateFromDocument<T>(params: {
   return object as T;
 }
 
-function clusterQuestionNumbers(cluster: ParsedCluster): number[] {
-  const nested = (cluster.questions ?? [])
-    .map((question) => question.originalNumber)
-    .filter((number) => Number.isInteger(number));
-  if (nested.length > 0) return nested.slice(0, CLUSTER_SIZE);
+function uniqueNumbers(values: number[]): number[] {
+  const seen = new Set<number>();
+  const numbers: number[] = [];
+  for (const value of values) {
+    if (!Number.isInteger(value) || seen.has(value)) continue;
+    seen.add(value);
+    numbers.push(value);
+  }
+  return numbers;
+}
+
+function clusterMemberNumbers(cluster: ParsedCluster): number[] {
+  const nested = uniqueNumbers(
+    (cluster.questions ?? []).map((question) => question.originalNumber),
+  );
+  if (nested.length > 0) return nested;
 
   const start = Math.min(cluster.startNumber, cluster.endNumber);
   const end = Math.max(cluster.startNumber, cluster.endNumber);
   const numbers: number[] = [];
-  for (let n = start; n <= end && numbers.length < CLUSTER_SIZE; n += 1) {
+  for (let n = start; n <= end; n += 1) {
     numbers.push(n);
   }
   return numbers;
 }
 
-function applyClusters(
+function applyClusterAndFillLimits(
   questions: Question[],
   clusters: ParsedCluster[] | undefined,
   examCode: ExamCode,
 ): Question[] {
-  if (!clusters || clusters.length === 0) return questions;
-
+  const spec = EXAM_SPECS[examCode];
   const byNumber = new Map(
     questions.map((question) => [question.originalNumber, { ...question }]),
   );
-  const defaultKind = EXAM_SPECS[examCode].clusterKind;
+  const drop = new Set<number>();
+  const defaultKind = spec.clusterKind;
 
-  for (const cluster of clusters) {
+  for (const cluster of clusters ?? []) {
+    const memberNumbers = clusterMemberNumbers(cluster);
+    const validMcq = memberNumbers.filter((n) => {
+      const question = byNumber.get(n);
+      return Boolean(question && isMcq(question.type) && question.options);
+    });
+
+    if (validMcq.length < CLUSTER_SIZE) {
+      for (const n of validMcq) drop.add(n);
+      continue;
+    }
+
+    const kept = validMcq.slice(0, CLUSTER_SIZE);
+    const keptSet = new Set(kept);
+    for (const n of validMcq) {
+      if (!keptSet.has(n)) drop.add(n);
+    }
+
     const clusterId = randomUUID();
     const kind: ClusterKind = cluster.kind ?? defaultKind;
     const passage = cluster.passage.trim();
-    let position = 1;
-    for (const n of clusterQuestionNumbers(cluster)) {
+    kept.forEach((n, index) => {
       const question = byNumber.get(n);
-      if (!question || !isMcq(question.type)) continue;
+      if (!question) return;
       byNumber.set(n, {
         ...question,
         section: "cluster",
         clusterId,
-        clusterPosition: position,
+        clusterPosition: index + 1,
         clusterKind: kind,
         passage,
       });
-      position += 1;
+    });
+  }
+
+  for (const n of drop) {
+    byNumber.delete(n);
+  }
+
+  const remaining = Array.from(byNumber.values());
+  const fills = remaining
+    .filter((question) => question.type === "fill")
+    .sort((a, b) => a.originalNumber - b.originalNumber);
+
+  const dropFill = new Set<number>();
+  if (fills.length < spec.fill) {
+    for (const question of fills) dropFill.add(question.originalNumber);
+  } else {
+    for (const question of fills.slice(spec.fill)) {
+      dropFill.add(question.originalNumber);
     }
   }
 
-  return Array.from(byNumber.values()).sort(
-    (a, b) => a.originalNumber - b.originalNumber,
-  );
+  return remaining
+    .filter((question) => !dropFill.has(question.originalNumber))
+    .sort((a, b) => a.originalNumber - b.originalNumber);
 }
 
 export function normalizeParsedQuestions(
@@ -220,8 +269,7 @@ export function normalizeParsedQuestions(
     });
   }
 
-  const withClusters = applyClusters(questions, clusters, examCode);
-  return withClusters.sort((a, b) => a.originalNumber - b.originalNumber);
+  return applyClusterAndFillLimits(questions, clusters, examCode);
 }
 
 export function assertExpectedQuestions(
