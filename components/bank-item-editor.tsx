@@ -68,22 +68,54 @@ export function EditToolbar({
 
 export function BankEssayFields({
   prompt,
+  topic,
+  solution,
   disabled,
   onChange,
 }: {
   prompt: string;
+  topic: string;
+  solution: string;
   disabled: boolean;
-  onChange: (prompt: string) => void;
+  onChange: (next: { prompt: string; topic: string; solution: string }) => void;
 }) {
   return (
-    <div className="grid gap-2">
-      <Label>Đề nghị luận</Label>
-      <Textarea
-        className="min-h-40 font-exam text-base"
-        disabled={disabled}
-        value={prompt}
-        onChange={(event) => onChange(event.target.value)}
-      />
+    <div className="grid gap-3">
+      <div className="grid gap-2">
+        <Label>Đề nghị luận</Label>
+        <Textarea
+          className="min-h-40 font-exam text-base"
+          disabled={disabled}
+          value={prompt}
+          onChange={(event) =>
+            onChange({ prompt: event.target.value, topic, solution })
+          }
+        />
+      </div>
+      <div className="grid max-w-md gap-2">
+        <Label>Dạng bài</Label>
+        <Input
+          className="font-exam"
+          disabled={disabled}
+          value={topic}
+          placeholder="Để trống nếu chưa có"
+          onChange={(event) =>
+            onChange({ prompt, topic: event.target.value, solution })
+          }
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label>Lời giải</Label>
+        <Textarea
+          className="min-h-28 font-exam"
+          disabled={disabled}
+          value={solution}
+          placeholder="Để trống nếu chưa có"
+          onChange={(event) =>
+            onChange({ prompt, topic, solution: event.target.value })
+          }
+        />
+      </div>
     </div>
   );
 }
@@ -115,6 +147,8 @@ export function BankQuestionFields({
   stem,
   options,
   answer,
+  topic,
+  solution,
   disabled,
   onChange,
 }: {
@@ -122,8 +156,16 @@ export function BankQuestionFields({
   stem: string;
   options?: McqOptions;
   answer: string;
+  topic: string;
+  solution: string;
   disabled: boolean;
-  onChange: (next: { stem: string; options?: McqOptions; answer: string }) => void;
+  onChange: (next: {
+    stem: string;
+    options?: McqOptions;
+    answer: string;
+    topic: string;
+    solution: string;
+  }) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -134,7 +176,13 @@ export function BankQuestionFields({
           disabled={disabled}
           value={stem}
           onChange={(event) =>
-            onChange({ stem: event.target.value, options, answer })
+            onChange({
+              stem: event.target.value,
+              options,
+              answer,
+              topic,
+              solution,
+            })
           }
         />
       </div>
@@ -151,6 +199,8 @@ export function BankQuestionFields({
                   onChange({
                     stem,
                     answer,
+                    topic,
+                    solution,
                     options: {
                       A: options?.A ?? "",
                       B: options?.B ?? "",
@@ -172,7 +222,49 @@ export function BankQuestionFields({
           disabled={disabled}
           value={answer}
           onChange={(event) =>
-            onChange({ stem, options, answer: event.target.value })
+            onChange({
+              stem,
+              options,
+              answer: event.target.value,
+              topic,
+              solution,
+            })
+          }
+        />
+      </div>
+      <div className="grid max-w-md gap-2">
+        <Label>Dạng bài</Label>
+        <Input
+          className="font-exam"
+          disabled={disabled}
+          value={topic}
+          placeholder="Để trống nếu chưa có"
+          onChange={(event) =>
+            onChange({
+              stem,
+              options,
+              answer,
+              topic: event.target.value,
+              solution,
+            })
+          }
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label>Lời giải</Label>
+        <Textarea
+          className="min-h-24 font-exam"
+          disabled={disabled}
+          value={solution}
+          placeholder="Để trống nếu chưa có"
+          onChange={(event) =>
+            onChange({
+              stem,
+              options,
+              answer,
+              topic,
+              solution: event.target.value,
+            })
           }
         />
       </div>

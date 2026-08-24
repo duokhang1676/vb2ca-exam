@@ -374,6 +374,10 @@ function SampleContributeForm() {
                   và số thành phần trong cụm.
                 </li>
                 <li>
+                  Tùy chọn: essayTopic, essaySolution; mỗi câu có thể có topic
+                  (dạng bài) và solution (lời giải). Thiếu thì hệ thống để trống.
+                </li>
+                <li>
                   Đối chiếu file mẫu fixtures/generated/
                   {examCode === "CA1" ? "ca1-template.json" : "ca4-template.json"}.
                 </li>

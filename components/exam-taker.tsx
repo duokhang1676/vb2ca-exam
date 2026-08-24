@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bookmark, LoaderCircle } from "lucide-react";
 import { ExamTimer } from "@/components/exam-timer";
 import { MathText } from "@/components/math-text";
+import { TopicBadge } from "@/components/question-meta";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -37,6 +38,7 @@ type ExamPayload = {
     flagged: number[];
     essayFlagged: boolean;
     sectionMode: SectionMode;
+    showTopic?: boolean;
     endsAt: number;
     serverNow: number;
   };
@@ -44,6 +46,7 @@ type ExamPayload = {
     title: string;
     examCode: ExamCode;
     essayPrompt: string;
+    essayTopic?: string;
     essayFingerprint: string;
     questions: Array<DisplayQuestion & { fingerprint?: string; marked?: boolean }>;
   };
@@ -288,7 +291,10 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
           <Card id="essay">
             <CardHeader>
               <CardTitle className="flex items-center justify-between gap-2">
-                <span>Phần 1 · Nghị luận xã hội (30 điểm)</span>
+                <span className="flex flex-wrap items-center gap-2">
+                  <span>Phần 1 · Nghị luận xã hội (30 điểm)</span>
+                  <TopicBadge topic={data.exam.essayTopic} />
+                </span>
                 <MarkButton
                   marked={essayFlagged}
                   disabled={locked}
@@ -464,11 +470,14 @@ function QuestionCard({
     <Card id={`q-${question.displayIndex}`}>
       <CardHeader>
         <CardTitle className="flex items-center justify-between gap-2 text-lg">
-          <span>
-            Câu {question.displayIndex}
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              {questionTypeLabel(question.type)}
+          <span className="flex flex-wrap items-center gap-2">
+            <span>
+              Câu {question.displayIndex}
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                {questionTypeLabel(question.type)}
+              </span>
             </span>
+            <TopicBadge topic={question.topic} />
           </span>
           <MarkButton marked={marked} disabled={disabled} onClick={onToggleMark} />
         </CardTitle>

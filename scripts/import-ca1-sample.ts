@@ -39,6 +39,8 @@ async function main() {
   const result = await saveGeneratedSampleExam({
     examCode: payload.examCode,
     essayPrompt: payload.essayPrompt,
+    essayTopic: payload.essayTopic,
+    essaySolution: payload.essaySolution,
     questions: payload.questions,
     answerKey: payload.answerKey,
     diversity: payload.diversity,

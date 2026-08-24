@@ -15,7 +15,7 @@ import {
   isOfficialSampleTitle,
   parseGeneratedSampleNumber,
 } from "./constants";
-import { asJson, parseAnswerKeyJson, parseQuestions } from "./json";
+import { asJson, optionalText, parseAnswerKeyJson, parseQuestions } from "./json";
 import { parseAnswerKey } from "./parse-answers";
 import { parseExamPdf } from "./parse-pdf";
 import { persistExam } from "./persist-exam";
@@ -120,7 +120,7 @@ export async function seedBankFromSample(examCode: ExamCode): Promise<void> {
   const title = SAMPLE_TITLES[examCode];
   const { data: exam } = await supabase
     .from("exams")
-    .select("essay_prompt, questions, answer_key")
+    .select("essay_prompt, essay_topic, essay_solution, questions, answer_key")
     .eq("title", title)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -132,6 +132,8 @@ export async function seedBankFromSample(examCode: ExamCode): Promise<void> {
       await importParsedIntoBank({
         examCode,
         essayPrompt: exam.essay_prompt,
+        essayTopic: optionalText(exam.essay_topic),
+        essaySolution: optionalText(exam.essay_solution),
         questions,
         answerKey: parseAnswerKeyJson(exam.answer_key),
         sourceFilename: SAMPLE_FILES[examCode].pdf,
@@ -325,6 +327,8 @@ export function assertFlexibleSample(
 export type SampleExamDetail = SampleExamOption & {
   examCode: ExamCode;
   essayPrompt: string;
+  essayTopic?: string;
+  essaySolution?: string;
   questions: Question[];
   answerKey: AnswerKey;
 };
@@ -333,7 +337,9 @@ export async function listSampleExamDetails(): Promise<SampleExamDetail[]> {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("exams")
-    .select("id, title, exam_code, essay_prompt, questions, answer_key, created_at")
+    .select(
+      "id, title, exam_code, essay_prompt, essay_topic, essay_solution, questions, answer_key, created_at",
+    )
     .eq("source", "sample")
     .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
@@ -351,6 +357,8 @@ export async function listSampleExamDetails(): Promise<SampleExamDetail[]> {
       kind: official ? "official" : "generated",
       number: official ? 1 : (generatedNumber ?? 0),
       essayPrompt: row.essay_prompt,
+      essayTopic: optionalText(row.essay_topic),
+      essaySolution: optionalText(row.essay_solution),
       questions: parseQuestions(row.questions),
       answerKey: parseAnswerKeyJson(row.answer_key),
     });
@@ -366,6 +374,8 @@ export async function listSampleExamDetails(): Promise<SampleExamDetail[]> {
 export async function updateSampleExam(params: {
   examId: string;
   essayPrompt: string;
+  essayTopic?: string;
+  essaySolution?: string;
   questions: Question[];
   answerKey: AnswerKey;
   title?: string;
@@ -437,11 +447,15 @@ export async function updateSampleExam(params: {
     .update({
       ...(nextTitle ? { title: nextTitle } : {}),
       essay_prompt: prompt,
+      essay_topic: optionalText(params.essayTopic) ?? null,
+      essay_solution: optionalText(params.essaySolution) ?? null,
       questions: asJson(questions),
       answer_key: asJson(params.answerKey),
     })
     .eq("id", params.examId)
-    .select("id, title, essay_prompt, questions, answer_key, exam_code")
+    .select(
+      "id, title, essay_prompt, essay_topic, essay_solution, questions, answer_key, exam_code",
+    )
     .single();
   if (error || !data) {
     throw new Error(error?.message || "Không lưu được đề minh họa.");
@@ -490,6 +504,8 @@ export async function deleteSampleExam(examId: string) {
 export async function saveGeneratedSampleExam(params: {
   examCode: ExamCode;
   essayPrompt: string;
+  essayTopic?: string;
+  essaySolution?: string;
   questions: Question[];
   answerKey: AnswerKey;
   diversity?: number;
@@ -511,6 +527,8 @@ export async function saveGeneratedSampleExam(params: {
   const exam = await persistExam({
     title,
     essayPrompt: prompt,
+    essayTopic: params.essayTopic,
+    essaySolution: params.essaySolution,
     questions,
     answerKey: params.answerKey,
     examCode: params.examCode,
@@ -544,6 +562,8 @@ export async function saveGeneratedSampleExam(params: {
   const imported = await importParsedIntoBank({
     examCode: params.examCode,
     essayPrompt: prompt,
+    essayTopic: params.essayTopic,
+    essaySolution: params.essaySolution,
     questions,
     answerKey: params.answerKey,
     sourceFilename,

@@ -8,25 +8,33 @@
     ],
     "rules": [
       "Bắt buộc: examCode, essayPrompt (≥80 ký tự), questions (≥1), answerKey",
+      "Tùy chọn: essayTopic, essaySolution; mỗi câu có thể có topic (dạng bài) và solution (lời giải)",
+      "Thiếu topic/solution thì để trống; hệ thống vẫn nhận file",
       "Chỉ 3 dạng trên; có thể thiếu dạng, lẫn thứ tự, không giới hạn số câu hay số thành phần cụm",
       "Không đưa loại câu ngoài mcq/fill"
     ]
   },
   "examCode": "CA1",
   "essayPrompt": "Đọc đoạn văn bản sau:\n\n[Đoạn văn về một vấn đề xã hội.]\n\nAnh/chị hãy viết bài nghị luận xã hội (tối thiểu 500 chữ) trình bày, phân tích và đánh giá vấn đề được đặt ra.",
+  "essayTopic": "Nghị luận xã hội",
+  "essaySolution": "Nêu vấn đề từ đoạn văn, phân tích nguyên nhân – hệ quả, nêu quan điểm và giải pháp, kết bài khái quát.",
   "questions": [
     {
       "originalNumber": 1,
       "type": "mcq",
       "section": "independent",
       "stem": "Giá trị của biểu thức 2 + 3 bằng",
+      "topic": "Phép cộng",
+      "solution": "2 + 3 = 5 nên chọn A.",
       "options": { "A": "5", "B": "6", "C": "1", "D": "23" }
     },
     {
       "originalNumber": 2,
       "type": "fill",
       "section": "fill",
-      "stem": "Tính 7 − 2. Đáp án:"
+      "stem": "Tính 7 − 2. Đáp án:",
+      "topic": "Phép trừ",
+      "solution": "7 − 2 = 5."
     },
     {
       "originalNumber": 3,
@@ -37,6 +45,8 @@
       "clusterKind": "passage",
       "passage": "Một cửa hàng bán 4 hộp, mỗi hộp có 6 quả.",
       "stem": "Tổng số quả là",
+      "topic": "Nhân",
+      "solution": "4 × 6 = 24 nên chọn B.",
       "options": { "A": "10", "B": "24", "C": "12", "D": "46" }
     },
     {
@@ -48,6 +58,8 @@
       "clusterKind": "passage",
       "passage": "Một cửa hàng bán 4 hộp, mỗi hộp có 6 quả.",
       "stem": "Nếu bán thêm 1 hộp nữa thì có",
+      "topic": "Nhân",
+      "solution": "5 × 6 = 30 nên chọn B.",
       "options": { "A": "24", "B": "30", "C": "5", "D": "18" }
     }
   ],

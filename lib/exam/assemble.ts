@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { EXAM_SPECS } from "./constants";
 import { normalizeForHash } from "./fingerprint";
+import { optionalText } from "./json";
 import { persistExam } from "./persist-exam";
 import {
   isClusterKind,
@@ -31,6 +32,8 @@ type BankQuestionRow = {
   answer: string;
   cluster_id: string | null;
   cluster_position: number | null;
+  topic: string | null;
+  solution: string | null;
 };
 
 type BankClusterRow = {
@@ -51,6 +54,8 @@ function toQuestion(
       type,
       stem: row.stem,
       options: type === "mcq" ? (row.options as McqOptions) : undefined,
+      ...(optionalText(row.topic) ? { topic: optionalText(row.topic) } : {}),
+      ...(optionalText(row.solution) ? { solution: optionalText(row.solution) } : {}),
       ...extra,
     },
     answer: row.answer,
@@ -65,10 +70,12 @@ export async function assembleRandomExam(
   const spec = EXAM_SPECS[examCode];
 
   const [essaysResult, questionsResult, clustersResult] = await Promise.all([
-    supabase.from("essays").select("prompt"),
+    supabase.from("essays").select("prompt, topic, solution"),
     supabase
       .from("questions")
-      .select("id, type, stem, options, answer, cluster_id, cluster_position")
+      .select(
+        "id, type, stem, options, answer, cluster_id, cluster_position, topic, solution",
+      )
       .eq("exam_code", examCode),
     supabase
       .from("question_clusters")
@@ -95,8 +102,9 @@ export async function assembleRandomExam(
     );
   }
 
-  const essayPrompt =
-    sectionMode === "part2" ? "" : pickRandom(essays, 1)[0].prompt;
+  const pickedEssay =
+    sectionMode === "part2" ? null : pickRandom(essays, 1)[0] ?? null;
+  const essayPrompt = pickedEssay?.prompt ?? "";
   const clusteredStems = new Set(
     bank
       .filter((row) => row.cluster_id)
@@ -180,6 +188,8 @@ export async function assembleRandomExam(
       ? `${examCode} — Đề ngẫu nhiên (${questions.length}/${spec.total} câu)${sectionNote}`
       : `${examCode} — Đề ngẫu nhiên${sectionNote}`,
     essayPrompt,
+    essayTopic: optionalText(pickedEssay?.topic),
+    essaySolution: optionalText(pickedEssay?.solution),
     questions,
     answerKey,
     examCode,

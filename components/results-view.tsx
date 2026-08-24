@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MathText } from "@/components/math-text";
+import { SolutionReveal, TopicBadge } from "@/components/question-meta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,8 @@ import { cn } from "@/lib/utils";
 export function ResultsView({
   title,
   essayPrompt,
+  essayTopic,
+  essaySolution,
   essayText,
   essayScore,
   essayFeedback,
@@ -30,6 +33,8 @@ export function ResultsView({
 }: {
   title: string;
   essayPrompt: string;
+  essayTopic?: string | null;
+  essaySolution?: string | null;
   essayText: string;
   essayScore: number;
   essayFeedback: string;
@@ -102,7 +107,10 @@ export function ResultsView({
       {showEssay ? (
         <Card>
           <CardHeader>
-            <CardTitle>Phần 1 · Chấm nghị luận</CardTitle>
+            <CardTitle className="flex flex-wrap items-center gap-2">
+              <span>Phần 1 · Chấm nghị luận</span>
+              <TopicBadge topic={essayTopic} />
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <MathText className="font-exam text-lg leading-8 text-muted-foreground" text={essayPrompt} />
@@ -110,6 +118,10 @@ export function ResultsView({
               {essayText.trim() || "Không có bài làm."}
             </div>
             <p className="text-sm leading-6">{essayFeedback}</p>
+            <SolutionReveal
+              solution={essaySolution}
+              textClassName="font-exam text-lg leading-8"
+            />
           </CardContent>
         </Card>
       ) : null}
@@ -156,11 +168,14 @@ function ResultQuestion({ item }: { item: McqDetailItem }) {
   return (
     <div className="rounded-lg border p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-lg font-medium">
-          Câu {item.displayIndex}
-          <span className="ml-2 text-sm font-normal text-muted-foreground">
-            {questionTypeLabel(item.type)}
+        <p className="flex flex-wrap items-center gap-2 text-lg font-medium">
+          <span>
+            Câu {item.displayIndex}
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
+              {questionTypeLabel(item.type)}
+            </span>
           </span>
+          <TopicBadge topic={item.topic} />
         </p>
         <Badge variant={item.isCorrect ? "secondary" : "destructive"}>
           {item.isCorrect ? "Đúng" : "Sai"} · {item.points}đ
@@ -208,6 +223,11 @@ function ResultQuestion({ item }: { item: McqDetailItem }) {
         · Đáp án đúng:{" "}
         <MathText inline text={item.correctDisplayAnswer} />
       </p>
+      <SolutionReveal
+        className="mt-3"
+        solution={item.solution}
+        textClassName="font-exam text-lg leading-8"
+      />
     </div>
   );
 }

@@ -21,7 +21,7 @@ export async function GET(_request: Request, { params }: Params) {
 
   const { data: exam, error: examError } = await supabase
     .from("exams")
-    .select("id, title, essay_prompt, questions, exam_code")
+    .select("id, title, essay_prompt, essay_topic, questions, exam_code")
     .eq("id", attempt.exam_id)
     .single();
 
@@ -58,6 +58,7 @@ export async function GET(_request: Request, { params }: Params) {
   const essayMarks = markSet(marks, "essay");
   const essayFp = exam.essay_prompt ? essayFingerprint(exam.essay_prompt) : "";
 
+  const showTopic = Boolean(attempt.show_topic);
   const endsAt =
     new Date(attempt.started_at).getTime() + examDurationMs(sectionMode);
 
@@ -72,6 +73,7 @@ export async function GET(_request: Request, { params }: Params) {
       flagged: parseFlagged(attempt.flagged),
       essayFlagged: Boolean(attempt.essay_flagged) || (essayFp ? essayMarks.has(essayFp) : false),
       sectionMode,
+      showTopic,
       endsAt,
       serverNow: Date.now(),
     },
@@ -80,13 +82,18 @@ export async function GET(_request: Request, { params }: Params) {
       title: exam.title,
       examCode,
       essayPrompt: sectionMode === "part2" ? "" : exam.essay_prompt,
+      essayTopic: showTopic ? exam.essay_topic ?? "" : "",
       essayFingerprint: essayFp,
-      questions: withFingerprints.map((question) => ({
-        ...question,
-        marked: question.fingerprint
-          ? questionMarks.has(question.fingerprint)
-          : false,
-      })),
+      questions: withFingerprints.map((question) => {
+        const { solution: _solution, ...rest } = question;
+        return {
+          ...rest,
+          topic: showTopic ? rest.topic : undefined,
+          marked: rest.fingerprint
+            ? questionMarks.has(rest.fingerprint)
+            : false,
+        };
+      }),
     },
   });
 }

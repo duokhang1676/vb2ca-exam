@@ -25,6 +25,7 @@ export type Database = {
           mcq_detail: Json | null
           mcq_score: number | null
           section_mode: string
+          show_topic: boolean
           shuffle: Json
           started_at: string
           submitted_at: string | null
@@ -43,6 +44,7 @@ export type Database = {
           mcq_detail?: Json | null
           mcq_score?: number | null
           section_mode?: string
+          show_topic?: boolean
           shuffle: Json
           started_at?: string
           submitted_at?: string | null
@@ -61,6 +63,7 @@ export type Database = {
           mcq_detail?: Json | null
           mcq_score?: number | null
           section_mode?: string
+          show_topic?: boolean
           shuffle?: Json
           started_at?: string
           submitted_at?: string | null
@@ -157,7 +160,9 @@ export type Database = {
           fingerprint: string
           id: string
           prompt: string
+          solution: string | null
           source_filename: string | null
+          topic: string | null
         }
         Insert: {
           contribution_id?: string | null
@@ -166,7 +171,9 @@ export type Database = {
           fingerprint: string
           id?: string
           prompt: string
+          solution?: string | null
           source_filename?: string | null
+          topic?: string | null
         }
         Update: {
           contribution_id?: string | null
@@ -175,7 +182,9 @@ export type Database = {
           fingerprint?: string
           id?: string
           prompt?: string
+          solution?: string | null
           source_filename?: string | null
+          topic?: string | null
         }
         Relationships: [
           {
@@ -193,6 +202,8 @@ export type Database = {
           answer_path: string | null
           created_at: string
           essay_prompt: string
+          essay_solution: string | null
+          essay_topic: string | null
           exam_code: string | null
           id: string
           pdf_path: string | null
@@ -205,6 +216,8 @@ export type Database = {
           answer_path?: string | null
           created_at?: string
           essay_prompt: string
+          essay_solution?: string | null
+          essay_topic?: string | null
           exam_code?: string | null
           id?: string
           pdf_path?: string | null
@@ -217,6 +230,8 @@ export type Database = {
           answer_path?: string | null
           created_at?: string
           essay_prompt?: string
+          essay_solution?: string | null
+          essay_topic?: string | null
           exam_code?: string | null
           id?: string
           pdf_path?: string | null
@@ -290,6 +305,8 @@ export type Database = {
           id: string
           options: Json | null
           stem: string
+          solution: string | null
+          topic: string | null
           type: string
         }
         Insert: {
@@ -304,6 +321,8 @@ export type Database = {
           id?: string
           options?: Json | null
           stem: string
+          solution?: string | null
+          topic?: string | null
           type: string
         }
         Update: {
@@ -318,6 +337,8 @@ export type Database = {
           id?: string
           options?: Json | null
           stem?: string
+          solution?: string | null
+          topic?: string | null
           type?: string
         }
         Relationships: [

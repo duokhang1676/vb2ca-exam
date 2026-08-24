@@ -1,10 +1,12 @@
-import { parseAnswerKeyJson, parseQuestions } from "./json";
+import { optionalText, parseAnswerKeyJson, parseQuestions } from "./json";
 import { isExamCode, type AnswerKey, type ExamCode, type Question } from "./types";
 
 export type ParsedSampleJson = {
   examCode: ExamCode;
   diversity?: number;
   essayPrompt: string;
+  essayTopic?: string;
+  essaySolution?: string;
   questions: Question[];
   answerKey: AnswerKey;
 };
@@ -67,6 +69,8 @@ export function parseSampleJsonText(
         ? payload.diversity
         : undefined,
     essayPrompt: payload.essayPrompt,
+    essayTopic: optionalText(payload.essayTopic),
+    essaySolution: optionalText(payload.essaySolution),
     questions: parseQuestions(payload.questions),
     answerKey: parseAnswerKeyJson(payload.answerKey),
   };

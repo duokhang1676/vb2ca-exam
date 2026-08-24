@@ -2,7 +2,7 @@ import { generateObject } from "ai";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { clusterHeaderTemplate, OPTION_LETTERS } from "./constants";
 import { ContributeError } from "./contribute-error";
-import { asJson } from "./json";
+import { asJson, nullableText, optionalText } from "./json";
 import {
   clusterFingerprint,
   essayFingerprint,
@@ -47,6 +47,8 @@ type IncomingQuestion = {
   answer: string;
   fingerprint: string;
   clusterPosition?: number;
+  topic?: string;
+  solution?: string;
 };
 
 export function splitEssayPrompts(raw: string): string[] {
@@ -88,6 +90,7 @@ export async function importEssays(
   sourceFilename?: string,
   attribution?: ImportAttribution,
   checkNearDuplicates = true,
+  meta?: { topic?: string; solution?: string },
 ): Promise<ImportSummary> {
   const prompts = splitEssayPrompts(rawPrompt);
   if (prompts.length === 0) {
@@ -103,8 +106,15 @@ export async function importEssays(
   const existing = existingRows ?? [];
   const existingFingerprints = new Set(existing.map((row) => row.fingerprint));
 
-  const uniqueNew: { prompt: string; fingerprint: string }[] = [];
+  const uniqueNew: {
+    prompt: string;
+    fingerprint: string;
+    topic: string | null;
+    solution: string | null;
+  }[] = [];
   let skipped = 0;
+  const essayTopic = prompts.length === 1 ? nullableText(meta?.topic) : null;
+  const essaySolution = prompts.length === 1 ? nullableText(meta?.solution) : null;
 
   for (const prompt of prompts) {
     const fingerprint = essayFingerprint(prompt);
@@ -116,7 +126,12 @@ export async function importEssays(
       skipped += 1;
       continue;
     }
-    uniqueNew.push({ prompt, fingerprint });
+    uniqueNew.push({
+      prompt,
+      fingerprint,
+      topic: essayTopic,
+      solution: essaySolution,
+    });
   }
 
   const nearDup = checkNearDuplicates
@@ -139,6 +154,8 @@ export async function importEssays(
       toInsert.map((item) => ({
         prompt: item.prompt,
         fingerprint: item.fingerprint,
+        topic: item.topic,
+        solution: item.solution,
         source_filename: sourceFilename ?? null,
         created_by: attribution?.createdBy ?? null,
         contribution_id: attribution?.contributionId ?? null,
@@ -173,6 +190,8 @@ function toIncoming(
       options: type === "mcq" ? question.options : undefined,
     }),
     clusterPosition: question.clusterPosition,
+    topic: optionalText(question.topic),
+    solution: optionalText(question.solution),
   };
 }
 
@@ -235,6 +254,8 @@ async function insertStandaloneQuestions(params: {
         options: item.options ? asJson(item.options) : null,
         answer: item.answer,
         fingerprint: item.fingerprint,
+        topic: nullableText(item.topic),
+        solution: nullableText(item.solution),
         cluster_id: null,
         cluster_position: null,
         created_by: params.attribution?.createdBy ?? null,
@@ -315,6 +336,8 @@ async function importCluster(params: {
       options: item.options ? asJson(item.options) : null,
       answer: item.answer,
       fingerprint: `${item.fingerprint}:${cluster.id}:${index + 1}`,
+      topic: nullableText(item.topic),
+      solution: nullableText(item.solution),
       cluster_id: cluster.id,
       cluster_position: index + 1,
       created_by: params.attribution?.createdBy ?? null,
@@ -403,6 +426,8 @@ export async function importQuestions(params: {
 export async function importParsedIntoBank(params: {
   examCode: ExamCode;
   essayPrompt: string;
+  essayTopic?: string;
+  essaySolution?: string;
   questions: Question[];
   answerKey: AnswerKey;
   sourceFilename?: string;
@@ -414,6 +439,7 @@ export async function importParsedIntoBank(params: {
     params.sourceFilename,
     params.attribution,
     params.checkNearDuplicates,
+    { topic: params.essayTopic, solution: params.essaySolution },
   );
   const questions = await importQuestions({
     examCode: params.examCode,
@@ -459,6 +485,8 @@ export async function existingQuestionContentFingerprints(
 export type UpdatedEssay = {
   id: string;
   prompt: string;
+  topic: string | null;
+  solution: string | null;
 };
 
 export type UpdatedQuestion = {
@@ -466,6 +494,8 @@ export type UpdatedQuestion = {
   stem: string;
   options?: McqOptions;
   answer: string;
+  topic: string | null;
+  solution: string | null;
 };
 
 export type UpdatedCluster = {
@@ -530,8 +560,11 @@ async function writeClusterFingerprint(clusterId: string, fingerprint: string) {
   if (error) throw new Error(error.message);
 }
 
-export async function updateEssay(id: string, prompt: string): Promise<UpdatedEssay> {
-  const trimmed = prompt.trim();
+export async function updateEssay(
+  id: string,
+  input: { prompt: string; topic?: string; solution?: string },
+): Promise<UpdatedEssay> {
+  const trimmed = input.prompt.trim();
   if (!trimmed) {
     throw invalidContent("Đề nghị luận không được để trống.", [
       "Nhập nội dung đề rồi bấm Lưu.",
@@ -539,6 +572,8 @@ export async function updateEssay(id: string, prompt: string): Promise<UpdatedEs
   }
 
   const fingerprint = essayFingerprint(trimmed);
+  const topic = nullableText(input.topic);
+  const solution = nullableText(input.solution);
   const supabase = getSupabaseAdmin();
   const { data: clash, error: clashError } = await supabase
     .from("essays")
@@ -558,9 +593,9 @@ export async function updateEssay(id: string, prompt: string): Promise<UpdatedEs
 
   const { data, error } = await supabase
     .from("essays")
-    .update({ prompt: trimmed, fingerprint })
+    .update({ prompt: trimmed, fingerprint, topic, solution })
     .eq("id", id)
-    .select("id, prompt")
+    .select("id, prompt, topic, solution")
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) {
@@ -571,12 +606,23 @@ export async function updateEssay(id: string, prompt: string): Promise<UpdatedEs
       ["Tải lại trang rồi thử sửa đề khác."],
     );
   }
-  return { id: data.id, prompt: data.prompt };
+  return {
+    id: data.id,
+    prompt: data.prompt,
+    topic: data.topic,
+    solution: data.solution,
+  };
 }
 
 export async function updateQuestion(
   id: string,
-  input: { stem: string; options?: McqOptions | null; answer: string },
+  input: {
+    stem: string;
+    options?: McqOptions | null;
+    answer: string;
+    topic?: string;
+    solution?: string;
+  },
 ): Promise<UpdatedQuestion> {
   const supabase = getSupabaseAdmin();
   const { data: row, error: loadError } = await supabase
@@ -680,9 +726,11 @@ export async function updateQuestion(
       options: options ? asJson(options) : null,
       answer: normalizedAnswer,
       fingerprint,
+      topic: nullableText(input.topic),
+      solution: nullableText(input.solution),
     })
     .eq("id", id)
-    .select("id, stem, options, answer")
+    .select("id, stem, options, answer, topic, solution")
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) {
@@ -703,6 +751,8 @@ export async function updateQuestion(
     stem: data.stem,
     options: (data.options as McqOptions | null) ?? undefined,
     answer: data.answer,
+    topic: data.topic,
+    solution: data.solution,
   };
 }
 

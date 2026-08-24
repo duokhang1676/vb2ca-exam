@@ -11,6 +11,16 @@ export function asJson(value: unknown): Json {
   return value as Json;
 }
 
+export function optionalText(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed || undefined;
+}
+
+export function nullableText(value: unknown): string | null {
+  return optionalText(value) ?? null;
+}
+
 export function parseQuestions(value: unknown): Question[] {
   if (!Array.isArray(value)) {
     throw new Error("Dữ liệu câu hỏi không hợp lệ.");
@@ -22,11 +32,20 @@ export function parseQuestions(value: unknown): Question[] {
     const section =
       question.section ??
       (clusterId ? "cluster" : type === "fill" ? "fill" : "independent");
+    const topic = optionalText(question.topic);
+    const solution = optionalText(question.solution);
     return {
-      ...question,
+      originalNumber: question.originalNumber,
       type,
+      stem: question.stem,
+      options: question.options,
       section,
       clusterId,
+      clusterPosition: question.clusterPosition,
+      clusterKind: question.clusterKind,
+      passage: question.passage,
+      ...(topic ? { topic } : {}),
+      ...(solution ? { solution } : {}),
     };
   });
 }

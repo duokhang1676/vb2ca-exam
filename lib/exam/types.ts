@@ -26,6 +26,8 @@ export type Question = {
   clusterPosition?: number;
   clusterKind?: ClusterKind;
   passage?: string;
+  topic?: string;
+  solution?: string;
 };
 
 export type AnswerKey = Record<string, string>;
@@ -49,6 +51,8 @@ export type DisplayQuestion = {
   clusterKind?: ClusterKind;
   passage?: string;
   fingerprint?: string;
+  topic?: string;
+  solution?: string;
 };
 
 export type DisplayBlock =
@@ -76,6 +80,8 @@ export type McqDetailItem = {
   clusterId?: string;
   clusterKind?: ClusterKind;
   passage?: string;
+  topic?: string;
+  solution?: string;
 };
 
 export type GradeResult = {
@@ -96,6 +102,8 @@ export type BankQuestion = {
   clusterId: string | null;
   clusterPosition: number | null;
   createdAt: string;
+  topic?: string;
+  solution?: string;
 };
 
 export type BankCluster = {
@@ -113,6 +121,8 @@ export type BankEssay = {
   fingerprint: string;
   sourceFilename: string | null;
   createdAt: string;
+  topic?: string;
+  solution?: string;
 };
 
 export function normalizeQuestionType(type: string | null | undefined): QuestionType {

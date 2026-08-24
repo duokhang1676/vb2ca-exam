@@ -20,6 +20,8 @@ export async function PATCH(request: Request, { params }: Params) {
   try {
     const body = (await request.json().catch(() => ({}))) as {
       essayPrompt?: unknown;
+      essayTopic?: unknown;
+      essaySolution?: unknown;
       questions?: unknown;
       answerKey?: unknown;
       title?: unknown;
@@ -37,6 +39,8 @@ export async function PATCH(request: Request, { params }: Params) {
     const updated = await updateSampleExam({
       examId: id,
       essayPrompt: body.essayPrompt,
+      essayTopic: typeof body.essayTopic === "string" ? body.essayTopic : "",
+      essaySolution: typeof body.essaySolution === "string" ? body.essaySolution : "",
       questions,
       answerKey,
       title: typeof body.title === "string" ? body.title : undefined,
@@ -45,6 +49,8 @@ export async function PATCH(request: Request, { params }: Params) {
       id: updated.id,
       title: updated.title,
       essayPrompt: updated.essay_prompt,
+      essayTopic: updated.essay_topic ?? "",
+      essaySolution: updated.essay_solution ?? "",
       questions: parseQuestions(updated.questions),
       answerKey: parseAnswerKeyJson(updated.answer_key),
     });

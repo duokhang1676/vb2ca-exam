@@ -21,6 +21,8 @@ export async function PATCH(request: Request, { params }: Params) {
       stem?: unknown;
       options?: McqOptions | null;
       answer?: unknown;
+      topic?: unknown;
+      solution?: unknown;
     };
     if (typeof body.stem !== "string" || typeof body.answer !== "string") {
       throw new ContributeError(
@@ -34,6 +36,8 @@ export async function PATCH(request: Request, { params }: Params) {
       stem: body.stem,
       options: body.options,
       answer: body.answer,
+      topic: typeof body.topic === "string" ? body.topic : "",
+      solution: typeof body.solution === "string" ? body.solution : "",
     });
     return NextResponse.json(question);
   } catch (error) {

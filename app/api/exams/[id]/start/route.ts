@@ -21,9 +21,11 @@ export async function POST(request: Request, { params }: Params) {
   const body = (await request.json().catch(() => ({}))) as {
     sectionMode?: string;
     shuffle?: boolean;
+    showTopic?: boolean;
   };
   const sectionMode = isSectionMode(body.sectionMode) ? body.sectionMode : "full";
   const shouldShuffle = body.shuffle !== false;
+  const showTopic = Boolean(body.showTopic);
   const supabase = getSupabaseAdmin();
 
   const { data: exam, error } = await supabase
@@ -54,6 +56,7 @@ export async function POST(request: Request, { params }: Params) {
       flagged: asJson([]),
       essay_flagged: false,
       section_mode: sectionMode,
+      show_topic: showTopic,
     })
     .select("id")
     .single();

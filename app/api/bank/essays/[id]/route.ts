@@ -16,7 +16,11 @@ export async function PATCH(request: Request, { params }: Params) {
   const { id } = await params;
 
   try {
-    const body = (await request.json().catch(() => ({}))) as { prompt?: unknown };
+    const body = (await request.json().catch(() => ({}))) as {
+      prompt?: unknown;
+      topic?: unknown;
+      solution?: unknown;
+    };
     if (typeof body.prompt !== "string") {
       throw new ContributeError(
         "INVALID_CONTENT",
@@ -25,7 +29,11 @@ export async function PATCH(request: Request, { params }: Params) {
         ["Nhập đề bài rồi bấm Lưu."],
       );
     }
-    const essay = await updateEssay(id, body.prompt);
+    const essay = await updateEssay(id, {
+      prompt: body.prompt,
+      topic: typeof body.topic === "string" ? body.topic : "",
+      solution: typeof body.solution === "string" ? body.solution : "",
+    });
     return NextResponse.json(essay);
   } catch (error) {
     return contributeErrorResponse(error, "Không lưu được đề nghị luận.");

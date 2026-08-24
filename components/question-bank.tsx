@@ -10,6 +10,7 @@ import {
 } from "@/components/bank-item-editor";
 import { SampleExamBank, type BankSampleView } from "@/components/sample-exam-bank";
 import { MathText } from "@/components/math-text";
+import { SolutionReveal, TopicBadge } from "@/components/question-meta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,8 @@ export type BankEssayView = {
   prompt: string;
   sourceFilename: string | null;
   fingerprint: string;
+  topic?: string;
+  solution?: string;
   marked?: boolean;
 };
 
@@ -46,6 +49,8 @@ export type BankQuestionView = {
   clusterId: string | null;
   clusterPosition: number | null;
   fingerprint: string;
+  topic?: string;
+  solution?: string;
   marked?: boolean;
 };
 
@@ -286,18 +291,29 @@ function EssayCard({
 }) {
   const [editing, setEditing] = useState(false);
   const [prompt, setPrompt] = useState(essay.prompt);
+  const [topic, setTopic] = useState(essay.topic ?? "");
+  const [solution, setSolution] = useState(essay.solution ?? "");
   const { busy, alertNode, setAlert, save } = useBankSave();
 
   async function onSave() {
-    const data = await save<{ prompt: string }>(() =>
+    const data = await save<{
+      prompt: string;
+      topic: string | null;
+      solution: string | null;
+    }>(() =>
       fetch(`/api/bank/essays/${essay.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, topic, solution }),
       }),
     );
     if (!data) return;
-    onSaved({ ...essay, prompt: data.prompt });
+    onSaved({
+      ...essay,
+      prompt: data.prompt,
+      topic: data.topic ?? undefined,
+      solution: data.solution ?? undefined,
+    });
     setEditing(false);
   }
 
@@ -333,6 +349,7 @@ function EssayCard({
           <span className="flex flex-wrap items-center gap-2">
             <span>NL-{essay.id.slice(0, 8).toUpperCase()}</span>
             <Badge variant="secondary">Nghị luận {index + 1}</Badge>
+            <TopicBadge topic={essay.topic} />
             {essay.marked ? (
               <MarkedBadge
                 marked
@@ -348,11 +365,15 @@ function EssayCard({
             busy={busy}
             onEdit={() => {
               setPrompt(essay.prompt);
+              setTopic(essay.topic ?? "");
+              setSolution(essay.solution ?? "");
               setAlert(null);
               setEditing(true);
             }}
             onCancel={() => {
               setPrompt(essay.prompt);
+              setTopic(essay.topic ?? "");
+              setSolution(essay.solution ?? "");
               setAlert(null);
               setEditing(false);
             }}
@@ -364,9 +385,22 @@ function EssayCard({
       <CardContent className="space-y-3">
         {alertNode}
         {editing ? (
-          <BankEssayFields prompt={prompt} disabled={busy} onChange={setPrompt} />
+          <BankEssayFields
+            prompt={prompt}
+            topic={topic}
+            solution={solution}
+            disabled={busy}
+            onChange={(next) => {
+              setPrompt(next.prompt);
+              setTopic(next.topic);
+              setSolution(next.solution);
+            }}
+          />
         ) : (
-          <MathText className="text-sm leading-7" text={essay.prompt} />
+          <>
+            <MathText className="text-sm leading-7" text={essay.prompt} />
+            <SolutionReveal solution={essay.solution} />
+          </>
         )}
       </CardContent>
     </Card>
@@ -404,6 +438,7 @@ function StandaloneQuestionCard({
             </span>
             <Badge variant="secondary">Câu {index + 1}</Badge>
             <Badge variant="outline">{questionTypeLabel(question.type)}</Badge>
+            <TopicBadge topic={question.topic} />
           </>
         }
       />
@@ -519,6 +554,7 @@ function ClusterCard({
               title={
                 <span className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
                   <span>Câu {questionIndex + 1}</span>
+                  <TopicBadge topic={question.topic} />
                 </span>
               }
             />
@@ -553,6 +589,8 @@ function QuestionEditBlock({
     stem: question.stem,
     options: question.options,
     answer: question.answer,
+    topic: question.topic ?? "",
+    solution: question.solution ?? "",
   });
   const { busy, alertNode, setAlert, save } = useBankSave();
 
@@ -561,6 +599,8 @@ function QuestionEditBlock({
       stem: string;
       options?: McqOptions;
       answer: string;
+      topic: string | null;
+      solution: string | null;
     }>(() =>
       fetch(`/api/bank/questions/${question.id}`, {
         method: "PATCH",
@@ -574,6 +614,8 @@ function QuestionEditBlock({
       stem: data.stem,
       options: data.options,
       answer: data.answer,
+      topic: data.topic ?? undefined,
+      solution: data.solution ?? undefined,
     });
     setEditing(false);
   }
@@ -620,6 +662,8 @@ function QuestionEditBlock({
           stem: question.stem,
           options: question.options,
           answer: question.answer,
+          topic: question.topic ?? "",
+          solution: question.solution ?? "",
         });
         setAlert(null);
         setEditing(true);
@@ -629,6 +673,8 @@ function QuestionEditBlock({
           stem: question.stem,
           options: question.options,
           answer: question.answer,
+          topic: question.topic ?? "",
+          solution: question.solution ?? "",
         });
         setAlert(null);
         setEditing(false);
@@ -644,12 +690,16 @@ function QuestionEditBlock({
       stem={draft.stem}
       options={draft.options}
       answer={draft.answer}
+      topic={draft.topic}
+      solution={draft.solution}
       disabled={busy}
       onChange={(next) =>
         setDraft({
           stem: next.stem,
           options: next.options,
           answer: next.answer,
+          topic: next.topic,
+          solution: next.solution,
         })
       }
     />
@@ -734,6 +784,7 @@ function QuestionBody({ question }: { question: BankQuestionView }) {
           text={question.answer}
         />
       </p>
+      <SolutionReveal solution={question.solution} />
     </div>
   );
 }

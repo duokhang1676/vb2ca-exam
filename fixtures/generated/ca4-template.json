@@ -8,24 +8,32 @@
     ],
     "rules": [
       "Bắt buộc: examCode, essayPrompt (≥80 ký tự), questions (≥1), answerKey",
+      "Tùy chọn: essayTopic, essaySolution; mỗi câu có thể có topic (dạng bài) và solution (lời giải)",
+      "Thiếu topic/solution thì để trống; hệ thống vẫn nhận file",
       "Chỉ 3 dạng trên; có thể thiếu dạng, lẫn thứ tự, không giới hạn số câu hay số thành phần cụm",
       "Không đưa loại câu ngoài mcq/fill"
     ]
   },
   "examCode": "CA4",
   "essayPrompt": "Đọc đoạn văn bản sau:\n\n[Đoạn văn về một vấn đề pháp luật — xã hội.]\n\nAnh/chị hãy viết bài nghị luận xã hội (tối thiểu 500 chữ) trình bày, phân tích và đánh giá vấn đề được đặt ra.",
+  "essayTopic": "Nghị luận xã hội",
+  "essaySolution": "Nêu vấn đề pháp luật — xã hội từ đoạn văn, phân tích, đánh giá và đề xuất hướng xử lý phù hợp.",
   "questions": [
     {
       "originalNumber": 1,
       "type": "fill",
       "section": "fill",
-      "stem": "Chủ thể có quyền, nghĩa vụ dân sự bằng hành vi của mình gọi là người có"
+      "stem": "Chủ thể có quyền, nghĩa vụ dân sự bằng hành vi của mình gọi là người có",
+      "topic": "Năng lực hành vi dân sự",
+      "solution": "Người thực hiện quyền, nghĩa vụ dân sự bằng hành vi của mình là người có năng lực hành vi dân sự."
     },
     {
       "originalNumber": 2,
       "type": "mcq",
       "section": "independent",
       "stem": "Việt Nam là nhà nước",
+      "topic": "Nhà nước pháp quyền",
+      "solution": "Hiến pháp xác định Việt Nam là nhà nước pháp quyền xã hội chủ nghĩa của Nhân dân, do Nhân dân, vì Nhân dân. Chọn A.",
       "options": {
         "A": "pháp quyền xã hội chủ nghĩa của Nhân dân, do Nhân dân, vì Nhân dân",
         "B": "liên bang",
@@ -42,6 +50,8 @@
       "clusterKind": "situation",
       "passage": "Anh A 19 tuổi điều khiển xe máy không có GPLX, vượt đèn đỏ gây tai nạn.",
       "stem": "Anh A thuộc đối tượng",
+      "topic": "Người thành niên",
+      "solution": "Anh A 19 tuổi đã thành niên. Chọn B.",
       "options": {
         "A": "người chưa thành niên",
         "B": "người thành niên",

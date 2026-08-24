@@ -1,11 +1,13 @@
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { examUploadContentType } from "./document";
-import { asJson } from "./json";
+import { asJson, nullableText } from "./json";
 import type { AnswerKey, ExamCode, ExamSource, Question } from "./types";
 
 export async function persistExam(params: {
   title: string;
   essayPrompt: string;
+  essayTopic?: string;
+  essaySolution?: string;
   questions: Question[];
   answerKey: AnswerKey;
   examCode?: ExamCode;
@@ -51,6 +53,8 @@ export async function persistExam(params: {
     .insert({
       title: params.title,
       essay_prompt: params.essayPrompt,
+      essay_topic: nullableText(params.essayTopic),
+      essay_solution: nullableText(params.essaySolution),
       questions: asJson(params.questions),
       answer_key: asJson(params.answerKey),
       pdf_path: pdfPath,

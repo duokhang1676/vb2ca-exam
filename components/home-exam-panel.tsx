@@ -43,6 +43,7 @@ export function HomeExamPanel({
   const [sampling, setSampling] = useState(false);
   const [sectionMode, setSectionMode] = useState<SectionMode>("full");
   const [shuffleSample, setShuffleSample] = useState(false);
+  const [showTopic, setShowTopic] = useState(false);
 
   const options = samples[examCode];
   const selectedId =
@@ -73,6 +74,7 @@ export function HomeExamPanel({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sectionMode,
+        showTopic,
         ...(shuffle !== undefined ? { shuffle } : {}),
       }),
     });
@@ -143,6 +145,37 @@ export function HomeExamPanel({
                 {sectionModeLabel(mode)}
               </button>
             ))}
+          </div>
+        </div>
+        <div className="grid gap-2">
+          <Label>Dạng câu hỏi</Label>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setShowTopic(false)}
+              className={cn(
+                "rounded-lg border px-3 py-2 text-left text-sm",
+                !showTopic
+                  ? "border-primary bg-primary/5 text-foreground"
+                  : "border-border text-muted-foreground",
+              )}
+            >
+              Ẩn dạng câu hỏi
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setShowTopic(true)}
+              className={cn(
+                "rounded-lg border px-3 py-2 text-left text-sm",
+                showTopic
+                  ? "border-primary bg-primary/5 text-foreground"
+                  : "border-border text-muted-foreground",
+              )}
+            >
+              Hiển thị dạng câu hỏi
+            </button>
           </div>
         </div>
         {error ? (

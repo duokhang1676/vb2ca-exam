@@ -76,6 +76,8 @@ export async function POST(request: Request) {
       saved = await saveGeneratedSampleExam({
         examCode: examCodeRaw,
         essayPrompt: payload.essayPrompt,
+        essayTopic: payload.essayTopic,
+        essaySolution: payload.essaySolution,
         questions: payload.questions,
         answerKey: payload.answerKey,
         diversity: payload.diversity,

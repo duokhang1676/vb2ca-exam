@@ -9,6 +9,7 @@ import {
   useBankSave,
 } from "@/components/bank-item-editor";
 import { MathText } from "@/components/math-text";
+import { SolutionReveal, TopicBadge } from "@/components/question-meta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +32,8 @@ export type BankSampleView = {
   kind: "official" | "generated";
   number: number;
   essayPrompt: string;
+  essayTopic?: string;
+  essaySolution?: string;
   questions: Question[];
   answerKey: AnswerKey;
   essayMarked?: boolean;
@@ -91,6 +94,8 @@ function SampleExamCard({
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(sample.title);
   const [essayPrompt, setEssayPrompt] = useState(sample.essayPrompt);
+  const [essayTopic, setEssayTopic] = useState(sample.essayTopic ?? "");
+  const [essaySolution, setEssaySolution] = useState(sample.essaySolution ?? "");
   const [questions, setQuestions] = useState(sample.questions);
   const [answerKey, setAnswerKey] = useState(sample.answerKey);
   const { busy, alertNode, setAlert, save } = useBankSave();
@@ -99,6 +104,8 @@ function SampleExamCard({
   function resetDraft() {
     setTitle(sample.title);
     setEssayPrompt(sample.essayPrompt);
+    setEssayTopic(sample.essayTopic ?? "");
+    setEssaySolution(sample.essaySolution ?? "");
     setQuestions(sample.questions);
     setAnswerKey(sample.answerKey);
     setAlert(null);
@@ -107,12 +114,16 @@ function SampleExamCard({
   async function patchSample(next: {
     title: string;
     essayPrompt: string;
+    essayTopic: string;
+    essaySolution: string;
     questions: Question[];
     answerKey: AnswerKey;
   }) {
     const data = await save<{
       title: string;
       essayPrompt: string;
+      essayTopic: string;
+      essaySolution: string;
       questions: Question[];
       answerKey: AnswerKey;
     }>(() =>
@@ -125,12 +136,16 @@ function SampleExamCard({
     if (!data) return null;
     setTitle(data.title);
     setEssayPrompt(data.essayPrompt);
+    setEssayTopic(data.essayTopic ?? "");
+    setEssaySolution(data.essaySolution ?? "");
     setQuestions(data.questions);
     setAnswerKey(data.answerKey);
     onSaved({
       ...sample,
       title: data.title,
       essayPrompt: data.essayPrompt,
+      essayTopic: data.essayTopic,
+      essaySolution: data.essaySolution,
       questions: data.questions,
       answerKey: data.answerKey,
     });
@@ -138,7 +153,14 @@ function SampleExamCard({
   }
 
   async function onSave() {
-    const data = await patchSample({ title, essayPrompt, questions, answerKey });
+    const data = await patchSample({
+      title,
+      essayPrompt,
+      essayTopic,
+      essaySolution,
+      questions,
+      answerKey,
+    });
     if (!data) return;
     setEditing(false);
   }
@@ -163,6 +185,8 @@ function SampleExamCard({
     await patchSample({
       title,
       essayPrompt,
+      essayTopic,
+      essaySolution,
       questions: nextQuestions,
       answerKey: nextAnswerKey,
     });
@@ -254,16 +278,26 @@ function SampleExamCard({
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-medium">Phần 1 · Nghị luận</p>
+              <TopicBadge topic={essayTopic} />
               {sample.essayMarked ? <Badge>Đã đánh dấu</Badge> : null}
             </div>
               {editing ? (
                 <BankEssayFields
                   prompt={essayPrompt}
+                  topic={essayTopic}
+                  solution={essaySolution}
                   disabled={busy}
-                  onChange={setEssayPrompt}
+                  onChange={(next) => {
+                    setEssayPrompt(next.prompt);
+                    setEssayTopic(next.topic);
+                    setEssaySolution(next.solution);
+                  }}
                 />
               ) : (
-                <MathText className="font-exam text-sm leading-7" text={essayPrompt} />
+                <>
+                  <MathText className="font-exam text-sm leading-7" text={essayPrompt} />
+                  <SolutionReveal solution={essaySolution || sample.essaySolution} />
+                </>
               )}
           </div>
           {blocks.map((block, blockIndex) => (
@@ -289,6 +323,7 @@ function SampleExamCard({
                         <span>
                           Câu {question.displayIndex} · {questionTypeLabel(question.type)}
                         </span>
+                        <TopicBadge topic={question.topic} />
                         {isMarked ? <Badge>Đã đánh dấu</Badge> : null}
                       </span>
                       {editable ? (
@@ -313,12 +348,26 @@ function SampleExamCard({
                             ?.options
                         }
                         answer={answer}
+                        topic={
+                          questions.find((item) => item.originalNumber === question.originalNumber)
+                            ?.topic ?? ""
+                        }
+                        solution={
+                          questions.find((item) => item.originalNumber === question.originalNumber)
+                            ?.solution ?? ""
+                        }
                         disabled={busy}
                         onChange={(next) => {
                           setQuestions((current) =>
                             current.map((item) =>
                               item.originalNumber === question.originalNumber
-                                ? { ...item, stem: next.stem, options: next.options }
+                                ? {
+                                    ...item,
+                                    stem: next.stem,
+                                    options: next.options,
+                                    topic: next.topic,
+                                    solution: next.solution,
+                                  }
                                 : item,
                             ),
                           );
@@ -351,6 +400,7 @@ function SampleExamCard({
                           Đáp án:{" "}
                           <MathText inline className="font-medium text-primary" text={answer} />
                         </p>
+                        <SolutionReveal solution={question.solution} />
                       </div>
                     )}
                   </div>

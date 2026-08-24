@@ -159,6 +159,8 @@ export function toDisplayQuestions(
       clusterPosition: question.clusterPosition,
       clusterKind: question.clusterKind,
       passage: question.passage,
+      topic: question.topic,
+      solution: question.solution,
     };
 
     if (type !== "mcq" || !question.options || !mapped) {
