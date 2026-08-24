@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth/session";
 import { asJson, parseQuestions } from "@/lib/exam/json";
-import { createShuffle } from "@/lib/exam/shuffle";
+import {
+  createFlexibleShuffle,
+  createIdentityShuffle,
+  createShuffle,
+} from "@/lib/exam/shuffle";
 import { isSectionMode } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -16,13 +20,15 @@ export async function POST(request: Request, { params }: Params) {
   const { id } = await params;
   const body = (await request.json().catch(() => ({}))) as {
     sectionMode?: string;
+    shuffle?: boolean;
   };
   const sectionMode = isSectionMode(body.sectionMode) ? body.sectionMode : "full";
+  const shouldShuffle = body.shuffle !== false;
   const supabase = getSupabaseAdmin();
 
   const { data: exam, error } = await supabase
     .from("exams")
-    .select("id, questions")
+    .select("id, questions, source")
     .eq("id", id)
     .single();
 
@@ -32,7 +38,11 @@ export async function POST(request: Request, { params }: Params) {
 
   const questions = parseQuestions(exam.questions);
   const activeQuestions = sectionMode === "part1" ? [] : questions;
-  const shuffle = createShuffle(activeQuestions);
+  const shuffle = !shouldShuffle
+    ? createIdentityShuffle(activeQuestions)
+    : exam.source === "sample"
+      ? createFlexibleShuffle(activeQuestions)
+      : createShuffle(activeQuestions);
 
   const { data: attempt, error: insertError } = await supabase
     .from("attempts")

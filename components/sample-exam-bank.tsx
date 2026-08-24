@@ -12,6 +12,8 @@ import { MathText } from "@/components/math-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { OPTION_LETTERS, questionTypeLabel } from "@/lib/exam/constants";
 import { toDisplayBlocks } from "@/lib/exam/shuffle";
 import {
@@ -87,14 +89,29 @@ function SampleExamCard({
   const editable = signedIn && sample.kind !== "official";
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(sample.title);
   const [essayPrompt, setEssayPrompt] = useState(sample.essayPrompt);
   const [questions, setQuestions] = useState(sample.questions);
   const [answerKey, setAnswerKey] = useState(sample.answerKey);
   const { busy, alertNode, setAlert, save } = useBankSave();
   const marked = new Set(sample.markedNumbers ?? []);
 
-  async function onSave() {
+  function resetDraft() {
+    setTitle(sample.title);
+    setEssayPrompt(sample.essayPrompt);
+    setQuestions(sample.questions);
+    setAnswerKey(sample.answerKey);
+    setAlert(null);
+  }
+
+  async function patchSample(next: {
+    title: string;
+    essayPrompt: string;
+    questions: Question[];
+    answerKey: AnswerKey;
+  }) {
     const data = await save<{
+      title: string;
       essayPrompt: string;
       questions: Question[];
       answerKey: AnswerKey;
@@ -102,17 +119,53 @@ function SampleExamCard({
       fetch(`/api/exams/sample/${sample.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ essayPrompt, questions, answerKey }),
+        body: JSON.stringify(next),
       }),
     );
-    if (!data) return;
+    if (!data) return null;
+    setTitle(data.title);
+    setEssayPrompt(data.essayPrompt);
+    setQuestions(data.questions);
+    setAnswerKey(data.answerKey);
     onSaved({
       ...sample,
+      title: data.title,
       essayPrompt: data.essayPrompt,
       questions: data.questions,
       answerKey: data.answerKey,
     });
+    return data;
+  }
+
+  async function onSave() {
+    const data = await patchSample({ title, essayPrompt, questions, answerKey });
+    if (!data) return;
     setEditing(false);
+  }
+
+  async function onDeleteQuestion(originalNumber: number) {
+    if (questions.length <= 1) {
+      setAlert({
+        tone: "error",
+        title: "Không xóa được câu",
+        message: "Đề minh họa cần ít nhất 1 câu phần 2.",
+      });
+      setOpen(true);
+      return;
+    }
+    if (!window.confirm(`Xóa câu ${originalNumber} khỏi đề minh họa?`)) return;
+    const nextQuestions = questions.filter(
+      (question) => question.originalNumber !== originalNumber,
+    );
+    const nextAnswerKey = { ...answerKey };
+    delete nextAnswerKey[String(originalNumber)];
+    setOpen(true);
+    await patchSample({
+      title,
+      essayPrompt,
+      questions: nextQuestions,
+      answerKey: nextAnswerKey,
+    });
   }
 
   async function onDelete() {
@@ -136,8 +189,22 @@ function SampleExamCard({
     <Card>
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-sm">
-          <span className="flex flex-wrap items-center gap-2">
-            <span>{sample.title}</span>
+          <span className="flex min-w-0 flex-wrap items-center gap-2">
+            {editing ? (
+              <span className="grid min-w-[12rem] flex-1 gap-1">
+                <Label htmlFor={`sample-title-${sample.id}`} className="sr-only">
+                  Tên đề
+                </Label>
+                <Input
+                  id={`sample-title-${sample.id}`}
+                  value={title}
+                  disabled={busy}
+                  onChange={(event) => setTitle(event.target.value)}
+                />
+              </span>
+            ) : (
+              <span>{sample.title}</span>
+            )}
             <Badge variant="outline">{sample.examCode}</Badge>
             {sample.kind === "official" ? (
               <Badge variant="secondary">Chính thức</Badge>
@@ -156,18 +223,12 @@ function SampleExamCard({
                   editing={editing}
                   busy={busy}
                   onEdit={() => {
-                    setEssayPrompt(sample.essayPrompt);
-                    setQuestions(sample.questions);
-                    setAnswerKey(sample.answerKey);
-                    setAlert(null);
+                    resetDraft();
                     setEditing(true);
                     setOpen(true);
                   }}
                   onCancel={() => {
-                    setEssayPrompt(sample.essayPrompt);
-                    setQuestions(sample.questions);
-                    setAnswerKey(sample.answerKey);
-                    setAlert(null);
+                    resetDraft();
                     setEditing(false);
                   }}
                   onSave={onSave}
@@ -195,15 +256,15 @@ function SampleExamCard({
               <p className="text-sm font-medium">Phần 1 · Nghị luận</p>
               {sample.essayMarked ? <Badge>Đã đánh dấu</Badge> : null}
             </div>
-            {editing ? (
-              <BankEssayFields
-                prompt={essayPrompt}
-                disabled={busy}
-                onChange={setEssayPrompt}
-              />
-            ) : (
-              <MathText className="font-exam text-sm leading-7" text={sample.essayPrompt} />
-            )}
+              {editing ? (
+                <BankEssayFields
+                  prompt={essayPrompt}
+                  disabled={busy}
+                  onChange={setEssayPrompt}
+                />
+              ) : (
+                <MathText className="font-exam text-sm leading-7" text={essayPrompt} />
+              )}
           </div>
           {blocks.map((block, blockIndex) => (
             <div key={`sample-block-${blockIndex}`} className="space-y-3">
@@ -223,11 +284,25 @@ function SampleExamCard({
                 const isMarked = marked.has(question.originalNumber);
                 return (
                   <div key={question.originalNumber} className="rounded-lg border p-3">
-                    <p className="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      <span>
-                        Câu {question.displayIndex} · {questionTypeLabel(question.type)}
+                    <p className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span>
+                          Câu {question.displayIndex} · {questionTypeLabel(question.type)}
+                        </span>
+                        {isMarked ? <Badge>Đã đánh dấu</Badge> : null}
                       </span>
-                      {isMarked ? <Badge>Đã đánh dấu</Badge> : null}
+                      {editable ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => void onDeleteQuestion(question.originalNumber)}
+                        >
+                          {busy ? <LoaderCircle className="animate-spin" /> : <Trash2 />}
+                          Xóa câu
+                        </Button>
+                      ) : null}
                     </p>
                     {editing ? (
                       <BankQuestionFields

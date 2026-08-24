@@ -4,7 +4,6 @@ import {
   ContributeError,
   contributeErrorResponse,
 } from "@/lib/exam/contribute-error";
-import { EXAM_SPECS } from "@/lib/exam/constants";
 import { isJsonFile } from "@/lib/exam/document";
 import { parseSampleJsonText } from "@/lib/exam/parse-sample-json";
 import { saveGeneratedSampleExam } from "@/lib/exam/sample";
@@ -51,11 +50,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const spec = EXAM_SPECS[examCodeRaw];
     const sampleFile =
       examCodeRaw === "CA1"
-        ? "fixtures/generated/ca1-so-2.json"
-        : "fixtures/generated/ca4-so-2.json";
+        ? "fixtures/generated/ca1-template.json"
+        : "fixtures/generated/ca4-template.json";
 
     let payload;
     try {
@@ -66,7 +64,8 @@ export async function POST(request: Request) {
         error instanceof Error ? error.message : "Không đọc được file JSON.",
         "JSON đề minh họa không đúng format",
         [
-          `Cần examCode ${examCodeRaw}, essayPrompt, ${spec.total} câu questions và answerKey.`,
+          `Cần examCode ${examCodeRaw}, essayPrompt, questions (≥ 1 câu) và answerKey.`,
+          "Chỉ nhận 3 dạng: trắc nghiệm độc lập, trắc nghiệm cụm, điền đáp án.",
           `Đối chiếu với file mẫu ${sampleFile}.`,
         ],
       );
@@ -80,21 +79,19 @@ export async function POST(request: Request) {
         questions: payload.questions,
         answerKey: payload.answerKey,
         diversity: payload.diversity,
+        createdBy: user.id,
+        sourceFilename: file.name,
       });
     } catch (error) {
       throw new ContributeError(
         "INVALID_CONTENT",
         error instanceof Error ? error.message : "Không lưu được đề JSON.",
         `JSON đề minh họa không đúng cấu trúc ${examCodeRaw}`,
-        examCodeRaw === "CA1"
-          ? [
-              "Cần đúng 50 câu: 1–39 độc lập, 40–45 thuộc cụm, 46–50 điền.",
-              `Đối chiếu với file mẫu ${sampleFile}.`,
-            ]
-          : [
-              "Cần đúng 60 câu: 1–54 trắc nghiệm (cụm 49–54 nếu có), 55–60 điền chữ.",
-              `Đối chiếu với file mẫu ${sampleFile}.`,
-            ],
+        [
+          "Cần essayPrompt, ít nhất 1 câu, mỗi câu thuộc mcq độc lập / mcq cụm / fill.",
+          "Số câu, thứ tự dạng và số thành phần cụm không bắt buộc.",
+          `Đối chiếu với file mẫu ${sampleFile}.`,
+        ],
       );
     }
 

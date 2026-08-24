@@ -1,6 +1,6 @@
 import { generateObject } from "ai";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { CLUSTER_SIZE, clusterHeaderTemplate, OPTION_LETTERS } from "./constants";
+import { clusterHeaderTemplate, OPTION_LETTERS } from "./constants";
 import { ContributeError } from "./contribute-error";
 import { asJson } from "./json";
 import {
@@ -256,16 +256,11 @@ async function importCluster(params: {
   attribution?: ImportAttribution;
   checkNearDuplicates?: boolean;
 }): Promise<ImportSummary> {
-  const members = [...params.members]
-    .sort((a, b) => (a.clusterPosition ?? 0) - (b.clusterPosition ?? 0))
-    .slice(0, CLUSTER_SIZE);
-  if (members.length < 2) {
-    return insertStandaloneQuestions({
-      examCode: params.examCode,
-      incoming: members,
-      attribution: params.attribution,
-      checkNearDuplicates: params.checkNearDuplicates,
-    });
+  const members = [...params.members].sort(
+    (a, b) => (a.clusterPosition ?? 0) - (b.clusterPosition ?? 0),
+  );
+  if (members.length < 1) {
+    return { added: 0, skipped: 0 };
   }
 
   const fingerprint = clusterFingerprint({
@@ -373,7 +368,7 @@ export async function importQuestions(params: {
   let skipped = 0;
 
   for (const cluster of clusters.values()) {
-    if (!cluster.passage.trim() || cluster.members.length < 2) {
+    if (!cluster.passage.trim() || cluster.members.length < 1) {
       standalone.push(...cluster.members);
       continue;
     }
@@ -412,11 +407,12 @@ export async function importParsedIntoBank(params: {
   answerKey: AnswerKey;
   sourceFilename?: string;
   checkNearDuplicates?: boolean;
+  attribution?: ImportAttribution;
 }): Promise<{ essays: ImportSummary; questions: ImportSummary }> {
   const essays = await importEssays(
     params.essayPrompt,
     params.sourceFilename,
-    undefined,
+    params.attribution,
     params.checkNearDuplicates,
   );
   const questions = await importQuestions({
@@ -424,6 +420,7 @@ export async function importParsedIntoBank(params: {
     questions: params.questions,
     answerKey: params.answerKey,
     checkNearDuplicates: params.checkNearDuplicates,
+    attribution: params.attribution,
   });
   return { essays, questions };
 }
@@ -913,10 +910,8 @@ export function fingerprintsFromParsedSample(params: {
 
   const clusterHashes = new Set<string>();
   for (const cluster of clusters.values()) {
-    const members = [...cluster.members]
-      .sort((a, b) => a.position - b.position)
-      .slice(0, CLUSTER_SIZE);
-    if (!cluster.passage.trim() || members.length < 2) continue;
+    const members = [...cluster.members].sort((a, b) => a.position - b.position);
+    if (!cluster.passage.trim() || members.length < 1) continue;
     clusterHashes.add(
       clusterFingerprint({
         examCode: params.examCode,

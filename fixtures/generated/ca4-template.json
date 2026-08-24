@@ -1,0 +1,58 @@
+{
+  "_ai": {
+    "purpose": "Mẫu JSON ngắn cho đề minh họa CA4. Copy schema; sinh đề thật với nội dung đầy đủ.",
+    "types": [
+      "mcq độc lập: type=mcq, không clusterId, options A–D, answerKey = A|B|C|D",
+      "mcq cụm: type=mcq, clusterId, clusterPosition, clusterKind=situation, passage dùng chung, options A–D",
+      "điền: type=fill, không options, answerKey là chuỗi chữ"
+    ],
+    "rules": [
+      "Bắt buộc: examCode, essayPrompt (≥80 ký tự), questions (≥1), answerKey",
+      "Chỉ 3 dạng trên; có thể thiếu dạng, lẫn thứ tự, không giới hạn số câu hay số thành phần cụm",
+      "Không đưa loại câu ngoài mcq/fill"
+    ]
+  },
+  "examCode": "CA4",
+  "essayPrompt": "Đọc đoạn văn bản sau:\n\n[Đoạn văn về một vấn đề pháp luật — xã hội.]\n\nAnh/chị hãy viết bài nghị luận xã hội (tối thiểu 500 chữ) trình bày, phân tích và đánh giá vấn đề được đặt ra.",
+  "questions": [
+    {
+      "originalNumber": 1,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Chủ thể có quyền, nghĩa vụ dân sự bằng hành vi của mình gọi là người có"
+    },
+    {
+      "originalNumber": 2,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Việt Nam là nhà nước",
+      "options": {
+        "A": "pháp quyền xã hội chủ nghĩa của Nhân dân, do Nhân dân, vì Nhân dân",
+        "B": "liên bang",
+        "C": "quân chủ lập hiến",
+        "D": "tổng thống chế"
+      }
+    },
+    {
+      "originalNumber": 3,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c1",
+      "clusterPosition": 1,
+      "clusterKind": "situation",
+      "passage": "Anh A 19 tuổi điều khiển xe máy không có GPLX, vượt đèn đỏ gây tai nạn.",
+      "stem": "Anh A thuộc đối tượng",
+      "options": {
+        "A": "người chưa thành niên",
+        "B": "người thành niên",
+        "C": "người mất năng lực hành vi dân sự",
+        "D": "người bị hạn chế năng lực hành vi dân sự"
+      }
+    }
+  ],
+  "answerKey": {
+    "1": "năng lực hành vi dân sự",
+    "2": "A",
+    "3": "B"
+  }
+}

@@ -22,6 +22,7 @@ export async function PATCH(request: Request, { params }: Params) {
       essayPrompt?: unknown;
       questions?: unknown;
       answerKey?: unknown;
+      title?: unknown;
     };
     if (typeof body.essayPrompt !== "string") {
       throw new ContributeError(
@@ -38,6 +39,7 @@ export async function PATCH(request: Request, { params }: Params) {
       essayPrompt: body.essayPrompt,
       questions,
       answerKey,
+      title: typeof body.title === "string" ? body.title : undefined,
     });
     return NextResponse.json({
       id: updated.id,

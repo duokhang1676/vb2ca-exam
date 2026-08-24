@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 function sectionLabel(kind: string, examCode: string | null): string {
   if (kind === "essay") return "Phần 1 · Nghị luận";
+  if (kind === "sample") return `Đề minh họa · ${examCode ?? ""}`.trim();
   return `Phần 2 · ${examCode ?? ""}`.trim();
 }
 

@@ -42,17 +42,22 @@ export function HomeExamPanel({
   const [generating, setGenerating] = useState(false);
   const [sampling, setSampling] = useState(false);
   const [sectionMode, setSectionMode] = useState<SectionMode>("full");
+  const [shuffleSample, setShuffleSample] = useState(false);
 
   const options = samples[examCode];
   const selectedId =
     selectedByCode[examCode] ??
     (options[0] ? sampleValue(options[0]) : OFFICIAL_SAMPLE_VALUE);
 
-  async function postExam(url: string, extra?: { examId?: string }) {
+  async function postExam(
+    url: string,
+    extra?: { examId?: string; shuffle?: boolean },
+  ) {
+    const { shuffle, ...createBody } = extra ?? {};
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ examCode, sectionMode, ...extra }),
+      body: JSON.stringify({ examCode, sectionMode, ...createBody }),
     });
     if (response.status === 401) {
       router.push("/login?next=/");
@@ -62,7 +67,27 @@ export function HomeExamPanel({
     if (!response.ok || !data.examId) {
       throw new Error(data.error || "Không tạo được đề.");
     }
-    router.push(`/exams/${data.examId}?section=${sectionMode}`);
+
+    const startResponse = await fetch(`/api/exams/${data.examId}/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sectionMode,
+        ...(shuffle !== undefined ? { shuffle } : {}),
+      }),
+    });
+    if (startResponse.status === 401) {
+      router.push("/login?next=/");
+      throw new Error("Cần đăng nhập để bắt đầu bài thi.");
+    }
+    const startData = (await startResponse.json()) as {
+      attemptId?: string;
+      error?: string;
+    };
+    if (!startResponse.ok || !startData.attemptId) {
+      throw new Error(startData.error || "Không bắt đầu được bài thi.");
+    }
+    router.push(`/attempts/${startData.attemptId}`);
   }
 
   const spec = EXAM_SPECS[examCode];
@@ -170,6 +195,35 @@ export function HomeExamPanel({
                   </option>
                 ))}
               </select>
+              <Label>Thứ tự câu hỏi</Label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setShuffleSample(false)}
+                  className={cn(
+                    "rounded-lg border px-3 py-2 text-left text-sm",
+                    !shuffleSample
+                      ? "border-primary bg-primary/5 text-foreground"
+                      : "border-border text-muted-foreground",
+                  )}
+                >
+                  Giữ thứ tự file
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setShuffleSample(true)}
+                  className={cn(
+                    "rounded-lg border px-3 py-2 text-left text-sm",
+                    shuffleSample
+                      ? "border-primary bg-primary/5 text-foreground"
+                      : "border-border text-muted-foreground",
+                  )}
+                >
+                  Trộn đề
+                </button>
+              </div>
               <Button
                 variant="outline"
                 disabled={busy}
@@ -177,7 +231,10 @@ export function HomeExamPanel({
                   setError(null);
                   setSampling(true);
                   try {
-                    await postExam("/api/exams/sample", { examId: selectedId });
+                    await postExam("/api/exams/sample", {
+                      examId: selectedId,
+                      shuffle: shuffleSample,
+                    });
                   } catch (err) {
                     setError(
                       err instanceof Error ? err.message : "Lỗi không xác định.",

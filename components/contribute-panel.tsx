@@ -325,9 +325,8 @@ function SampleContributeForm() {
       <CardHeader>
         <CardTitle>Đóng góp đề minh họa</CardTitle>
         <CardDescription>
-          {examCode === "CA1"
-            ? "Upload file JSON đề CA1 (essayPrompt, 50 câu và answerKey). Hệ thống lưu đề minh họa với số tăng dần."
-            : "Upload file JSON đề CA4 (essayPrompt, 60 câu và answerKey). Hệ thống lưu đề minh họa với số tăng dần."}
+          Upload file JSON đề {examCode}. Số câu, thứ tự dạng và số thành phần
+          cụm không bắt buộc. Hệ thống lưu đề minh họa với số tăng dần.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -361,23 +360,25 @@ function SampleContributeForm() {
               required
               disabled={busy}
             />
-            {examCode === "CA1" ? (
-              <FormatHelp title="Yêu cầu file JSON CA1">
-                <ul className="list-disc pl-5">
-                  <li>Đúng cấu trúc: examCode, essayPrompt, questions (50 câu), answerKey.</li>
-                  <li>Câu 1–39 trắc nghiệm độc lập, 40–45 thuộc 2 cụm đọc hiểu, 46–50 điền đáp án.</li>
-                  <li>Đối chiếu file mẫu fixtures/generated/ca1-so-2.json.</li>
-                </ul>
-              </FormatHelp>
-            ) : (
-              <FormatHelp title="Yêu cầu file JSON CA4">
-                <ul className="list-disc pl-5">
-                  <li>Đúng cấu trúc: examCode, essayPrompt, questions (60 câu), answerKey.</li>
-                  <li>Câu 1–54 trắc nghiệm (cụm tình huống 49–54 nếu có), 55–60 điền chữ.</li>
-                  <li>Đối chiếu file mẫu fixtures/generated/ca4-so-2.json.</li>
-                </ul>
-              </FormatHelp>
-            )}
+            <FormatHelp title={`Yêu cầu file JSON ${examCode}`}>
+              <ul className="list-disc pl-5">
+                <li>
+                  Cấu trúc: examCode, essayPrompt, questions (≥ 1 câu), answerKey.
+                </li>
+                <li>
+                  Chỉ 3 dạng: trắc nghiệm chọn đáp án (mcq độc lập), trắc nghiệm
+                  cụm (mcq + clusterId + passage), trắc nghiệm điền (fill).
+                </li>
+                <li>
+                  Không bắt buộc đủ cả 3 dạng, không giới hạn số câu, thứ tự dạng
+                  và số thành phần trong cụm.
+                </li>
+                <li>
+                  Đối chiếu file mẫu fixtures/generated/
+                  {examCode === "CA1" ? "ca1-template.json" : "ca4-template.json"}.
+                </li>
+              </ul>
+            </FormatHelp>
           </div>
           {alert ? <ContributeAlert {...alert} /> : null}
           <Button type="submit" disabled={busy}>

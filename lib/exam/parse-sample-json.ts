@@ -30,6 +30,25 @@ export function parseSampleJsonText(
   if (!payload.questions || !payload.answerKey) {
     throw new Error("JSON thiếu questions hoặc answerKey.");
   }
+  if (!Array.isArray(payload.questions)) {
+    throw new Error("JSON questions phải là mảng.");
+  }
+  for (const item of payload.questions) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      throw new Error("JSON có câu hỏi không hợp lệ.");
+    }
+    const type = (item as { type?: unknown }).type;
+    if (
+      type != null &&
+      type !== "mcq" &&
+      type !== "fill" &&
+      type !== "numeric"
+    ) {
+      throw new Error(
+        `Loại câu không hỗ trợ: ${String(type)}. Chỉ nhận mcq (độc lập/cụm) hoặc fill.`,
+      );
+    }
+  }
 
   if (payload.examCode != null && !isExamCode(payload.examCode)) {
     throw new Error("JSON có examCode không hợp lệ.");

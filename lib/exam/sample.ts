@@ -8,6 +8,7 @@ import {
 } from "./bank";
 import {
   EXAM_SPECS,
+  OPTION_LETTERS,
   SAMPLE_FILES,
   SAMPLE_TITLES,
   generatedSampleTitle,
@@ -245,79 +246,78 @@ export async function getExistingSampleExam(
   return { examId: data.id };
 }
 
-export function assertSampleStructure(
-  examCode: ExamCode,
+function fillClusterPassages(questions: Question[]): Question[] {
+  const passages = new Map<string, string>();
+  for (const question of questions) {
+    if (question.clusterId && question.passage?.trim()) {
+      passages.set(question.clusterId, question.passage.trim());
+    }
+  }
+  return questions.map((question) => {
+    if (!question.clusterId) return question;
+    const passage = passages.get(question.clusterId);
+    return passage ? { ...question, passage } : question;
+  });
+}
+
+export function assertFlexibleSample(
   questions: Question[],
   answerKey: AnswerKey,
 ) {
-  const spec = EXAM_SPECS[examCode];
-  if (questions.length !== spec.total) {
-    throw new Error(
-      `Đề ${examCode} phải có đúng ${spec.total} câu phần 2 (đang có ${questions.length}).`,
-    );
+  if (questions.length < 1) {
+    throw new Error("Đề minh họa cần ít nhất 1 câu phần 2.");
   }
 
-  const numbers = questions.map((question) => question.originalNumber).sort(
-    (a, b) => a - b,
-  );
-  for (let i = 0; i < spec.total; i += 1) {
-    if (numbers[i] !== i + 1) {
-      throw new Error(`Thiếu hoặc trùng số câu phần 2 (cần 1–${spec.total}).`);
-    }
-  }
-
-  const byNumber = new Map(
-    questions.map((question) => [question.originalNumber, question]),
-  );
-  const independentEnd = spec.independentMcq;
-  const clusterEnd = independentEnd + spec.clusters * spec.clusterSize;
-  const clusterRange = Array.from({ length: spec.clusters * spec.clusterSize }, (_, i) =>
-    byNumber.get(independentEnd + 1 + i),
-  );
-  const clusteredCount = clusterRange.filter((question) => question?.clusterId).length;
-  const allowIndependentClusters = examCode === "CA4" && clusteredCount === 0;
-
-  if (examCode === "CA4" && clusteredCount > 0 && clusteredCount < clusterRange.length) {
-    throw new Error("Câu 49–54 phải cùng thuộc cụm tình huống hoặc cùng độc lập.");
-  }
-
-  const mcqEnd = allowIndependentClusters ? clusterEnd : independentEnd;
-  for (let n = 1; n <= mcqEnd; n += 1) {
-    const question = byNumber.get(n);
-    if (
-      !question ||
-      normalizeQuestionType(question.type) !== "mcq" ||
-      question.clusterId
-    ) {
-      throw new Error(`Câu ${n} phải là trắc nghiệm độc lập.`);
-    }
-  }
-  if (!allowIndependentClusters) {
-    for (let n = independentEnd + 1; n <= clusterEnd; n += 1) {
-      const question = byNumber.get(n);
-      if (
-        !question ||
-        normalizeQuestionType(question.type) !== "mcq" ||
-        !question.clusterId
-      ) {
-        throw new Error(`Câu ${n} phải thuộc cụm thông tin/tình huống.`);
-      }
-      if (!question.passage?.trim()) {
-        throw new Error(`Câu ${n} thiếu đoạn thông tin của cụm.`);
-      }
-    }
-  }
-  for (let n = clusterEnd + 1; n <= spec.total; n += 1) {
-    const question = byNumber.get(n);
-    if (!question || normalizeQuestionType(question.type) === "mcq") {
-      throw new Error(`Câu ${n} phải là câu điền đáp án.`);
+  const seen = new Set<number>();
+  const clusterPassages = new Map<string, string>();
+  for (const question of questions) {
+    if (question.clusterId && question.passage?.trim()) {
+      clusterPassages.set(question.clusterId, question.passage.trim());
     }
   }
 
   for (const question of questions) {
+    if (!Number.isInteger(question.originalNumber) || question.originalNumber < 1) {
+      throw new Error("Số câu không hợp lệ.");
+    }
+    if (seen.has(question.originalNumber)) {
+      throw new Error(`Trùng số câu ${question.originalNumber}.`);
+    }
+    seen.add(question.originalNumber);
+
+    if (!question.stem?.trim()) {
+      throw new Error(`Câu ${question.originalNumber} thiếu nội dung đề bài.`);
+    }
+
+    const type = normalizeQuestionType(question.type);
     const answer = answerKey[String(question.originalNumber)]?.trim();
     if (!answer) {
       throw new Error(`Thiếu đáp án câu ${question.originalNumber}.`);
+    }
+
+    if (type === "mcq") {
+      const options = question.options;
+      if (!options) {
+        throw new Error(`Câu ${question.originalNumber} trắc nghiệm thiếu đáp án A–D.`);
+      }
+      for (const letter of OPTION_LETTERS) {
+        if (!options[letter]?.trim()) {
+          throw new Error(
+            `Câu ${question.originalNumber} trắc nghiệm thiếu lựa chọn ${letter}.`,
+          );
+        }
+      }
+      const letter = answer.toUpperCase();
+      if (!OPTION_LETTERS.includes(letter as (typeof OPTION_LETTERS)[number])) {
+        throw new Error(`Đáp án câu ${question.originalNumber} phải là A, B, C hoặc D.`);
+      }
+      if (question.clusterId) {
+        if (!clusterPassages.get(question.clusterId)) {
+          throw new Error(`Câu ${question.originalNumber} thuộc cụm nhưng thiếu đoạn thông tin.`);
+        }
+      }
+    } else if (question.clusterId) {
+      throw new Error(`Câu điền ${question.originalNumber} không được thuộc cụm.`);
     }
   }
 }
@@ -368,11 +368,12 @@ export async function updateSampleExam(params: {
   essayPrompt: string;
   questions: Question[];
   answerKey: AnswerKey;
+  title?: string;
 }) {
   const supabase = getSupabaseAdmin();
   const { data: existing, error: loadError } = await supabase
     .from("exams")
-    .select("id, title, exam_code, source")
+    .select("id, title, exam_code, source, essay_prompt, questions")
     .eq("id", params.examId)
     .maybeSingle();
   if (loadError) throw new Error(loadError.message);
@@ -389,13 +390,54 @@ export async function updateSampleExam(params: {
   if (prompt.length < 80) {
     throw new Error("Đề nghị luận quá ngắn.");
   }
-  assertSampleStructure(existing.exam_code, params.questions, params.answerKey);
+  const questions = fillClusterPassages(params.questions);
+  assertFlexibleSample(questions, params.answerKey);
+
+  const nextTitle = params.title?.trim();
+  if (nextTitle !== undefined) {
+    if (!nextTitle) {
+      throw new Error("Tên đề minh họa không được để trống.");
+    }
+    if (isOfficialSampleTitle(nextTitle, existing.exam_code)) {
+      throw new Error("Không được dùng tên đề minh họa chính thức.");
+    }
+    const { data: clash, error: clashError } = await supabase
+      .from("exams")
+      .select("id")
+      .eq("source", "sample")
+      .eq("exam_code", existing.exam_code)
+      .eq("title", nextTitle)
+      .neq("id", params.examId)
+      .maybeSingle();
+    if (clashError) throw new Error(clashError.message);
+    if (clash) {
+      throw new Error("Đã có đề minh họa cùng tên.");
+    }
+  }
+
+  const previous = fingerprintsFromParsedSample({
+    examCode: existing.exam_code,
+    essayPrompt: existing.essay_prompt,
+    questions: parseQuestions(existing.questions),
+  });
+  const next = fingerprintsFromParsedSample({
+    examCode: existing.exam_code,
+    essayPrompt: prompt,
+    questions,
+  });
+  await pruneUnsharedSampleBankItems({
+    examId: params.examId,
+    examCode: existing.exam_code,
+    previous,
+    next,
+  });
 
   const { data, error } = await supabase
     .from("exams")
     .update({
+      ...(nextTitle ? { title: nextTitle } : {}),
       essay_prompt: prompt,
-      questions: asJson(params.questions),
+      questions: asJson(questions),
       answer_key: asJson(params.answerKey),
     })
     .eq("id", params.examId)
@@ -431,34 +473,13 @@ export async function deleteSampleExam(examId: string) {
     essayPrompt: existing.essay_prompt,
     questions: parseQuestions(existing.questions),
   });
-
-  const { data: others, error: othersError } = await supabase
-    .from("exams")
-    .select("exam_code, essay_prompt, questions")
-    .eq("source", "sample")
-    .neq("id", examId);
-  if (othersError) throw new Error(othersError.message);
-
-  const keptEssay = new Set<string>();
-  const keptQuestions = new Set<string>();
-  const keptClusters = new Set<string>();
-  for (const row of others ?? []) {
-    if (row.exam_code !== "CA1" && row.exam_code !== "CA4") continue;
-    const fingerprints = fingerprintsFromParsedSample({
-      examCode: row.exam_code,
-      essayPrompt: row.essay_prompt,
-      questions: parseQuestions(row.questions),
-    });
-    keptEssay.add(fingerprints.essay);
-    for (const hash of fingerprints.questions) keptQuestions.add(hash);
-    for (const hash of fingerprints.clusters) keptClusters.add(hash);
-  }
+  const kept = await fingerprintsKeptByOtherSamples(examId);
 
   await deleteBankItemsNotShared({
     examCode,
-    essay: keptEssay.has(mine.essay) ? null : mine.essay,
-    questions: [...mine.questions].filter((hash) => !keptQuestions.has(hash)),
-    clusters: [...mine.clusters].filter((hash) => !keptClusters.has(hash)),
+    essay: kept.essay.has(mine.essay) ? null : mine.essay,
+    questions: [...mine.questions].filter((hash) => !kept.questions.has(hash)),
+    clusters: [...mine.clusters].filter((hash) => !kept.clusters.has(hash)),
   });
 
   const { error } = await supabase.from("exams").delete().eq("id", examId);
@@ -474,20 +495,23 @@ export async function saveGeneratedSampleExam(params: {
   diversity?: number;
   pdf?: { bytes: Buffer; filename: string };
   answerFile?: { bytes: Buffer; filename: string };
+  createdBy?: string;
+  sourceFilename?: string;
 }) {
   const prompt = params.essayPrompt.trim();
   if (prompt.length < 80) {
     throw new Error("Đề nghị luận quá ngắn.");
   }
 
-  assertSampleStructure(params.examCode, params.questions, params.answerKey);
+  const questions = fillClusterPassages(params.questions);
+  assertFlexibleSample(questions, params.answerKey);
 
   const number = await nextGeneratedSampleNumber(params.examCode);
   const title = generatedSampleTitle(params.examCode, number);
   const exam = await persistExam({
     title,
     essayPrompt: prompt,
-    questions: params.questions,
+    questions,
     answerKey: params.answerKey,
     examCode: params.examCode,
     source: "sample",
@@ -495,14 +519,50 @@ export async function saveGeneratedSampleExam(params: {
     answerFile: params.answerFile,
   });
 
+  const sourceFilename = params.sourceFilename ?? `${title}.json`;
+  let contributionId: string | null = null;
+  if (params.createdBy) {
+    const supabase = getSupabaseAdmin();
+    const { data: contribution, error: contribError } = await supabase
+      .from("contributions")
+      .insert({
+        user_id: params.createdBy,
+        kind: "sample",
+        exam_code: params.examCode,
+        source_filename: sourceFilename,
+        added_count: 0,
+        skipped_count: 0,
+      })
+      .select("id")
+      .single();
+    if (contribError || !contribution) {
+      throw new Error(contribError?.message || "Không ghi được lịch sử đóng góp.");
+    }
+    contributionId = contribution.id;
+  }
+
   const imported = await importParsedIntoBank({
     examCode: params.examCode,
     essayPrompt: prompt,
-    questions: params.questions,
+    questions,
     answerKey: params.answerKey,
-    sourceFilename: `${title}.json`,
+    sourceFilename,
     checkNearDuplicates: false,
+    attribution: params.createdBy
+      ? { createdBy: params.createdBy, contributionId }
+      : undefined,
   });
+
+  if (contributionId) {
+    const supabase = getSupabaseAdmin();
+    await supabase
+      .from("contributions")
+      .update({
+        added_count: imported.essays.added + imported.questions.added,
+        skipped_count: imported.essays.skipped + imported.questions.skipped,
+      })
+      .eq("id", contributionId);
+  }
 
   return {
     examId: exam.id,
@@ -511,4 +571,55 @@ export async function saveGeneratedSampleExam(params: {
     diversity: params.diversity,
     imported,
   };
+}
+
+async function fingerprintsKeptByOtherSamples(examId: string) {
+  const supabase = getSupabaseAdmin();
+  const { data: others, error } = await supabase
+    .from("exams")
+    .select("exam_code, essay_prompt, questions")
+    .eq("source", "sample")
+    .neq("id", examId);
+  if (error) throw new Error(error.message);
+
+  const kept = {
+    essay: new Set<string>(),
+    questions: new Set<string>(),
+    clusters: new Set<string>(),
+  };
+  for (const row of others ?? []) {
+    if (row.exam_code !== "CA1" && row.exam_code !== "CA4") continue;
+    const fingerprints = fingerprintsFromParsedSample({
+      examCode: row.exam_code,
+      essayPrompt: row.essay_prompt,
+      questions: parseQuestions(row.questions),
+    });
+    kept.essay.add(fingerprints.essay);
+    for (const hash of fingerprints.questions) kept.questions.add(hash);
+    for (const hash of fingerprints.clusters) kept.clusters.add(hash);
+  }
+  return kept;
+}
+
+async function pruneUnsharedSampleBankItems(params: {
+  examId: string;
+  examCode: ExamCode;
+  previous: ReturnType<typeof fingerprintsFromParsedSample>;
+  next: ReturnType<typeof fingerprintsFromParsedSample>;
+}) {
+  const removedQuestions = [...params.previous.questions].filter(
+    (hash) => !params.next.questions.has(hash),
+  );
+  const removedClusters = [...params.previous.clusters].filter(
+    (hash) => !params.next.clusters.has(hash),
+  );
+  if (removedQuestions.length === 0 && removedClusters.length === 0) return;
+
+  const kept = await fingerprintsKeptByOtherSamples(params.examId);
+  await deleteBankItemsNotShared({
+    examCode: params.examCode,
+    essay: null,
+    questions: removedQuestions.filter((hash) => !kept.questions.has(hash)),
+    clusters: removedClusters.filter((hash) => !kept.clusters.has(hash)),
+  });
 }

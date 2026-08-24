@@ -28,7 +28,7 @@ function hasClusterMetadata(questions: Question[]): boolean {
   return questions.some((question) => Boolean(question.clusterId));
 }
 
-export function createShuffle(questions: Question[]): ShuffleMap {
+function shuffledOptionMaps(questions: Question[]): Record<string, OptionLetter[]> {
   const optionMaps: Record<string, OptionLetter[]> = {};
   for (const question of questions) {
     if (isMcq(question.type)) {
@@ -37,6 +37,59 @@ export function createShuffle(questions: Question[]): ShuffleMap {
       ]);
     }
   }
+  return optionMaps;
+}
+
+function identityOptionMaps(questions: Question[]): Record<string, OptionLetter[]> {
+  const optionMaps: Record<string, OptionLetter[]> = {};
+  for (const question of questions) {
+    if (isMcq(question.type)) {
+      optionMaps[String(question.originalNumber)] = [...OPTION_LETTERS];
+    }
+  }
+  return optionMaps;
+}
+
+export function createIdentityShuffle(questions: Question[]): ShuffleMap {
+  return {
+    order: questions.map((_, index) => index),
+    optionMaps: identityOptionMaps(questions),
+  };
+}
+
+export function createFlexibleShuffle(questions: Question[]): ShuffleMap {
+  const units: number[][] = [];
+  const seenClusters = new Set<string>();
+
+  questions.forEach((question, index) => {
+    if (question.clusterId && isMcq(question.type)) {
+      if (seenClusters.has(question.clusterId)) return;
+      seenClusters.add(question.clusterId);
+      const members = questions
+        .map((item, itemIndex) => ({ item, itemIndex }))
+        .filter(
+          (entry) =>
+            entry.item.clusterId === question.clusterId && isMcq(entry.item.type),
+        )
+        .sort(
+          (a, b) =>
+            (a.item.clusterPosition ?? 0) - (b.item.clusterPosition ?? 0),
+        )
+        .map((entry) => entry.itemIndex);
+      units.push(members);
+      return;
+    }
+    units.push([index]);
+  });
+
+  return {
+    order: fisherYates(units).flat(),
+    optionMaps: shuffledOptionMaps(questions),
+  };
+}
+
+export function createShuffle(questions: Question[]): ShuffleMap {
+  const optionMaps = shuffledOptionMaps(questions);
 
   if (!hasClusterMetadata(questions)) {
     const mcqIndices: number[] = [];
