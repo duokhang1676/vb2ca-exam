@@ -3,8 +3,16 @@ import { requireOwnedAttempt } from "@/lib/auth/attempt";
 import { pointsPerQuestion } from "@/lib/exam/constants";
 import { gradeEssay } from "@/lib/exam/grade-essay";
 import { gradeMultipleChoice, roundTotal } from "@/lib/exam/grade";
-import { asJson, parseAnswerKeyJson, parseAnswers, parseQuestions, parseShuffle } from "@/lib/exam/json";
+import {
+  asJson,
+  parseAnswerKeyJson,
+  parseAnswers,
+  parseFlagged,
+  parseQuestions,
+  parseShuffle,
+} from "@/lib/exam/json";
 import { toDisplayQuestions } from "@/lib/exam/shuffle";
+import { isSectionMode } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -19,6 +27,8 @@ export async function POST(request: Request, { params }: Params) {
   const body = (await request.json().catch(() => ({}))) as {
     essayText?: string;
     answers?: Record<string, string>;
+    flagged?: number[];
+    essayFlagged?: boolean;
   };
 
   const supabase = getSupabaseAdmin();
@@ -37,6 +47,9 @@ export async function POST(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Không tìm thấy đề thi." }, { status: 404 });
   }
 
+  const sectionMode = isSectionMode(attempt.section_mode)
+    ? attempt.section_mode
+    : "full";
   const answers = {
     ...parseAnswers(attempt.answers),
     ...(body.answers ?? {}),
@@ -44,21 +57,36 @@ export async function POST(request: Request, { params }: Params) {
   const essayText = body.essayText ?? attempt.essay_text ?? "";
   const questions = parseQuestions(exam.questions);
   const shuffle = parseShuffle(attempt.shuffle);
-  const displayQuestions = toDisplayQuestions(questions, shuffle);
+  const displayQuestions =
+    sectionMode === "part1" ? [] : toDisplayQuestions(questions, shuffle);
   const answerKey = parseAnswerKeyJson(exam.answer_key);
 
-  const mcq = gradeMultipleChoice({
-    questions: displayQuestions,
-    answers,
-    answerKey,
-    shuffle,
-    points: pointsPerQuestion(displayQuestions.length),
-  });
+  const mcq =
+    sectionMode === "part1"
+      ? {
+          mcqScore: 0,
+          correctCount: 0,
+          totalQuestions: 0,
+          detail: [],
+        }
+      : gradeMultipleChoice({
+          questions: displayQuestions,
+          answers,
+          answerKey,
+          shuffle,
+          points: pointsPerQuestion(displayQuestions.length),
+        });
 
-  const essay = await gradeEssay({
-    prompt: exam.essay_prompt,
-    essayText,
-  });
+  const essay =
+    sectionMode === "part2"
+      ? {
+          score: 0,
+          feedback: "Bài làm chỉ gồm phần 2 nên không chấm nghị luận.",
+        }
+      : await gradeEssay({
+          prompt: exam.essay_prompt,
+          essayText,
+        });
 
   const total = roundTotal(essay.score, mcq.mcqScore);
 
@@ -67,6 +95,11 @@ export async function POST(request: Request, { params }: Params) {
     .update({
       essay_text: essayText,
       answers: asJson(answers),
+      flagged: asJson(body.flagged ?? parseFlagged(attempt.flagged)),
+      essay_flagged:
+        typeof body.essayFlagged === "boolean"
+          ? body.essayFlagged
+          : Boolean(attempt.essay_flagged),
       submitted_at: new Date().toISOString(),
       essay_score: essay.score,
       essay_feedback: essay.feedback,

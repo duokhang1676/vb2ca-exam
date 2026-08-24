@@ -13,8 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { EXAM_SPECS } from "@/lib/exam/constants";
-import type { ExamCode, SampleExamOption } from "@/lib/exam/types";
+import { EXAM_SPECS, sectionModeLabel } from "@/lib/exam/constants";
+import type { ExamCode, SampleExamOption, SectionMode } from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
 const OFFICIAL_SAMPLE_VALUE = "official";
@@ -41,6 +41,7 @@ export function HomeExamPanel({
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [sampling, setSampling] = useState(false);
+  const [sectionMode, setSectionMode] = useState<SectionMode>("full");
 
   const options = samples[examCode];
   const selectedId =
@@ -51,7 +52,7 @@ export function HomeExamPanel({
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ examCode, ...extra }),
+      body: JSON.stringify({ examCode, sectionMode, ...extra }),
     });
     if (response.status === 401) {
       router.push("/login?next=/");
@@ -61,7 +62,7 @@ export function HomeExamPanel({
     if (!response.ok || !data.examId) {
       throw new Error(data.error || "Không tạo được đề.");
     }
-    router.push(`/exams/${data.examId}`);
+    router.push(`/exams/${data.examId}?section=${sectionMode}`);
   }
 
   const spec = EXAM_SPECS[examCode];
@@ -72,10 +73,11 @@ export function HomeExamPanel({
       <CardHeader>
         <CardTitle>Tạo bài làm</CardTitle>
         <CardDescription>
-          Chọn mã đề, hệ thống lấy ngẫu nhiên 1 câu nghị luận và phần 2 từ ngân
-          hàng ({spec.independentMcq} trắc nghiệm + {spec.clusters} cụm ×{" "}
-          {spec.clusterSize} + {spec.fill} điền, {spec.total} câu). Hoặc chọn một
-          đề minh họa có sẵn.
+          Chọn mã đề và phạm vi làm bài. Hệ thống lấy ngẫu nhiên 1 câu nghị luận
+          và phần 2 từ ngân hàng ({spec.independentMcq} trắc nghiệm +{" "}
+          {spec.clusters} cụm × {spec.clusterSize} + {spec.fill} điền,{" "}
+          {spec.total} câu). Hoặc chọn một đề minh họa có sẵn. Toàn bộ 150 phút;
+          chỉ phần 1: 50 phút; chỉ phần 2: 100 phút.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
@@ -96,6 +98,27 @@ export function HomeExamPanel({
               {code}
             </button>
           ))}
+        </div>
+        <div className="grid gap-2">
+          <Label>Phạm vi làm bài</Label>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {(["full", "part1", "part2"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                disabled={busy}
+                onClick={() => setSectionMode(mode)}
+                className={cn(
+                  "rounded-lg border px-3 py-2 text-left text-sm",
+                  sectionMode === mode
+                    ? "border-primary bg-primary/5 text-foreground"
+                    : "border-border text-muted-foreground",
+                )}
+              >
+                {sectionModeLabel(mode)}
+              </button>
+            ))}
+          </div>
         </div>
         {error ? (
           <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">

@@ -11,6 +11,7 @@ import {
   type ExamCode,
   type McqOptions,
   type Question,
+  type SectionMode,
 } from "./types";
 
 function pickRandom<T>(items: T[], count: number): T[] {
@@ -56,7 +57,10 @@ function toQuestion(
   };
 }
 
-export async function assembleRandomExam(examCode: ExamCode) {
+export async function assembleRandomExam(
+  examCode: ExamCode,
+  sectionMode: SectionMode = "full",
+) {
   const supabase = getSupabaseAdmin();
   const spec = EXAM_SPECS[examCode];
 
@@ -80,18 +84,19 @@ export async function assembleRandomExam(examCode: ExamCode) {
   const bank = (questionsResult.data ?? []) as BankQuestionRow[];
   const clusterRows = (clustersResult.data ?? []) as BankClusterRow[];
 
-  if (essays.length === 0) {
+  if (essays.length === 0 && sectionMode !== "part2") {
     throw new Error(
       "Ngân hàng chưa có đề nghị luận xã hội. Hãy đóng góp Phần 1 hoặc dùng đề minh họa 2026.",
     );
   }
-  if (bank.length === 0) {
+  if (bank.length === 0 && sectionMode !== "part1") {
     throw new Error(
       `Ngân hàng chưa có câu hỏi mã ${examCode}. Hãy đóng góp Phần 2 hoặc dùng đề minh họa 2026.`,
     );
   }
 
-  const essayPrompt = pickRandom(essays, 1)[0].prompt;
+  const essayPrompt =
+    sectionMode === "part2" ? "" : pickRandom(essays, 1)[0].prompt;
   const clusteredStems = new Set(
     bank
       .filter((row) => row.cluster_id)
@@ -115,9 +120,12 @@ export async function assembleRandomExam(examCode: ExamCode) {
     })
     .filter((item) => item.members.length >= spec.clusterSize);
 
-  const selectedIndependent = pickRandom(independent, spec.independentMcq);
-  const selectedClusters = pickRandom(completeClusters, spec.clusters);
-  const selectedFill = pickRandom(fillPool, spec.fill);
+  const selectedIndependent =
+    sectionMode === "part1" ? [] : pickRandom(independent, spec.independentMcq);
+  const selectedClusters =
+    sectionMode === "part1" ? [] : pickRandom(completeClusters, spec.clusters);
+  const selectedFill =
+    sectionMode === "part1" ? [] : pickRandom(fillPool, spec.fill);
 
   const questions: Question[] = [];
   const answerKey: AnswerKey = {};
@@ -155,16 +163,22 @@ export async function assembleRandomExam(examCode: ExamCode) {
     number += 1;
   }
 
-  if (questions.length === 0) {
+  if (questions.length === 0 && sectionMode !== "part1") {
     throw new Error(`Không lấy được câu hỏi mã ${examCode}.`);
   }
 
-  const belowSpec = questions.length < spec.total;
+  const belowSpec = sectionMode !== "part1" && questions.length < spec.total;
+  const sectionNote =
+    sectionMode === "part1"
+      ? " — Phần 1"
+      : sectionMode === "part2"
+        ? " — Phần 2"
+        : "";
 
   return persistExam({
     title: belowSpec
-      ? `${examCode} — Đề ngẫu nhiên (${questions.length}/${spec.total} câu)`
-      : `${examCode} — Đề ngẫu nhiên`,
+      ? `${examCode} — Đề ngẫu nhiên (${questions.length}/${spec.total} câu)${sectionNote}`
+      : `${examCode} — Đề ngẫu nhiên${sectionNote}`,
     essayPrompt,
     questions,
     answerKey,

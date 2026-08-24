@@ -7,9 +7,10 @@ import {
   SAMPLE_FILES,
   SAMPLE_TITLES,
   generatedSampleTitle,
+  isOfficialSampleTitle,
   parseGeneratedSampleNumber,
 } from "./constants";
-import { parseAnswerKeyJson, parseQuestions } from "./json";
+import { asJson, parseAnswerKeyJson, parseQuestions } from "./json";
 import { parseAnswerKey } from "./parse-answers";
 import { parseExamPdf } from "./parse-pdf";
 import { persistExam } from "./persist-exam";
@@ -237,7 +238,7 @@ export async function getExistingSampleExam(
   return { examId: data.id };
 }
 
-function assertSampleStructure(
+export function assertSampleStructure(
   examCode: ExamCode,
   questions: Question[],
   answerKey: AnswerKey,
@@ -302,12 +303,122 @@ function assertSampleStructure(
   }
 }
 
+export type SampleExamDetail = SampleExamOption & {
+  examCode: ExamCode;
+  essayPrompt: string;
+  questions: Question[];
+  answerKey: AnswerKey;
+};
+
+export async function listSampleExamDetails(): Promise<SampleExamDetail[]> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("exams")
+    .select("id, title, exam_code, essay_prompt, questions, answer_key, created_at")
+    .eq("source", "sample")
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+
+  const details: SampleExamDetail[] = [];
+  for (const row of data ?? []) {
+    if (row.exam_code !== "CA1" && row.exam_code !== "CA4") continue;
+    const examCode = row.exam_code;
+    const official = isOfficialSampleTitle(row.title, examCode);
+    const generatedNumber = parseGeneratedSampleNumber(row.title, examCode);
+    details.push({
+      id: row.id,
+      title: row.title,
+      examCode,
+      kind: official ? "official" : "generated",
+      number: official ? 1 : (generatedNumber ?? 0),
+      essayPrompt: row.essay_prompt,
+      questions: parseQuestions(row.questions),
+      answerKey: parseAnswerKeyJson(row.answer_key),
+    });
+  }
+  details.sort((a, b) => {
+    if (a.examCode !== b.examCode) return a.examCode.localeCompare(b.examCode);
+    if (a.number !== b.number) return a.number - b.number;
+    return a.title.localeCompare(b.title, "vi");
+  });
+  return details;
+}
+
+export async function updateSampleExam(params: {
+  examId: string;
+  essayPrompt: string;
+  questions: Question[];
+  answerKey: AnswerKey;
+}) {
+  const supabase = getSupabaseAdmin();
+  const { data: existing, error: loadError } = await supabase
+    .from("exams")
+    .select("id, title, exam_code, source")
+    .eq("id", params.examId)
+    .maybeSingle();
+  if (loadError) throw new Error(loadError.message);
+  if (!existing || existing.source !== "sample") {
+    throw new Error("Không tìm thấy đề minh họa.");
+  }
+  if (existing.exam_code !== "CA1" && existing.exam_code !== "CA4") {
+    throw new Error("Mã đề minh họa không hợp lệ.");
+  }
+  if (isOfficialSampleTitle(existing.title, existing.exam_code)) {
+    throw new Error("Không được sửa đề minh họa chính thức.");
+  }
+  const prompt = params.essayPrompt.trim();
+  if (prompt.length < 80) {
+    throw new Error("Đề nghị luận quá ngắn.");
+  }
+  assertSampleStructure(existing.exam_code, params.questions, params.answerKey);
+
+  const { data, error } = await supabase
+    .from("exams")
+    .update({
+      essay_prompt: prompt,
+      questions: asJson(params.questions),
+      answer_key: asJson(params.answerKey),
+    })
+    .eq("id", params.examId)
+    .select("id, title, essay_prompt, questions, answer_key, exam_code")
+    .single();
+  if (error || !data) {
+    throw new Error(error?.message || "Không lưu được đề minh họa.");
+  }
+  return data;
+}
+
+export async function deleteSampleExam(examId: string) {
+  const supabase = getSupabaseAdmin();
+  const { data: existing, error: loadError } = await supabase
+    .from("exams")
+    .select("id, title, exam_code, source")
+    .eq("id", examId)
+    .maybeSingle();
+  if (loadError) throw new Error(loadError.message);
+  if (!existing || existing.source !== "sample") {
+    throw new Error("Không tìm thấy đề minh họa.");
+  }
+  if (
+    existing.exam_code === "CA1" || existing.exam_code === "CA4"
+      ? isOfficialSampleTitle(existing.title, existing.exam_code)
+      : false
+  ) {
+    throw new Error("Không được xóa đề minh họa chính thức.");
+  }
+  const { error } = await supabase.from("exams").delete().eq("id", examId);
+  if (error) throw new Error(error.message);
+  return { ok: true };
+}
+
 export async function saveGeneratedSampleExam(params: {
   examCode: ExamCode;
   essayPrompt: string;
   questions: Question[];
   answerKey: AnswerKey;
   diversity?: number;
+  pdf?: { bytes: Buffer; filename: string };
+  answerFile?: { bytes: Buffer; filename: string };
 }) {
   const prompt = params.essayPrompt.trim();
   if (prompt.length < 80) {
@@ -325,6 +436,8 @@ export async function saveGeneratedSampleExam(params: {
     answerKey: params.answerKey,
     examCode: params.examCode,
     source: "sample",
+    pdf: params.pdf,
+    answerFile: params.answerFile,
   });
 
   const imported = await importParsedIntoBank({

@@ -13,6 +13,7 @@ import {
   ContributeProgress,
   ESSAY_PARSE_STEPS,
   QUESTION_PARSE_STEPS,
+  SAMPLE_PARSE_STEPS,
 } from "@/components/contribute-progress";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,9 +48,12 @@ export function ContributePanel({ signedIn }: { signedIn: boolean }) {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <EssayContributeForm />
-      <QuestionContributeForm />
+    <div className="grid gap-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        <EssayContributeForm />
+        <QuestionContributeForm />
+      </div>
+      <SampleContributeForm />
     </div>
   );
 }
@@ -265,6 +269,119 @@ function QuestionContributeForm() {
             {busy ? "Đang trích xuất..." : "Nạp vào ngân hàng"}
           </Button>
           <ContributeProgress active={busy} steps={QUESTION_PARSE_STEPS} />
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SampleContributeForm() {
+  const router = useRouter();
+  const [examCode, setExamCode] = useState<ExamCode>("CA1");
+  const [busy, setBusy] = useState(false);
+  const [alert, setAlert] = useState<ContributeAlertPayload | null>(null);
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAlert(null);
+    setBusy(true);
+    try {
+      const form = new FormData(event.currentTarget);
+      form.set("examCode", examCode);
+      const response = await fetch("/api/samples/parse", { method: "POST", body: form });
+      const data = (await response.json()) as {
+        examId?: string;
+        title?: string;
+        added?: number;
+        skipped?: number;
+        error?: string;
+        steps?: string[];
+      };
+      if (!response.ok || !data.examId) {
+        setAlert(alertFromApiError(data));
+        return;
+      }
+      const added = Number(data.added ?? 0);
+      const skipped = Number(data.skipped ?? 0);
+      router.push(`/bank?tab=sample&added=${added}&skipped=${skipped}`);
+    } catch {
+      setAlert({
+        tone: "error",
+        title: "Không gửi được file",
+        message: "Kiểm tra kết nối mạng rồi thử lại.",
+        steps: ["Giữ nguyên hai file đã chọn.", "Đăng nhập lại nếu phiên hết hạn."],
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Đóng góp đề minh họa</CardTitle>
+        <CardDescription>
+          Upload đề đầy đủ PDF/DOCX có chữ đọc được và TXT đáp án. Hệ thống đọc
+          file thuần (không OCR) để giữ nguyên ký tự toán, rồi thêm đề vào danh
+          sách minh họa với số tăng dần.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form className="grid gap-4" onSubmit={onSubmit}>
+          <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
+            {(["CA1", "CA4"] as const).map((code) => (
+              <button
+                key={code}
+                type="button"
+                disabled={busy}
+                onClick={() => setExamCode(code)}
+                className={cn(
+                  "rounded-md px-3 py-2 text-sm font-medium",
+                  examCode === code
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground",
+                )}
+              >
+                {code}
+              </button>
+            ))}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="sample-file">File đề đầy đủ (PDF/DOCX)</Label>
+            <Input
+              id="sample-file"
+              name="file"
+              type="file"
+              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              required
+              disabled={busy}
+            />
+            <FormatHelp title="Yêu cầu file đề minh họa">
+              <ul className="list-disc pl-5">
+                <li>Phải có lớp chữ chọn được. PDF scan ảnh sẽ bị từ chối — dùng form OCR phía trên.</li>
+                <li>Đủ Phần 1 nghị luận và Phần 2 đánh số Câu 1, Câu 2, …</li>
+                <li>Công thức trong DOCX (Word Equation) được giữ bằng LaTeX. PDF giữ Unicode toán.</li>
+                <li>Cụm đọc hiểu/tình huống: đoạn thông tin chung rồi đúng 3 câu MCQ.</li>
+              </ul>
+            </FormatHelp>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="sample-answers">File đáp án (TXT)</Label>
+            <Input
+              id="sample-answers"
+              name="answers"
+              type="file"
+              accept="text/plain,.txt"
+              required
+              disabled={busy}
+            />
+          </div>
+          {alert ? <ContributeAlert {...alert} /> : null}
+          <Button type="submit" disabled={busy}>
+            {busy ? <LoaderCircle className="animate-spin" /> : <FileUp />}
+            {busy ? "Đang đọc file..." : "Tạo đề minh họa"}
+          </Button>
+          <ContributeProgress active={busy} steps={SAMPLE_PARSE_STEPS} />
         </form>
       </CardContent>
     </Card>

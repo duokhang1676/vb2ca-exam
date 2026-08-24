@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { examUploadContentType } from "./document";
 import { asJson } from "./json";
 import type { AnswerKey, ExamCode, ExamSource, Question } from "./types";
 
@@ -22,7 +23,7 @@ export async function persistExam(params: {
     const { error } = await supabase.storage
       .from("exam-uploads")
       .upload(pdfPath, params.pdf.bytes, {
-        contentType: "application/pdf",
+        contentType: examUploadContentType(params.pdf.filename),
         upsert: false,
       });
     if (error) {

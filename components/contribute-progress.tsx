@@ -21,6 +21,12 @@ export const QUESTION_PARSE_STEPS: ContributeProgressStep[] = [
   { label: "Đang lưu bản review...", holdMs: 20_000 },
 ];
 
+export const SAMPLE_PARSE_STEPS: ContributeProgressStep[] = [
+  { label: "Đang đọc chữ trong file...", holdMs: 4000 },
+  { label: "Đang tách phần 1 và phần 2...", holdMs: 8000 },
+  { label: "Đang lưu đề minh họa và ngân hàng...", holdMs: 20_000 },
+];
+
 export const COMMIT_STEPS: ContributeProgressStep[] = [
   { label: "Đang kiểm tra câu trùng...", holdMs: 8000 },
   { label: "Đang lưu vào ngân hàng...", holdMs: 20_000 },

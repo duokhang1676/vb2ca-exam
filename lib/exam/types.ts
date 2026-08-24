@@ -4,6 +4,8 @@ export type ExamCode = "CA1" | "CA4";
 export type ExamSource = "random" | "sample";
 export type ClusterKind = "passage" | "situation";
 export type QuestionSection = "independent" | "cluster" | "fill";
+export type SectionMode = "full" | "part1" | "part2";
+export type MarkKind = "essay" | "question";
 
 export type SampleExamOption = {
   id: string | null;
@@ -46,6 +48,7 @@ export type DisplayQuestion = {
   clusterPosition?: number;
   clusterKind?: ClusterKind;
   passage?: string;
+  fingerprint?: string;
 };
 
 export type DisplayBlock =
@@ -122,6 +125,10 @@ export function isMcq(type: string | null | undefined): boolean {
 
 export function isExamCode(value: unknown): value is ExamCode {
   return value === "CA1" || value === "CA4";
+}
+
+export function isSectionMode(value: unknown): value is SectionMode {
+  return value === "full" || value === "part1" || value === "part2";
 }
 
 export function isClusterKind(value: unknown): value is ClusterKind {

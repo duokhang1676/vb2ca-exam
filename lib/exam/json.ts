@@ -49,3 +49,8 @@ export function parseShuffle(value: unknown): ShuffleMap {
   }
   return value as ShuffleMap;
 }
+
+export function parseFlagged(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is number => Number.isInteger(item));
+}

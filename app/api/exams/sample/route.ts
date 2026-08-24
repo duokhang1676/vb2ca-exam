@@ -5,7 +5,7 @@ import {
   getOrCreateSampleExam,
   listSampleExams,
 } from "@/lib/exam/sample";
-import { isExamCode } from "@/lib/exam/types";
+import { isExamCode, isSectionMode } from "@/lib/exam/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -41,17 +41,19 @@ export async function POST(request: Request) {
     const body = (await request.json().catch(() => ({}))) as {
       examCode?: string;
       examId?: string;
+      sectionMode?: string;
     };
     const examCode = isExamCode(body.examCode) ? body.examCode : "CA1";
     const examId = body.examId?.trim();
+    const sectionMode = isSectionMode(body.sectionMode) ? body.sectionMode : "full";
 
     if (examId && examId !== "official") {
       const existing = await getExistingSampleExam(examCode, examId);
-      return NextResponse.json({ examId: existing.examId });
+      return NextResponse.json({ examId: existing.examId, sectionMode });
     }
 
     const created = await getOrCreateSampleExam(examCode);
-    return NextResponse.json({ examId: created.examId });
+    return NextResponse.json({ examId: created.examId, sectionMode });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

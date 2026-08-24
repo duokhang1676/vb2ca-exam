@@ -16,12 +16,15 @@ export type Database = {
         Row: {
           answers: Json
           essay_feedback: string | null
+          essay_flagged: boolean
           essay_score: number | null
           essay_text: string | null
           exam_id: string
+          flagged: Json
           id: string
           mcq_detail: Json | null
           mcq_score: number | null
+          section_mode: string
           shuffle: Json
           started_at: string
           submitted_at: string | null
@@ -31,12 +34,15 @@ export type Database = {
         Insert: {
           answers?: Json
           essay_feedback?: string | null
+          essay_flagged?: boolean
           essay_score?: number | null
           essay_text?: string | null
           exam_id: string
+          flagged?: Json
           id?: string
           mcq_detail?: Json | null
           mcq_score?: number | null
+          section_mode?: string
           shuffle: Json
           started_at?: string
           submitted_at?: string | null
@@ -46,12 +52,15 @@ export type Database = {
         Update: {
           answers?: Json
           essay_feedback?: string | null
+          essay_flagged?: boolean
           essay_score?: number | null
           essay_text?: string | null
           exam_id?: string
+          flagged?: Json
           id?: string
           mcq_detail?: Json | null
           mcq_score?: number | null
+          section_mode?: string
           shuffle?: Json
           started_at?: string
           submitted_at?: string | null
@@ -238,6 +247,33 @@ export type Database = {
           display_name?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      question_marks: {
+        Row: {
+          created_at: string
+          exam_code: string | null
+          fingerprint: string
+          id: string
+          kind: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exam_code?: string | null
+          fingerprint: string
+          id?: string
+          kind: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exam_code?: string | null
+          fingerprint?: string
+          id?: string
+          kind?: string
+          user_id?: string
         }
         Relationships: []
       }

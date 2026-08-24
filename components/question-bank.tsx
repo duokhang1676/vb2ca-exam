@@ -8,6 +8,7 @@ import {
   EditToolbar,
   useBankSave,
 } from "@/components/bank-item-editor";
+import { SampleExamBank, type BankSampleView } from "@/components/sample-exam-bank";
 import { MathText } from "@/components/math-text";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +31,7 @@ export type BankEssayView = {
   id: string;
   prompt: string;
   sourceFilename: string | null;
+  marked?: boolean;
 };
 
 export type BankQuestionView = {
@@ -41,6 +43,7 @@ export type BankQuestionView = {
   answer: string;
   clusterId: string | null;
   clusterPosition: number | null;
+  marked?: boolean;
 };
 
 export type BankClusterView = {
@@ -51,23 +54,27 @@ export type BankClusterView = {
   questions: BankQuestionView[];
 };
 
-type Tab = "essay" | ExamCode;
+type Tab = "essay" | ExamCode | "sample";
 
 export function QuestionBank({
   essays,
   questions,
   clusters,
+  samples,
   signedIn,
+  initialTab = "essay",
 }: {
   essays: BankEssayView[];
   questions: BankQuestionView[];
   clusters: BankClusterView[];
+  samples: BankSampleView[];
   signedIn: boolean;
+  initialTab?: Tab;
 }) {
   const [essayItems, setEssayItems] = useState(essays);
   const [questionItems, setQuestionItems] = useState(questions);
   const [clusterItems, setClusterItems] = useState(clusters);
-  const [tab, setTab] = useState<Tab>("essay");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const counts = useMemo(
     () => ({
       essay: essayItems.length,
@@ -124,6 +131,7 @@ export function QuestionBank({
             ["essay", `Nghị luận (${counts.essay})`],
             ["CA1", `CA1 (${counts.CA1})`],
             ["CA4", `CA4 (${counts.CA4})`],
+            ["sample", `Đề minh họa (${samples.length})`],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -158,6 +166,8 @@ export function QuestionBank({
             ))}
           </div>
         )
+      ) : tab === "sample" ? (
+        <SampleExamBank samples={samples} signedIn={signedIn} />
       ) : standalone.length === 0 && visibleClusters.length === 0 ? (
         <Empty text={`Chưa có câu hỏi mã ${tab}.`} />
       ) : (
@@ -222,6 +232,7 @@ function EssayCard({
           <span className="flex flex-wrap items-center gap-2">
             <span>NL-{essay.id.slice(0, 8).toUpperCase()}</span>
             <Badge variant="secondary">Nghị luận {index + 1}</Badge>
+            {essay.marked ? <Badge>Đã đánh dấu</Badge> : null}
           </span>
           <EditToolbar
             signedIn={signedIn}
@@ -277,6 +288,7 @@ function StandaloneQuestionCard({
             </span>
             <Badge variant="secondary">Câu {index + 1}</Badge>
             <Badge variant="outline">{questionTypeLabel(question.type)}</Badge>
+            {question.marked ? <Badge>Đã đánh dấu</Badge> : null}
           </>
         }
       />
@@ -371,8 +383,9 @@ function ClusterCard({
               onSaved={onQuestionSaved}
               compact
               title={
-                <span className="text-xs font-medium text-muted-foreground">
-                  Câu {questionIndex + 1}
+                <span className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <span>Câu {questionIndex + 1}</span>
+                  {question.marked ? <Badge>Đã đánh dấu</Badge> : null}
                 </span>
               }
             />

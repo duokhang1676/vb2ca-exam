@@ -9,9 +9,10 @@ import {
   OPTION_LETTERS,
   TOTAL_MAX_SCORE,
   questionTypeLabel,
+  sectionModeLabel,
 } from "@/lib/exam/constants";
 import { toDisplayBlocks } from "@/lib/exam/shuffle";
-import { isMcq, type McqDetailItem } from "@/lib/exam/types";
+import { isMcq, isSectionMode, type McqDetailItem, type SectionMode } from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
 export function ResultsView({
@@ -25,6 +26,7 @@ export function ResultsView({
   totalQuestions,
   totalScore,
   detail,
+  sectionMode = "full",
 }: {
   title: string;
   essayPrompt: string;
@@ -36,7 +38,14 @@ export function ResultsView({
   totalQuestions: number;
   totalScore: number;
   detail: McqDetailItem[];
+  sectionMode?: SectionMode;
 }) {
+  const mode = isSectionMode(sectionMode) ? sectionMode : "full";
+  const showEssay = mode !== "part2";
+  const showPart2 = mode !== "part1";
+  const maxEssay = showEssay ? ESSAY_MAX_SCORE : 0;
+  const maxMcq = showPart2 ? MCQ_MAX_SCORE : 0;
+  const maxTotal = maxEssay + maxMcq;
   const blocks = toDisplayBlocks(
     detail.map((item) => ({
       originalNumber: item.originalNumber,
@@ -58,7 +67,9 @@ export function ResultsView({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">{title}</h1>
-          <p className="text-sm text-muted-foreground">Kết quả bài làm</p>
+          <p className="text-sm text-muted-foreground">
+            Kết quả bài làm · {sectionModeLabel(mode)}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline">
@@ -71,32 +82,39 @@ export function ResultsView({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <ScoreCard label="Tự luận" value={`${essayScore}/${ESSAY_MAX_SCORE}`} />
-        <ScoreCard
-          label="Trắc nghiệm"
-          value={`${mcqScore}/${MCQ_MAX_SCORE}`}
-          hint={`${correctCount}/${totalQuestions} câu đúng`}
-        />
+        {showEssay ? (
+          <ScoreCard label="Tự luận" value={`${essayScore}/${ESSAY_MAX_SCORE}`} />
+        ) : null}
+        {showPart2 ? (
+          <ScoreCard
+            label="Trắc nghiệm"
+            value={`${mcqScore}/${MCQ_MAX_SCORE}`}
+            hint={`${correctCount}/${totalQuestions} câu đúng`}
+          />
+        ) : null}
         <ScoreCard
           label="Tổng điểm"
-          value={`${totalScore}/${TOTAL_MAX_SCORE}`}
+          value={`${totalScore}/${maxTotal || TOTAL_MAX_SCORE}`}
           highlight
         />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Phần 1 · Chấm nghị luận</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <MathText className="font-exam text-lg leading-8 text-muted-foreground" text={essayPrompt} />
-          <div className="rounded-lg bg-muted/50 p-4 font-exam whitespace-pre-wrap text-lg leading-8">
-            {essayText.trim() || "Không có bài làm."}
-          </div>
-          <p className="text-sm leading-6">{essayFeedback}</p>
-        </CardContent>
-      </Card>
+      {showEssay ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Phần 1 · Chấm nghị luận</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <MathText className="font-exam text-lg leading-8 text-muted-foreground" text={essayPrompt} />
+            <div className="rounded-lg bg-muted/50 p-4 font-exam whitespace-pre-wrap text-lg leading-8">
+              {essayText.trim() || "Không có bài làm."}
+            </div>
+            <p className="text-sm leading-6">{essayFeedback}</p>
+          </CardContent>
+        </Card>
+      ) : null}
 
+      {showPart2 ? (
       <Card>
         <CardHeader>
           <CardTitle>Phần 2 · Chi tiết trắc nghiệm</CardTitle>
@@ -129,6 +147,7 @@ export function ResultsView({
           ))}
         </CardContent>
       </Card>
+      ) : null}
     </div>
   );
 }

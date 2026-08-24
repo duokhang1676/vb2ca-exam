@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { ResultsView } from "@/components/results-view";
 import { getAuthUser } from "@/lib/auth/session";
 import { parseQuestions } from "@/lib/exam/json";
-import type { McqDetailItem } from "@/lib/exam/types";
+import { isSectionMode, type McqDetailItem } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +36,9 @@ export default async function ResultPage({
 
   const questions = parseQuestions(exam.questions);
   const detail = (attempt.mcq_detail as McqDetailItem[] | null) ?? [];
+  const sectionMode = isSectionMode(attempt.section_mode)
+    ? attempt.section_mode
+    : "full";
 
   return (
     <ResultsView
@@ -46,9 +49,10 @@ export default async function ResultPage({
       essayFeedback={attempt.essay_feedback ?? ""}
       mcqScore={Number(attempt.mcq_score ?? 0)}
       correctCount={detail.filter((item) => item.isCorrect).length}
-      totalQuestions={questions.length}
+      totalQuestions={sectionMode === "part1" ? 0 : questions.length}
       totalScore={Number(attempt.total_score ?? 0)}
       detail={detail}
+      sectionMode={sectionMode}
     />
   );
 }

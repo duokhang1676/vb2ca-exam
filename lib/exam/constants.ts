@@ -1,6 +1,14 @@
-import type { ClusterKind, ExamCode } from "./types";
+import type { ClusterKind, ExamCode, SectionMode } from "./types";
 
 export const EXAM_DURATION_MS = 150 * 60 * 1000;
+export const PART1_DURATION_MS = 50 * 60 * 1000;
+export const PART2_DURATION_MS = 100 * 60 * 1000;
+
+export const SECTION_DURATION_MS: Record<SectionMode, number> = {
+  full: EXAM_DURATION_MS,
+  part1: PART1_DURATION_MS,
+  part2: PART2_DURATION_MS,
+};
 export const ESSAY_MAX_SCORE = 30;
 export const MCQ_MAX_SCORE = 70;
 export const TOTAL_MAX_SCORE = 100;
@@ -55,6 +63,26 @@ export const SAMPLE_TITLES: Record<ExamCode, string> = {
   CA1: "Đề minh họa 2026 — CA1",
   CA4: "Đề minh họa 2026 — CA4",
 };
+
+export function examDurationMs(mode: SectionMode = "full"): number {
+  return SECTION_DURATION_MS[mode];
+}
+
+export function sectionModeLabel(mode: SectionMode): string {
+  if (mode === "part1") return "Phần 1 · Nghị luận (50 phút)";
+  if (mode === "part2") return "Phần 2 · Trắc nghiệm (100 phút)";
+  return "Toàn bộ đề (150 phút)";
+}
+
+export function sectionModeShortLabel(mode: SectionMode): string {
+  if (mode === "part1") return "Phần 1";
+  if (mode === "part2") return "Phần 2";
+  return "Toàn bộ";
+}
+
+export function isOfficialSampleTitle(title: string, examCode: ExamCode): boolean {
+  return title === SAMPLE_TITLES[examCode];
+}
 
 export function generatedSampleTitle(examCode: ExamCode, number: number): string {
   return `Đề minh họa ${examCode} - số ${number}`;

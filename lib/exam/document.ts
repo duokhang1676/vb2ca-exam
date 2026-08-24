@@ -1,7 +1,14 @@
 import mammoth from "mammoth";
 
-const DOCX_MIME =
+export const DOCX_MIME =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+export function examUploadContentType(filename: string): string {
+  const name = filename.toLowerCase();
+  if (name.endsWith(".docx")) return DOCX_MIME;
+  if (name.endsWith(".txt")) return "text/plain";
+  return "application/pdf";
+}
 
 export function isPdfFile(name: string, type?: string): boolean {
   return name.toLowerCase().endsWith(".pdf") || type === "application/pdf";
