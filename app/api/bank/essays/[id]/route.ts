@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth/session";
-import { updateEssay } from "@/lib/exam/bank";
+import { deleteEssay, updateEssay } from "@/lib/exam/bank";
 import {
   ContributeError,
   contributeErrorResponse,
@@ -29,5 +29,18 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json(essay);
   } catch (error) {
     return contributeErrorResponse(error, "Không lưu được đề nghị luận.");
+  }
+}
+
+export async function DELETE(_request: Request, { params }: Params) {
+  const { user, response } = await requireAuthUser();
+  if (!user) return response;
+  const { id } = await params;
+
+  try {
+    const result = await deleteEssay(id);
+    return NextResponse.json(result);
+  } catch (error) {
+    return contributeErrorResponse(error, "Không xóa được đề nghị luận.");
   }
 }

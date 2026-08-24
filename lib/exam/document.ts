@@ -18,6 +18,10 @@ export function isDocxFile(name: string, type?: string): boolean {
   return name.toLowerCase().endsWith(".docx") || type === DOCX_MIME;
 }
 
+export function isJsonFile(name: string, type?: string): boolean {
+  return name.toLowerCase().endsWith(".json") || type === "application/json";
+}
+
 export async function extractDocxText(bytes: Uint8Array): Promise<string> {
   const result = await mammoth.extractRawText({
     buffer: Buffer.from(bytes),

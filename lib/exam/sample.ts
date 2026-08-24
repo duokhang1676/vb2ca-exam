@@ -1,7 +1,11 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { importParsedIntoBank } from "./bank";
+import {
+  deleteBankItemsNotShared,
+  fingerprintsFromParsedSample,
+  importParsedIntoBank,
+} from "./bank";
 import {
   EXAM_SPECS,
   SAMPLE_FILES,
@@ -80,6 +84,7 @@ export async function getOrCreateSampleExam(examCode: ExamCode) {
     questions: parsed.questions,
     answerKey,
     sourceFilename: files.pdf,
+    checkNearDuplicates: false,
   }).catch((error) => {
     console.error("seed bank from sample failed", error);
   });
@@ -129,6 +134,7 @@ export async function seedBankFromSample(examCode: ExamCode): Promise<void> {
         questions,
         answerKey: parseAnswerKeyJson(exam.answer_key),
         sourceFilename: SAMPLE_FILES[examCode].pdf,
+        checkNearDuplicates: false,
       });
       return;
     }
@@ -141,6 +147,7 @@ export async function seedBankFromSample(examCode: ExamCode): Promise<void> {
     questions: parsed.questions,
     answerKey,
     sourceFilename: files.pdf,
+    checkNearDuplicates: false,
   });
 }
 
@@ -264,8 +271,18 @@ export function assertSampleStructure(
   );
   const independentEnd = spec.independentMcq;
   const clusterEnd = independentEnd + spec.clusters * spec.clusterSize;
+  const clusterRange = Array.from({ length: spec.clusters * spec.clusterSize }, (_, i) =>
+    byNumber.get(independentEnd + 1 + i),
+  );
+  const clusteredCount = clusterRange.filter((question) => question?.clusterId).length;
+  const allowIndependentClusters = examCode === "CA4" && clusteredCount === 0;
 
-  for (let n = 1; n <= independentEnd; n += 1) {
+  if (examCode === "CA4" && clusteredCount > 0 && clusteredCount < clusterRange.length) {
+    throw new Error("Câu 49–54 phải cùng thuộc cụm tình huống hoặc cùng độc lập.");
+  }
+
+  const mcqEnd = allowIndependentClusters ? clusterEnd : independentEnd;
+  for (let n = 1; n <= mcqEnd; n += 1) {
     const question = byNumber.get(n);
     if (
       !question ||
@@ -275,17 +292,19 @@ export function assertSampleStructure(
       throw new Error(`Câu ${n} phải là trắc nghiệm độc lập.`);
     }
   }
-  for (let n = independentEnd + 1; n <= clusterEnd; n += 1) {
-    const question = byNumber.get(n);
-    if (
-      !question ||
-      normalizeQuestionType(question.type) !== "mcq" ||
-      !question.clusterId
-    ) {
-      throw new Error(`Câu ${n} phải thuộc cụm thông tin/tình huống.`);
-    }
-    if (!question.passage?.trim()) {
-      throw new Error(`Câu ${n} thiếu đoạn thông tin của cụm.`);
+  if (!allowIndependentClusters) {
+    for (let n = independentEnd + 1; n <= clusterEnd; n += 1) {
+      const question = byNumber.get(n);
+      if (
+        !question ||
+        normalizeQuestionType(question.type) !== "mcq" ||
+        !question.clusterId
+      ) {
+        throw new Error(`Câu ${n} phải thuộc cụm thông tin/tình huống.`);
+      }
+      if (!question.passage?.trim()) {
+        throw new Error(`Câu ${n} thiếu đoạn thông tin của cụm.`);
+      }
     }
   }
   for (let n = clusterEnd + 1; n <= spec.total; n += 1) {
@@ -392,20 +411,56 @@ export async function deleteSampleExam(examId: string) {
   const supabase = getSupabaseAdmin();
   const { data: existing, error: loadError } = await supabase
     .from("exams")
-    .select("id, title, exam_code, source")
+    .select("id, title, exam_code, source, essay_prompt, questions")
     .eq("id", examId)
     .maybeSingle();
   if (loadError) throw new Error(loadError.message);
   if (!existing || existing.source !== "sample") {
     throw new Error("Không tìm thấy đề minh họa.");
   }
-  if (
-    existing.exam_code === "CA1" || existing.exam_code === "CA4"
-      ? isOfficialSampleTitle(existing.title, existing.exam_code)
-      : false
-  ) {
+  if (existing.exam_code !== "CA1" && existing.exam_code !== "CA4") {
+    throw new Error("Mã đề minh họa không hợp lệ.");
+  }
+  if (isOfficialSampleTitle(existing.title, existing.exam_code)) {
     throw new Error("Không được xóa đề minh họa chính thức.");
   }
+
+  const examCode = existing.exam_code;
+  const mine = fingerprintsFromParsedSample({
+    examCode,
+    essayPrompt: existing.essay_prompt,
+    questions: parseQuestions(existing.questions),
+  });
+
+  const { data: others, error: othersError } = await supabase
+    .from("exams")
+    .select("exam_code, essay_prompt, questions")
+    .eq("source", "sample")
+    .neq("id", examId);
+  if (othersError) throw new Error(othersError.message);
+
+  const keptEssay = new Set<string>();
+  const keptQuestions = new Set<string>();
+  const keptClusters = new Set<string>();
+  for (const row of others ?? []) {
+    if (row.exam_code !== "CA1" && row.exam_code !== "CA4") continue;
+    const fingerprints = fingerprintsFromParsedSample({
+      examCode: row.exam_code,
+      essayPrompt: row.essay_prompt,
+      questions: parseQuestions(row.questions),
+    });
+    keptEssay.add(fingerprints.essay);
+    for (const hash of fingerprints.questions) keptQuestions.add(hash);
+    for (const hash of fingerprints.clusters) keptClusters.add(hash);
+  }
+
+  await deleteBankItemsNotShared({
+    examCode,
+    essay: keptEssay.has(mine.essay) ? null : mine.essay,
+    questions: [...mine.questions].filter((hash) => !keptQuestions.has(hash)),
+    clusters: [...mine.clusters].filter((hash) => !keptClusters.has(hash)),
+  });
+
   const { error } = await supabase.from("exams").delete().eq("id", examId);
   if (error) throw new Error(error.message);
   return { ok: true };
@@ -446,6 +501,7 @@ export async function saveGeneratedSampleExam(params: {
     questions: params.questions,
     answerKey: params.answerKey,
     sourceFilename: `${title}.json`,
+    checkNearDuplicates: false,
   });
 
   return {

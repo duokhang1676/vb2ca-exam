@@ -2,6 +2,12 @@ import JSZip from "jszip";
 import { extractTextItems } from "unpdf";
 import { ContributeError } from "./contribute-error";
 import { ommlToLatex } from "./omml-to-latex";
+import {
+  decodeSymbolCode,
+  decodeSymbolString,
+  isSymbolFont,
+  repairMathGlyphs,
+} from "./repair-math-glyphs";
 
 const MIN_CHARS = 400;
 const REPLACEMENT = "\uFFFD";
@@ -41,11 +47,19 @@ export function assertReadableExamText(text: string): string {
 }
 
 export function normalizeExtractedMath(text: string): string {
-  return text
+  return repairMathGlyphs(text)
     .replace(/\u00a0/g, " ")
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+function decodePdfItemStr(str: string, fontFamily?: string): string {
+  const next = str.replace(/\u00a0/g, " ");
+  if (fontFamily && isSymbolFont(fontFamily)) {
+    return decodeSymbolString(next);
+  }
+  return next;
 }
 
 function reconstructPage(
@@ -55,12 +69,13 @@ function reconstructPage(
     y: number;
     height: number;
     hasEOL: boolean;
+    fontFamily?: string;
   }>,
 ): string {
   type Line = { y: number; parts: { x: number; str: string }[] };
   const lines: Line[] = [];
   for (const item of items) {
-    const str = item.str.replace(/\u00a0/g, " ");
+    const str = decodePdfItemStr(item.str, item.fontFamily);
     if (!str && !item.hasEOL) continue;
     const tolerance = Math.max(item.height * 0.45, 2.5);
     let line = lines.find((candidate) => Math.abs(candidate.y - item.y) <= tolerance);
@@ -122,6 +137,25 @@ function decodeXmlEntities(value: string): string {
     .replace(/&apos;/g, "'");
 }
 
+function replaceDocxSymbols(xml: string): string {
+  return xml.replace(/<w:sym\b([^>]*)\/?>/gi, (_, attrs: string) => {
+    const charMatch = /(?:w:)?char\s*=\s*["']([^"']+)["']/i.exec(attrs);
+    const fontMatch = /(?:w:)?font\s*=\s*["']([^"']+)["']/i.exec(attrs);
+    if (!charMatch) return "";
+    const code = Number.parseInt(charMatch[1], 16);
+    if (Number.isNaN(code)) return "";
+    const font = fontMatch?.[1] ?? "";
+    if (isSymbolFont(font) || (code >= 0xf000 && code <= 0xf0ff)) {
+      return decodeSymbolCode(code);
+    }
+    try {
+      return String.fromCodePoint(code);
+    } catch {
+      return "";
+    }
+  });
+}
+
 export async function extractDocxExamText(bytes: Uint8Array): Promise<string> {
   const zip = await JSZip.loadAsync(bytes);
   const documentFile = zip.file("word/document.xml");
@@ -132,7 +166,8 @@ export async function extractDocxExamText(bytes: Uint8Array): Promise<string> {
   xml = xml.replace(/<w:del\b[\s\S]*?<\/w:del>/gi, "");
   xml = xml.replace(/<w:instrText\b[\s\S]*?<\/w:instrText>/gi, "");
   const { xml: withMath, blocks } = replaceMathBlocks(xml);
-  const withBreaks = withMath
+  const withSymbols = replaceDocxSymbols(withMath);
+  const withBreaks = withSymbols
     .replace(/<w:tab\b[^>]*\/?>/gi, "\t")
     .replace(/<w:br\b[^>]*\/?>/gi, "\n")
     .replace(/<w:cr\b[^>]*\/?>/gi, "\n")

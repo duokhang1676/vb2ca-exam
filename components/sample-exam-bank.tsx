@@ -47,7 +47,7 @@ export function SampleExamBank({
   if (items.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Chưa có đề minh họa. Hãy đóng góp từ trang chủ bằng file PDF/DOCX đọc được.
+        Chưa có đề minh họa. Hãy đóng góp từ trang chủ bằng file JSON.
       </p>
     );
   }
@@ -116,7 +116,7 @@ function SampleExamCard({
   }
 
   async function onDelete() {
-    if (!window.confirm(`Xóa ${sample.title}? Câu đã nạp ngân hàng vẫn giữ.`)) {
+    if (!window.confirm(`Xóa ${sample.title}? Câu hỏi của đề này trong ngân hàng cũng sẽ bị xóa.`)) {
       return;
     }
     const data = await save<{ ok?: boolean }>(() =>

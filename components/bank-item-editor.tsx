@@ -21,6 +21,7 @@ export function EditToolbar({
   onEdit,
   onCancel,
   onSave,
+  onDelete,
 }: {
   signedIn: boolean;
   editing: boolean;
@@ -28,13 +29,28 @@ export function EditToolbar({
   onEdit: () => void;
   onCancel: () => void;
   onSave: () => void;
+  onDelete?: () => void;
 }) {
   if (!signedIn) return null;
   if (!editing) {
     return (
-      <Button type="button" variant="outline" size="sm" onClick={onEdit}>
-        Sửa
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={onEdit} disabled={busy}>
+          Sửa
+        </Button>
+        {onDelete ? (
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={onDelete}
+            disabled={busy}
+          >
+            {busy ? <LoaderCircle className="animate-spin" /> : null}
+            Xóa
+          </Button>
+        ) : null}
+      </div>
     );
   }
   return (

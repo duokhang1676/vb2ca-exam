@@ -14,11 +14,19 @@ import {
 } from "./types";
 
 const PART2_RE =
-  /(?:^|\n)\s*(?:PHẦN|Phần)\s*(?:II|2)\b[^\n]*/i;
+  /(?:^|\n)[^\S\n]*[^\n]{0,8}?(?:PHẦN|Phần)\s*(?:II|2)\b[^\n]*/i;
+const PART1_LINE_RE =
+  /(?:^|\n)[^\S\n]*[^\n]{0,8}?(?:PHẦN|Phần)\s*(?:I|1)\b[^\n]*/gi;
+const ESSAY_TAIL_RE =
+  /(?:^|\n)[^\S\n]*[^\n]{0,8}?(?:PHẦN|Phần)\s*(?:II|2)\b[\s\S]*$|(?:^|\n)\s*Từ câu\s+\d+\s+đến[\s\S]*$/i;
+const HEADER_START_RE =
+  /^(đề\s*thi(\s*minh\s*họa)?|bài\s*thi|tuyển\s*sinh|công\s*dân|đối\s*với\s*công\s*dân|có\s*bằng|trình\s*độ\s*đại\s*học|mã\s*(bài\s*thi|đề)|ca\s*[14]\b|kỳ\s*thi|bộ\s*công\s*an|thời\s*gian(\s*làm\s*bài)?|phần\s*(i|1|ii|2)\b|tự\s*luận|trắc\s*nghiệm|nội\s*dung\s*câu\s*hỏi|\(?\s*đề\s*thi\s*có\s+\d+)/i;
 const QUESTION_RE = /(?:^|\n)\s*(?:Câu|CÂU)\s+(\d+)\s*[\.:)]\s*/g;
-const OPTION_RE = /(?:^|\n)\s*([A-D])[\.)]\s+/g;
+const OPTION_MARK_RE = /([A-D])\./g;
 const PASSAGE_HEADER_RE =
   /dựa vào thông tin dưới đây|đọc tình huống sau đây/i;
+const EXAM_NOISE_RE =
+  /Cán bộ coi thi[^\n]*|Trang\s+\d+\s*\/\s*\d+[^\n]*|-{2,}\s*HẾT\s*-{2,}|Trả lời\s*:[.…\s]*/gi;
 
 function parseError(message: string): ContributeError {
   return new ContributeError(
@@ -37,7 +45,7 @@ function parseError(message: string): ContributeError {
 function splitParts(text: string): { essay: string; part2: string } {
   const match = text.match(PART2_RE);
   if (match && match.index != null) {
-    const essay = text.slice(0, match.index).replace(/(?:^|\n)\s*(?:PHẦN|Phần)\s*(?:I|1)\b[^\n]*/i, "").trim();
+    const essay = text.slice(0, match.index).replace(PART1_LINE_RE, "").trim();
     const part2 = text.slice(match.index + match[0].length).trim();
     return { essay, part2 };
   }
@@ -51,26 +59,41 @@ function splitParts(text: string): { essay: string; part2: string } {
   throw parseError("Không tìm thấy Phần 2 hoặc câu hỏi Câu 1.");
 }
 
+function stripLeadingDecor(line: string): string {
+  return line
+    .replace(/^[\s\u2022\u25CF\u25A0\u25C6\uF0A7\uFFFD•·▪►]+/u, "")
+    .trim();
+}
+
+function isExamHeaderLine(line: string): boolean {
+  const trimmed = stripLeadingDecor(line);
+  if (trimmed.length < 4) return true;
+  if (/^\(?\s*\d+\s*điểm\)?\.?$/i.test(trimmed)) return true;
+  return HEADER_START_RE.test(trimmed);
+}
+
 function stripExamHeader(essay: string): string {
-  const lines = essay.split(/\n/);
+  const withoutTail = essay.replace(ESSAY_TAIL_RE, "");
+  const lines = withoutTail.split(/\n/);
   const kept: string[] = [];
   let started = false;
   for (const line of lines) {
-    const trimmed = line.trim();
     if (!started) {
-      if (
-        /^(kỳ thi|đề minh họa|bộ công an|mã đề|ca1|ca4|thời gian|phần\s*(i|1)\b)/i.test(
-          trimmed,
-        )
-      ) {
-        continue;
-      }
-      if (trimmed.length < 4) continue;
+      if (isExamHeaderLine(line)) continue;
       started = true;
     }
     kept.push(line);
   }
   return kept.join("\n").trim();
+}
+
+function cleanExamNoise(text: string): string {
+  return text
+    .replace(EXAM_NOISE_RE, "\n")
+    .replace(/\n\s*\d{1,2}\s*\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function splitTrailing(text: string): { main: string; trailing: string } {
@@ -91,48 +114,68 @@ function splitTrailing(text: string): { main: string; trailing: string } {
   return { main: text.trim(), trailing: "" };
 }
 
+type OptionMark = {
+  letter: keyof McqOptions;
+  index: number;
+  end: number;
+};
+
+function findOptionMarks(body: string): OptionMark[] {
+  return [...body.matchAll(new RegExp(OPTION_MARK_RE.source, "g"))].flatMap(
+    (match) => {
+      if (match.index == null) return [];
+      return [
+        {
+          letter: match[1] as keyof McqOptions,
+          index: match.index,
+          end: match.index + match[0].length,
+        },
+      ];
+    },
+  );
+}
+
+function findAbcdSequence(marks: OptionMark[]): OptionMark[] | null {
+  let best: OptionMark[] | null = null;
+  for (let i = 0; i < marks.length; i += 1) {
+    if (marks[i].letter !== "A") continue;
+    const b = marks.find((mark, index) => index > i && mark.letter === "B");
+    if (!b) continue;
+    const c = marks.find((mark) => mark.index > b.index && mark.letter === "C");
+    if (!c) continue;
+    const d = marks.find((mark) => mark.index > c.index && mark.letter === "D");
+    if (!d) continue;
+    best = [marks[i], b, c, d];
+  }
+  return best;
+}
+
 function parseOptions(body: string): {
   stem: string;
   options?: McqOptions;
   trailing: string;
 } {
-  const matches = [...body.matchAll(new RegExp(OPTION_RE.source, "g"))];
-  if (matches.length < 4) {
-    const split = splitTrailing(body);
+  const cleaned = cleanExamNoise(body);
+  const sequence = findAbcdSequence(findOptionMarks(cleaned));
+  if (!sequence) {
+    const split = splitTrailing(cleaned);
     return { stem: split.main, trailing: split.trailing };
   }
-  const start = matches.find((item) => item[1] === "A");
-  if (!start || start.index == null) {
-    const split = splitTrailing(body);
+  const [a, b, c, d] = sequence;
+  const dSplit = splitTrailing(cleaned.slice(d.end));
+  const options: McqOptions = {
+    A: cleaned.slice(a.end, b.index).trim(),
+    B: cleaned.slice(b.end, c.index).trim(),
+    C: cleaned.slice(c.end, d.index).trim(),
+    D: dSplit.main,
+  };
+  if (!options.A || !options.B || !options.C) {
+    const split = splitTrailing(cleaned);
     return { stem: split.main, trailing: split.trailing };
   }
-  const aIndex = start.index;
-  const byLetter: Partial<McqOptions> = {};
-  for (let i = 0; i < matches.length; i += 1) {
-    const current = matches[i];
-    if (current.index == null || current.index < aIndex) continue;
-    const letter = current[1] as keyof McqOptions;
-    const contentStart = current.index + current[0].length;
-    const next = matches[i + 1];
-    const contentEnd =
-      next && next.index != null && next.index > current.index
-        ? next.index
-        : body.length;
-    byLetter[letter] = body.slice(contentStart, contentEnd).trim();
-  }
-  if (!byLetter.A || !byLetter.B || !byLetter.C || !byLetter.D) {
-    const split = splitTrailing(body);
-    return { stem: split.main, trailing: split.trailing };
-  }
-  const dSplit = splitTrailing(byLetter.D);
   return {
-    stem: body.slice(0, aIndex).trim(),
-    options: {
-      A: byLetter.A,
-      B: byLetter.B,
-      C: byLetter.C,
-      D: dSplit.main,
-    },
+    stem: cleaned.slice(0, a.index).trim(),
+    options: { ...options, D: options.D || "." },
     trailing: dSplit.trailing,
   };
 }
@@ -180,7 +223,14 @@ function passageFromPrefix(prefix: string): string {
   if (!trimmed) return "";
   const header = trimmed.match(PASSAGE_HEADER_RE);
   if (header && header.index != null) {
-    return trimmed.slice(header.index).replace(PASSAGE_HEADER_RE, "").replace(/^[\s.,:;-]+/, "").trim() || trimmed;
+    return (
+      trimmed
+        .slice(header.index)
+        .replace(PASSAGE_HEADER_RE, "")
+        .replace(/^[\s.,:;-]+/, "")
+        .replace(/^và trả lời các câu từ \d+ đến \d+\.?\s*/i, "")
+        .trim() || trimmed
+    );
   }
   return trimmed;
 }
@@ -281,7 +331,7 @@ export function parseNativeExamText(params: {
   answerKey: AnswerKey;
 }): { essayPrompt: string; questions: Question[] } {
   const spec = EXAM_SPECS[params.examCode];
-  const { essay, part2 } = splitParts(params.text);
+  const { essay, part2 } = splitParts(cleanExamNoise(params.text));
   const essayPrompt = stripExamHeader(essay);
   if (essayPrompt.length < 80) {
     throw parseError("Phần nghị luận xã hội quá ngắn hoặc không tách được Phần 1.");

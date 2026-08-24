@@ -10,10 +10,12 @@ export function AuthMenu({
   email,
   displayName,
   avatarUrl,
+  averageScore,
 }: {
   email: string;
   displayName: string;
   avatarUrl: string | null;
+  averageScore: number | null;
 }) {
   const router = useRouter();
 
@@ -29,7 +31,14 @@ export function AuthMenu({
       <Button variant="ghost" size="sm" asChild>
         <Link href="/account" className="flex items-center gap-2">
           <AuthAvatar url={avatarUrl} name={displayName} size={28} />
-          <span className="hidden max-w-32 truncate sm:inline">{displayName}</span>
+          <span className="hidden items-center gap-1.5 sm:inline-flex">
+            <span className="max-w-32 truncate">{displayName}</span>
+            {averageScore != null ? (
+              <span className="shrink-0 text-xs font-normal text-muted-foreground">
+                · TB {averageScore.toFixed(1)}
+              </span>
+            ) : null}
+          </span>
         </Link>
       </Button>
       <Button variant="outline" size="sm" type="button" onClick={signOut}>

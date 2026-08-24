@@ -1,0 +1,183 @@
+{
+  "_format": {
+    "purpose": "File mẫu format đề CA4 cho AI. Không phải đề đầy đủ — chỉ cần copy schema, số câu và kiểu dữ liệu.",
+    "examCode": "CA4",
+    "phần1": "essayPrompt: nghị luận xã hội, tối thiểu 500 chữ (dùng chung CA1/CA4).",
+    "phần2": {
+      "total": 60,
+      "independentMcq": "câu 1–48: type=mcq, section=independent, options A–D",
+      "clusters": "câu 49–51 và 52–54: 2 cụm × 3 MCQ, clusterKind=situation, cùng passage trong cụm",
+      "fill": "câu 55–60: type=fill, section=fill, không có options; đáp án là chuỗi chữ (không phải A–D)"
+    },
+    "khác CA1": [
+      "examCode phải là CA4",
+      "60 câu (CA1 là 50)",
+      "48 MCQ độc lập (CA1 là 39)",
+      "cụm dùng clusterKind situation, header: Đọc tình huống sau đây và trả lời các câu từ {start} đến {end}.",
+      "6 câu điền chữ (CA1 điền số); ví dụ đáp án: Năng lực pháp luật"
+    ],
+    "bắt buộc khi sinh đề thật": "questions.length === 60, originalNumber 1–60 không thiếu/trùng; file này cố ý lược câu 2–47 và 57–59.",
+    "clusterHeader": "Đọc tình huống sau đây và trả lời các câu từ {start} đến {end}.",
+    "fillHeader": "Câu trắc nghiệm trả lời ngắn. Thí sinh trả lời các câu từ 55 đến 60.",
+    "answerKey": {
+      "mcq": "A | B | C | D",
+      "fill": "chuỗi tiếng Việt, khớp nguyên văn đáp án (có thể có số trong câu chữ)"
+    }
+  },
+  "examCode": "CA4",
+  "diversity": 5,
+  "essayPrompt": "Đọc đoạn văn bản sau:\n\n[Đoạn văn bản về một chủ đề chính trị, kinh tế, văn hóa - xã hội.]\n\nAnh/chị hãy sử dụng thể loại văn nghị luận (tối thiểu 500 chữ) để trình bày, đánh giá, phân tích, bình luận về vấn đề … được đặt ra trong đoạn văn bản trên.",
+  "questions": [
+    {
+      "originalNumber": 1,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Theo Hiến pháp năm 2013, nước Cộng hòa xã hội chủ nghĩa Việt Nam là nhà nước",
+      "options": {
+        "A": "pháp quyền xã hội chủ nghĩa của Nhân dân, do Nhân dân, vì Nhân dân",
+        "B": "liên bang",
+        "C": "quân chủ lập hiến",
+        "D": "tổng thống chế"
+      }
+    },
+    {
+      "originalNumber": 48,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "(Câu độc lập cuối — cùng schema câu 1–48.) Hành vi nào sau đây là tội phạm?",
+      "options": {
+        "A": "Hành vi nguy hiểm cho xã hội được quy định trong Bộ luật Hình sự",
+        "B": "Mọi hành vi vi phạm đạo đức",
+        "C": "Mọi hành vi trái pháp luật hành chính",
+        "D": "Mọi hành vi gây thiệt hại dân sự"
+      }
+    },
+    {
+      "originalNumber": 49,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c1",
+      "clusterPosition": 1,
+      "clusterKind": "situation",
+      "passage": "Anh A, 19 tuổi, điều khiển xe máy không có giấy phép lái xe, vượt đèn đỏ gây tai nạn làm anh B bị thương tích 11% sức khỏe. Cơ quan công an đã lập hồ sơ xử lý.",
+      "stem": "Anh A thuộc đối tượng",
+      "options": {
+        "A": "người chưa thành niên",
+        "B": "người thành niên",
+        "C": "người mất năng lực hành vi dân sự",
+        "D": "người bị hạn chế năng lực hành vi dân sự"
+      }
+    },
+    {
+      "originalNumber": 50,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c1",
+      "clusterPosition": 2,
+      "clusterKind": "situation",
+      "passage": "Anh A, 19 tuổi, điều khiển xe máy không có giấy phép lái xe, vượt đèn đỏ gây tai nạn làm anh B bị thương tích 11% sức khỏe. Cơ quan công an đã lập hồ sơ xử lý.",
+      "stem": "Hành vi của anh A có thể bị xem xét theo",
+      "options": {
+        "A": "pháp luật hình sự và pháp luật xử lý vi phạm hành chính",
+        "B": "chỉ pháp luật dân sự",
+        "C": "chỉ nội quy cơ quan",
+        "D": "chỉ đạo đức xã hội"
+      }
+    },
+    {
+      "originalNumber": 51,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c1",
+      "clusterPosition": 3,
+      "clusterKind": "situation",
+      "passage": "Anh A, 19 tuổi, điều khiển xe máy không có giấy phép lái xe, vượt đèn đỏ gây tai nạn làm anh B bị thương tích 11% sức khỏe. Cơ quan công an đã lập hồ sơ xử lý.",
+      "stem": "Thiệt hại sức khỏe của anh B trước hết đặt ra trách nhiệm",
+      "options": {
+        "A": "bồi thường thiệt hại ngoài hợp đồng",
+        "B": "trách nhiệm kỷ luật lao động",
+        "C": "trách nhiệm của người giám hộ",
+        "D": "trách nhiệm của chủ phương tiện công cộng"
+      }
+    },
+    {
+      "originalNumber": 52,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c2",
+      "clusterPosition": 1,
+      "clusterKind": "situation",
+      "passage": "Chị C là cán bộ xã, lợi dụng chức vụ thu thêm khoản tiền trái quy định của một số hộ dân. Ủy ban kiểm tra đã vào cuộc.",
+      "stem": "Hành vi của chị C trước hết vi phạm",
+      "options": {
+        "A": "kỷ luật của Đảng và pháp luật về cán bộ, công chức",
+        "B": "chỉ quy tắc ứng xử cộng đồng",
+        "C": "chỉ hợp đồng dân sự",
+        "D": "chỉ nội quy trường học"
+      }
+    },
+    {
+      "originalNumber": 53,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c2",
+      "clusterPosition": 2,
+      "clusterKind": "situation",
+      "passage": "Chị C là cán bộ xã, lợi dụng chức vụ thu thêm khoản tiền trái quy định của một số hộ dân. Ủy ban kiểm tra đã vào cuộc.",
+      "stem": "Khoản tiền thu trái quy định được xác định là",
+      "options": {
+        "A": "hành vi vụ lợi, trái pháp luật",
+        "B": "khoản đóng góp tự nguyện hợp pháp",
+        "C": "phụ cấp theo hợp đồng lao động",
+        "D": "thuế được luật cho phép"
+      }
+    },
+    {
+      "originalNumber": 54,
+      "type": "mcq",
+      "section": "cluster",
+      "clusterId": "c2",
+      "clusterPosition": 3,
+      "clusterKind": "situation",
+      "passage": "Chị C là cán bộ xã, lợi dụng chức vụ thu thêm khoản tiền trái quy định của một số hộ dân. Ủy ban kiểm tra đã vào cuộc.",
+      "stem": "Thẩm quyền xử lý cán bộ, công chức trong tình huống này thuộc",
+      "options": {
+        "A": "cơ quan, tổ chức có thẩm quyền quản lý cán bộ",
+        "B": "chỉ tòa án nhân dân tối cao",
+        "C": "chỉ tổ dân phố",
+        "D": "chỉ hội đồng họ tộc"
+      }
+    },
+    {
+      "originalNumber": 55,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Hình thức cấu trúc nhà nước của nước Cộng hòa xã hội chủ nghĩa Việt Nam là gì?"
+    },
+    {
+      "originalNumber": 56,
+      "type": "fill",
+      "section": "fill",
+      "stem": "(Câu điền 56–59 cùng schema.) Nguyên tắc tổ chức và hoạt động cơ bản của bộ máy nhà nước ta là gì?"
+    },
+    {
+      "originalNumber": 60,
+      "type": "fill",
+      "section": "fill",
+      "stem": "(Câu điền cuối.) Hình thức trách nhiệm pháp lý áp dụng đối với cán bộ, công chức vi phạm kỷ luật là gì?"
+    }
+  ],
+  "answerKey": {
+    "1": "A",
+    "48": "A",
+    "49": "B",
+    "50": "A",
+    "51": "A",
+    "52": "A",
+    "53": "A",
+    "54": "A",
+    "55": "Hình thức cấu trúc nhà nước đơn nhất",
+    "56": "Nguyên tắc tập trung dân chủ",
+    "60": "Trách nhiệm kỷ luật"
+  }
+}

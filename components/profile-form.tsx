@@ -138,9 +138,10 @@ export function ProfileForm({
                 onChange={(event) => {
                   const file = event.target.files?.[0];
                   if (file) void uploadAvatar(file);
+                  event.target.value = "";
                 }}
               />
-              <p className="text-xs text-muted-foreground">JPG, PNG hoặc WEBP, tối đa 2MB.</p>
+              <p className="text-xs text-muted-foreground">JPG, PNG, WEBP hoặc GIF, tối đa 2MB.</p>
             </div>
           </div>
           <form className="grid gap-4" onSubmit={saveProfile}>

@@ -1,7 +1,7 @@
 import { QuestionBank } from "@/components/question-bank";
 import { getAuthUser } from "@/lib/auth/session";
 import { essayFingerprint, questionFingerprint } from "@/lib/exam/fingerprint";
-import { listUserMarks, markSet } from "@/lib/exam/marks";
+import { listUserMarks, markSet, isMarkedFingerprint } from "@/lib/exam/marks";
 import { listSampleExamDetails } from "@/lib/exam/sample";
 import {
   isClusterKind,
@@ -50,20 +50,33 @@ export default async function BankPage({
     id: row.id,
     prompt: row.prompt,
     sourceFilename: row.source_filename,
+    fingerprint: row.fingerprint,
     marked: essayMarks.has(row.fingerprint),
   }));
 
-  const questions = (questionsResult.data ?? []).map((row) => ({
-    id: row.id,
-    examCode: row.exam_code as ExamCode,
-    type: normalizeQuestionType(row.type),
-    stem: row.stem,
-    options: (row.options as McqOptions | null) ?? undefined,
-    answer: row.answer,
-    clusterId: row.cluster_id,
-    clusterPosition: row.cluster_position,
-    marked: questionMarks.has(row.fingerprint),
-  }));
+  const questions = (questionsResult.data ?? []).map((row) => {
+    const examCode = row.exam_code as ExamCode;
+    const type = normalizeQuestionType(row.type);
+    const options = (row.options as McqOptions | null) ?? undefined;
+    const fingerprint = questionFingerprint({
+      examCode,
+      type,
+      stem: row.stem,
+      options,
+    });
+    return {
+      id: row.id,
+      examCode,
+      type,
+      stem: row.stem,
+      options,
+      answer: row.answer,
+      clusterId: row.cluster_id,
+      clusterPosition: row.cluster_position,
+      fingerprint,
+      marked: isMarkedFingerprint(questionMarks, row.fingerprint, fingerprint),
+    };
+  });
 
   const clusters = (clustersResult.data ?? []).map((row) => ({
     id: row.id,

@@ -30,13 +30,24 @@ export async function setQuestionMark(params: {
 }) {
   const supabase = getSupabaseAdmin();
   if (!params.marked) {
-    const { error } = await supabase
+    const { data: rows, error: loadError } = await supabase
       .from("question_marks")
-      .delete()
+      .select("id, fingerprint")
       .eq("user_id", params.userId)
-      .eq("kind", params.kind)
-      .eq("fingerprint", params.fingerprint);
-    if (error) throw new Error(error.message);
+      .eq("kind", params.kind);
+    if (loadError) throw new Error(loadError.message);
+    const prefix = `${params.fingerprint}:`;
+    const ids = (rows ?? [])
+      .filter(
+        (row) =>
+          row.fingerprint === params.fingerprint ||
+          row.fingerprint.startsWith(prefix),
+      )
+      .map((row) => row.id);
+    if (ids.length > 0) {
+      const { error } = await supabase.from("question_marks").delete().in("id", ids);
+      if (error) throw new Error(error.message);
+    }
     return { marked: false };
   }
 
@@ -57,4 +68,16 @@ export function markSet(marks: QuestionMark[], kind: MarkKind): Set<string> {
   return new Set(
     marks.filter((mark) => mark.kind === kind).map((mark) => mark.fingerprint),
   );
+}
+
+export function isMarkedFingerprint(
+  marks: Set<string>,
+  stored: string,
+  contentHash: string,
+): boolean {
+  if (marks.has(stored) || marks.has(contentHash)) return true;
+  for (const mark of marks) {
+    if (mark.startsWith(`${contentHash}:`)) return true;
+  }
+  return false;
 }

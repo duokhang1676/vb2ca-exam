@@ -1,0 +1,769 @@
+{
+  "_format": {
+    "purpose": "File đề thi tuyển sinh CAND mã đề CA4 chuẩn hóa theo format ca4-format.json từ đề thi thử số 43.",
+    "examCode": "CA4",
+    "phần1": "essayPrompt: nghị luận xã hội, tối thiểu 500 chữ.",
+    "phần2": {
+      "total": 60,
+      "independentMcq": "câu 1–54: type=mcq, section=independent, options A–D",
+      "fill": "câu 55–60: type=fill, section=fill, không có options; đáp án là chuỗi chữ (không phải A–D)"
+    },
+    "clusterHeader": "Đọc tình huống sau đây và trả lời các câu từ {start} đến {end}.",
+    "fillHeader": "Câu trắc nghiệm trả lời ngắn. Thí sinh trả lời các câu từ 55 đến 60.",
+    "answerKey": {
+      "mcq": "A | B | C | D",
+      "fill": "chuỗi tiếng Việt, khớp nguyên văn đáp án (có thể có số trong câu chữ)"
+    }
+  },
+  "examCode": "CA4",
+  "diversity": 5,
+  "essayPrompt": "Đọc đoạn văn bản sau:\n\n\"Trong bối cảnh xây dựng và hoàn thiện Nhà nước pháp quyền xã hội chủ nghĩa Việt Nam hiện nay, tinh thần thượng tôn Hiến pháp và pháp luật, sự nghiêm minh và tính thống nhất của pháp chế không chỉ là nguyên tắc tổ chức quyền lực nhà nước mà còn là chuẩn mực ứng xử của mọi cơ quan, tổ chức, cán bộ và công dân. Sống và làm việc theo Hiến pháp và pháp luật chính là nền tảng vững chắc nhất để bảo đảm quyền làm chủ của Nhân dân, giữ vững an ninh chính trị, trật tự an toàn xã hội và phát triển đất nước bền vững.\"\n\nAnh/chị hãy viết một bài văn nghị luận xã hội (tối thiểu 500 chữ) trình bày suy nghĩ, đánh giá về yêu cầu nâng cao ý thức chấp hành pháp luật và giữ gìn kỷ cương pháp chế trong giai đoạn hiện nay.",
+  "questions": [
+    {
+      "originalNumber": 1,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Xem xét các nhận định sau:\n(1) Việc xác định quyền lực nhà nước là thống nhất không thể được\nhiểu theo nghĩa mọi quyền lực phải được tập trung và thực hiện bởi một cơ\nquan duy nhất, mà phải được đặt trong cơ chế phân công, phối hợp và kiểm\nsoát quyền lực giữa các cơ quan nhà nước trong quá trình thực hiện quyền lập\npháp, hành pháp và tư pháp.\n(2) Phân công quyền lực giữa các cơ quan thực hiện quyền lập pháp,\nhành pháp và tư pháp về bản chất làm cho mỗi cơ quan trở thành một trung\ntâm quyền lực độc lập, có quyền tự xác định phạm vi hoạt động của mình và\nchỉ chịu sự kiểm soát của cơ chế quyền lực tương ứng.\n(3) Kiểm soát quyền lực nhà nước không chỉ nhằm phòng ngừa, phát\nhiện và xử lý việc lạm dụng quyền lực mà còn nhằm bảo đảm quyền lực được\nthực hiện đúng Hiến pháp, pháp luật, đúng chức năng, nhiệm vụ, quyền hạn và\nchịu sự giám sát, kiểm tra của các chủ thể có thẩm quyền.\n(4) Do quyền lực nhà nước thuộc về Nhân dân, kiểm soát quyền lực nhà\nnước về nguyên tắc phải được thực hiện chủ yếu thông qua cơ chế Nhân dân trực\ntiếp giám sát và quyết định đối với hoạt động của từng cơ quan nhà nước; các cơ\nchế kiểm soát quyền lực bên trong bộ máy nhà nước chỉ có tính chất hỗ trợ.\nCó bao nhiêu nhận định đúng?",
+      "options": {
+        "A": "1",
+        "B": "2",
+        "C": "3",
+        "D": "4"
+      }
+    },
+    {
+      "originalNumber": 2,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quá trình phát triển của nhà nước trong thời kỳ quá độ lên chủ nghĩa xã\nhội vừa gắn với yêu cầu củng cố tổ chức, nâng cao năng lực quản lý, vừa gắn\nvới những biến đổi về điều kiện kinh tế – xã hội làm phát sinh và duy trì quyền\nlực công cộng đặc biệt. Từ mối quan hệ này, hạn chế căn bản của nhận định\ncho rằng “khi nhà nước đạt tới trình độ quản lý xã hội cao nhất, các chức năng\ncủa nhà nước được thực hiện đầy đủ và hiệu quả nhất, từ đó trực tiếp dẫn đến\nsự tiêu vong của nhà nước” là gì?",
+      "options": {
+        "A": "Đã tuyệt đối hóa chức năng quản lý xã hội của nhà nước, bởi trong thời kỳ quá độ, nhà nước chỉ có chức năng chính trị và cưỡng chế, còn chức năng tổ chức, quản lý kinh tế – xã hội chủ yếu thuộc về các tổ chức xã hội.",
+        "B": "Đã đồng nhất sự hoàn thiện về tổ chức, năng lực quản lý và hiệu quả hoạt động của nhà nước với xu hướng tiêu vong của nhà nước, trong khi sự tiêu vong của nhà nước gắn với quá trình biến đổi những cơ sở kinh tế – xã hội làm xuất hiện và duy trì nhu cầu về một quyền lực công cộng đặc biệt.",
+        "C": "Đã đánh giá quá cao khả năng tồn tại của nhà nước trong thời kỳ quá độ, bởi ngay sau khi giai cấp công nhân giành được chính quyền, nhà nước về cơ bản đã chuyển dần từ công cụ thống trị giai cấp thành thiết chế tự quản của toàn xã hội.",
+        "D": "Đã không phân biệt nhà nước của giai cấp công nhân với nhà nước tư sản, bởi cả hai đều có chức năng tổ chức xã hội và quản lý các quan hệ xã hội nên đều có cùng xu hướng phát triển và tiêu vong."
+      }
+    },
+    {
+      "originalNumber": 3,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong quá trình phát triển của nhà nước xã hội chủ nghĩa, cùng với việc\nmở rộng chức năng tổ chức, quản lý kinh tế, văn hóa và xã hội, nhà nước ngày\ncàng hướng tới việc bảo đảm lợi ích của đại đa số nhân dân lao động. Tuy\nnhiên, sự gia tăng tính xã hội trong hoạt động của nhà nước không đương nhiên\nlàm mất đi tính giai cấp của quyền lực nhà nước. Việc nhà nước vẫn sử dụng\nquyền lực cưỡng chế để bảo đảm pháp luật và duy trì trật tự xã hội cũng cần\nđược đặt trong mối quan hệ với bản chất và chức năng của nhà nước. Nội dung\nnào dưới đây phản ánh đầy đủ và chính xác nhất vấn đề trên?",
+      "options": {
+        "A": "Sự gia tăng tính xã hội trong hoạt động của nhà nước không đồng nghĩa với việc tính giai cấp bị loại bỏ; trong thời kỳ quá độ, nhà nước vẫn mang bản chất giai cấp, đồng thời thực hiện các chức năng xã hội, tổ chức và quản lý xã hội nhằm bảo đảm lợi ích của đại đa số nhân dân.",
+        "B": "Khi nhà nước hướng tới lợi ích của đại đa số nhân dân lao động và mở rộng các chức năng xã hội, tính giai cấp chỉ còn tồn tại về mặt lịch sử; trong hoạt động thực tiễn, quyền lực nhà nước về cơ bản đã chuyển thành quyền lực xã hội thuần túy.",
+        "C": "Tính giai cấp của nhà nước chủ yếu được biểu hiện thông qua việc sử dụng cưỡng chế; vì vậy, khi các biện pháp cưỡng chế được sử dụng để duy trì trật tự chung thì chúng không còn phản ánh bản chất giai cấp của quyền lực nhà nước.",
+        "D": "Trong thời kỳ quá độ, nhà nước chỉ mang bản chất giai cấp và thực hiện chức năng chính trị, còn các hoạt động tổ chức, quản lý kinh tế, văn hóa và xã hội về bản chất thuộc về các tổ chức tự quản của nhân dân."
+      }
+    },
+    {
+      "originalNumber": 4,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Sự tiêu vong của nhà nước không đồng nhất với việc chấm dứt mọi nhu\ncầu tổ chức, quản lý và điều phối đời sống chung của xã hội. Giả định trong\nmột xã hội tương lai, những đối kháng giai cấp cơ bản đã được khắc phục và\nnhững điều kiện làm phát sinh nhà nước với tư cách một quyền lực công cộng\nđặc biệt không còn tồn tại, nhưng xã hội vẫn duy trì sự phân công lao động,\nvẫn cần tổ chức sản xuất và điều phối những công việc chung. Trong trường\nhợp này, cách lý giải nào dưới đây phù hợp nhất?",
+      "options": {
+        "A": "Nhà nước vẫn phải được duy trì về cơ bản, bởi chừng nào xã hội còn tồn tại sự phân công lao động và nhu cầu điều phối các hoạt động chung thì chừng đó vẫn tồn tại cơ sở khách quan của quyền lực nhà nước.",
+        "B": "Nhà nước sẽ chuyển hóa thành một thiết chế quản lý trung lập, không còn mang bản chất giai cấp nhưng vẫn duy trì quyền lực công cộng đặc biệt để giải quyết những khác biệt phát sinh từ quá trình phân công lao động xã hội.",
+        "C": "Nhà nước chỉ có thể tiêu vong hoàn toàn khi xã hội đồng thời xóa bỏ mọi sự khác biệt về trình độ phát triển, mọi hình thức phân công lao động và mọi nhu cầu tổ chức, điều phối các hoạt động chung.",
+        "D": "Việc còn tồn tại nhu cầu tổ chức và điều phối đời sống chung không đồng nghĩa với việc phải duy trì nhà nước với tư cách một quyền lực công cộng đặc biệt; khi những cơ sở làm phát sinh và duy trì quyền lực công cộng đặc biệt không còn, nhà nước từng bước tiêu vong, còn các chức năng tô chức đời sống chung được thực hiện bằng những hình thức xã hội phù hợp."
+      }
+    },
+    {
+      "originalNumber": 5,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong lý luận Mác – Lênin về nguồn gốc, bản chất và chức năng của\nnhà nước, nhà nước chủ nô và nhà nước phong kiến đều là những kiểu nhà\nnước của xã hội có đối kháng giai cấp, đều sử dụng quyền lực công cộng để\nduy trì trật tự xã hội phù hợp với lợi ích của giai cấp thống trị. Tuy nhiên, nếu\nkhông chỉ căn cứ vào chủ thể nắm quyền lực mà xem xét sâu hơn mối quan hệ\ngiữa cơ sở kinh tế, chế độ sở hữu và phương thức bóc lột, nhận định nào dưới\nđây phản ánh chính xác nhất sự khác biệt cơ bản giữa hai kiểu nhà nước này?",
+      "options": {
+        "A": "Nhà nước chủ nô bảo vệ quan hệ sản xuất dựa trên sự chiếm hữu trực tiếp của chủ nô đối với tư liệu sản xuất và người nô lệ; trong khi nhà nước phong kiến bảo vệ quan hệ sản xuất dựa chủ yếu trên chế độ sở hữu ruộng đất của địa chủ, lãnh chúa và sự lệ thuộc của nông dân vào địa chủ, lãnh chúa.",
+        "B": "Nhà nước chủ nô bảo vệ quan hệ bóc lột trực tiếp đối với nô lệ, còn nhà nước phong kiến về cơ bản đã khắc phục tính chất đối kháng của quan hệ giữa địa chủ và nông dân vì người nông dân có quyền sở hữu nhất định đối với tư liệu sản xuất.",
+        "C": "Nhà nước chủ nô chủ yếu thực hiện chức năng duy trì trật tự xã hội và tổ chức sản xuất, trong khi nhà nước phong kiến mới thể hiện rõ bản chất là công cụ chính trị của giai cấp thống trị nhằm duy trì quan hệ bóc lột.",
+        "D": "Nhà nước chủ nô mang bản chất chuyên chế do quyền lực tập trung tuyệt đối vào chủ nô, còn nhà nước phong kiến không mang bản chất chuyên chế vì quyền lực bị phân tán giữa nhà vua, lãnh chúa và các thiết chế tôn giáo."
+      }
+    },
+    {
+      "originalNumber": 6,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Xem xét các nhận định sau:\n(1) Việc Nhà nước quản lý nền kinh tế bằng pháp luật không đồng nghĩa\nvới việc Nhà nước trực tiếp quyết định toàn bộ các quan hệ kinh tế; quản lý\nnhà nước trong nền kinh tế thị trường còn bao gồm việc thiết lập thể chế, tạo\nlập môi trường cạnh tranh, sử dụng các công cụ điều tiết và định hướng phát\ntriển nhằm bảo đảm sự vận hành của thị trường phù hợp với mục tiêu kinh tế\nxã hội.\n(2) Việc thừa nhận và bảo đảm quyền tự do kinh doanh của các chủ thể\nthuộc các thành phần kinh tế khác nhau về nguyên tắc loại trừ khả năng Nhà\nnước áp dụng các biện pháp quản lý hành chính đối với hoạt động kinh doanh,\nbởi mọi sự can thiệp hành chính đều đồng nghĩa với việc hạn chế tự do thị\ntrường.\n(3) Bình đẳng giữa các thành phần kinh tế trước pháp luật chủ yếu thể\nhiện ở việc các chủ thể được bảo đảm quyền và nghĩa vụ theo khuôn khổ pháp\nluật chung, nhưng không đồng nghĩa với việc mọi thành phần kinh tế phải có\nvị trí, chức năng và vai trò hoàn toàn giống nhau trong cơ cấu của nền kinh tế.\n(4) Khi chuyển từ cơ chế quản lý nền kinh tế chủ yếu bằng mệnh lệnh\nhành chính sang vận hành theo cơ chế thị trường, Nhà nước không còn giữ vai\ntrò điều tiết trực tiếp đối với các quan hệ kinh tế, mà về cơ bản chỉ thực hiện\nchức năng xây dựng pháp luật và hỗ trợ thị trường tự điều chỉnh.\nCó bao nhiêu nhận định đúng?",
+      "options": {
+        "A": "3",
+        "B": "2",
+        "C": "1",
+        "D": "4"
+      }
+    },
+    {
+      "originalNumber": 7,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong quá trình tổ chức thi hành một quyết định áp dụng pháp luật đã\nđược ban hành đúng thẩm quyền, đúng căn cứ pháp luật và đã có hiệu lực,\nngười có nghĩa vụ không thực hiện hoặc cố ý thực hiện không đầy đủ nghĩa vụ\nđược xác định trong quyết định. Cơ quan có thẩm quyền phải lựa chọn phương\nthức bảo đảm thi hành phù hợp với tính chất của vụ việc, đồng thời không được\nvượt quá giới hạn do pháp luật quy định. Xét từ yêu cầu bảo đảm tính hiện thực\ncủa pháp luật và nguyên tắc pháp chế, phương án nào dưới đây phản ánh đầy\nđủ và chính xác nhất?",
+      "options": {
+        "A": "Khi quyết định áp dụng pháp luật đã có hiệu lực thì việc thi hành về nguyên tắc phải dựa trên sự tự giác của chủ thể có nghĩa vụ; các biện pháp cưỡng chế chỉ có thể được xem xét khi quyết định không còn khả năng được thực hiện bằng các biện pháp tổ chức.",
+        "B": "Việc người có nghĩa vụ không tự nguyện thi hành cho phép cơ quan nhà nước chuyển ngay sang áp dụng biện pháp cưỡng chế, bởi hiệu lực bắt buộc của quyết định đã là căn cứ đầy đủ để thực hiện quyền lực nhà nước mà không cần xem xét thêm các điều kiện pháp luật khác.",
+        "C": "Bảo đảm thi hành quyết định áp dụng pháp luật có thể được thực hiện bằng sự kết hợp các biện pháp tổ chức, hướng dẫn, giáo dục, thuyết phục và, khi có căn cứ pháp luật, đúng thẩm quyền, đúng điều kiện và trình tự luật định, bằng biện pháp cưỡng chế nhà nước.",
+        "D": "Một khi biện pháp cưỡng chế được áp dụng nhằm bảo đảm kết quả thực hiện quyết định thì cơ quan nhà nước có thể lựa chọn biện pháp phù hợp nhất với mục tiêu quản lý, kể cả trường hợp pháp luật chưa quy định cụ thể, miễn là biện pháp đó không làm thay đổi nội dung của quyết định."
+      }
+    },
+    {
+      "originalNumber": 8,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Một quyết định áp dụng pháp luật đã được ban hành hợp pháp và có\nhiệu lực nhưng chủ thể có nghĩa vụ vẫn cố ý không chấp hành. Trong quá trình\ntổ chức thi hành, cơ quan có thẩm quyền nhận thấy việc sử dụng biện pháp\nthuyết phục không đạt kết quả và dự kiến áp dụng biện pháp cưỡng chế để bảo\nđảm quyết định được thực hiện. Xét dưới góc độ mối quan hệ giữa tính bắt\nbuộc của quyết định áp dụng pháp luật và nguyên tắc pháp chế, nhận định nào\ndưới đây là chính xác nhất?",
+      "options": {
+        "A": "Do quyết định áp dụng pháp luật đã có hiệu lực bắt buộc nên cơ quan có thẩm quyền có thể áp dụng biện pháp cưỡng chế cần thiết mà không phải chứng minh thêm căn cứ pháp lý cho từng biện pháp cụ thể.",
+        "B": "Việc cưỡng chế thi hành chỉ hợp pháp khi người phải thi hành đã được tạo điều kiện tự nguyện thực hiện nghĩa vụ và sau đó vẫn không chấp hành; tuy nhiên, trong trường hợp khẩn cấp, cơ quan có thẩm quyền có thể bỏ qua trình tự luật định để bảo đảm hiệu quả quản lý.",
+        "C": "Quyết định áp dụng pháp luật có tính bắt buộc đối với chủ thể liên quan, nhưng việc sử dụng quyền lực cưỡng chế để bảo đảm thi hành vẫn phải có căn cứ pháp luật, thuộc đúng thẩm quyền và tuân thủ các điều kiện, trình tự, thủ tục do pháp luật quy định.",
+        "D": "Khi người phải thi hành cố tình không chấp hành quyết định, việc áp dụng cưỡng chế trở thành hệ quả tất yếu của hiệu lực quyết định, vì vậy cơ quan có thẩm quyền không còn phải cân nhắc các biện pháp bảo đảm thi hành khác."
+      }
+    },
+    {
+      "originalNumber": 9,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong quá trình giải quyết một vụ việc cụ thể, cơ quan có thẩm quyền\nxác định có dấu hiệu cho thấy một chủ thể đã thực hiện hành vi có khả năng\nlàm phát sinh hậu quả pháp lý. Tuy nhiên, tài liệu thu thập được còn mâu thuẫn\nvề thời điểm xảy ra hành vi, chủ thể thực hiện, hoàn cảnh thực hiện và mức độ\nhậu quả. Một số tình tiết tuy có liên quan đến vụ việc nhưng chưa rõ có ý nghĩa\npháp lý hay không. Nếu cơ quan có thẩm quyền lựa chọn ngay quy phạm pháp\nluật và dựa vào những thông tin chưa được kiểm chứng để ban hành quyết định\nthì hoạt động áp dụng pháp luật có nguy cơ sai lệch ngay từ nền tảng. Trong\ntrường hợp này, yêu câu nào cần được thực hiện trước khi lựa chọn và áp dụng\nquy phạm pháp luật để giải quyết vụ việc?",
+      "options": {
+        "A": "Xác định trước phương án xử lý mà cơ quan có thẩm quyền cho là phù hợp, sau đó lựa chọn những tình tiết thực tế có khả năng làm căn cứ bảo vệ cho phương án đó.",
+        "B": "Lựa chọn quy phạm pháp luật điều chỉnh lĩnh vực có liên quan, sau đó sử dụng quy phạm đã lựa chọn làm cơ sở xác định những tình tiết thực tế cần thiết cho việc ra quyết định.",
+        "C": "Xác định các tình tiết thực tế có ý nghĩa đối với việc giải quyết vụ việc, kiểm tra và đánh giá tính xác thực của chúng, đồng thời làm rõ những đặc điểm pháp lý của vụ việc trước khi lựa chọn quy phạm thích hợp.",
+        "D": "Xác định hậu quả pháp lý có khả năng áp dụng đối với chủ thể, từ đó suy ngược lại các điều kiện thực tế cần thiết để chứng minh chủ thể thuộc trường hợp phải chịu hậu quả đó."
+      }
+    },
+    {
+      "originalNumber": 10,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Xem xét các nhận định sau:\n(1) Bảo đảm an ninh chính trị, trật tự, an toàn xã hội là một phương diện\nquan trọng của chức năng đối nội của Nhà nước; việc thực hiện chức năng này\nkhông chỉ giới hạn ở xử lý các hành vi xâm phạm trật tự mà còn bao gồm việc\nphòng ngừa, phát hiện, đấu tranh và tạo lập những điều kiện cần thiết cho sự\nôn định của đời sống xã hội.\n(2) Do Công an nhân dân là lực lượng nòng cốt trong bảo vệ an ninh\nquốc gia, bảo đảm trật tự, an toàn xã hội nên về phương diện thực hiện quyền\nlực nhà nước, chức năng này chủ yếu thuộc về Công an nhân dân; các cơ quan\nnhà nước và tổ chức xã hội khác chỉ giữ vai trò phối hợp khi được yêu cầu.\n(3) Việc xếp nhiệm vụ bảo vệ an ninh quốc gia, bảo đảm trật tự, an toàn\nxã hội vào phương diện đối nội không có nghĩa mọi yếu tố liên quan đến nhiệm\nvụ này đều chỉ được giải quyết bằng các hoạt động trong nước; trong những\ntrường hợp nhất định, việc bảo vệ lợi ích quốc gia có thể đòi hỏi sự kết hợp\ngiữa hoạt động đối nội với hoạt động đối ngoại.\n(4) Vì bảo đảm an ninh quốc gia, trật tự, an toàn xã hội liên quan trực\ntiếp đến lợi ích chung của cộng đồng nên trong mọi trường hợp, yêu cầu bảo\nđảm an ninh được đương nhiên ưu tiên hơn quyền con người, quyền công dân\nvà Nhà nước có thể hạn chế các quyền này mà không cần căn cứ vào những\nđiều kiện, giới hạn do Hiến pháp và pháp luật quy định.\nCó bao nhiêu nhận định đúng?",
+      "options": {
+        "A": "3",
+        "B": "1",
+        "C": "2",
+        "D": "4"
+      }
+    },
+    {
+      "originalNumber": 11,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quan hệ pháp luật phát sinh từ hợp đồng mua bán tài sản, A và B vừa\ncó những quyền, nghĩa vụ đối ứng với nhau, vừa hướng tới việc đạt được những\nlợi ích nhất định thông qua việc thực hiện hợp đồng. Trong quá trình thực hiện,\ntài sản được chuyển giao, tiền được thanh toán và lợi ích của các bên được hiện\nthực hóa. Việc xác định khách thể và đối tượng của quan hệ pháp luật không\nthể chỉ dựa vào sự tồn tại của tài sản được đề cập trong hợp đồng mà phải xem\nxét mối quan hệ giữa lợi ích mà các chủ thể hướng tới với quyền, nghĩa vụ\npháp lý được xác lập. Nội dung nào dưới đây phản ánh chính xác nhất vấn đề\nnày?",
+      "options": {
+        "A": "Khách thể là các chủ thể tham gia quan hệ pháp luật; tài sản và quyền yêu cầu thanh toán chỉ là những biểu hiện cụ thể của nội dung quan hệ giữa các chủ thể.",
+        "B": "Khách thể và đối tượng đều có thể được đồng nhất với tài sản trong hợp đồng vì tài sản vừa là cái các bên hướng tới vừa là cơ sở làm phát sinh quyền và nghĩa vụ pháp lý.",
+        "C": "Đối tượng của quan hệ pháp luật là quyền và nghĩa vụ của các bên, còn khách thể là chủ thể thực hiện các quyền và nghĩa vụ đó đối với tài sản được chuyển giao.",
+        "D": "Đối tượng của quan hệ pháp luật gắn với lợi ích, giá trị hoặc sự vật mà chủ thể hướng tới khi thực hiện quyền và nghĩa vụ; việc xác định khách thể phải đặt trong mối liên hệ với lợi ích xã hội, giá trị được pháp luật thừa nhận và bảo vệ."
+      }
+    },
+    {
+      "originalNumber": 12,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong đời sống, một người đủ tuổi theo quy định pháp luật, một người\nqua đời, một tài sản bị tiêu hủy hoặc một sự kiện tự nhiên xảy ra đều là những\nsự kiện có thật. Tuy nhiên, không phải tất cả những sự kiện đó trong mọi hoàn\ncảnh đều làm phát sinh hậu quả pháp lý. Giả sử một sự kiện đã xảy ra hoàn\ntoàn khách quan, nhưng tại thời điểm sự kiện xảy ra pháp luật không quy định\nbất kỳ hậu quả nào gắn với sự kiện đó. Việc phân biệt giữa sự kiện thực tế và\nsự kiện pháp lý trong trường hợp này cần dựa trên tiêu chí nào?",
+      "options": {
+        "A": "Chỉ cần sự kiện xảy ra trên thực tế và có thể được chứng minh bằng chứng cứ thì đã đủ để xác định đó là sự kiện pháp lý; việc pháp luật có quy định hậu quả hay không chỉ ảnh hưởng đến cách giải quyết vụ việc.",
+        "B": "Sự kiện chỉ trở thành sự kiện pháp lý khi cơ quan nhà nước hoặc chủ thể có thẩm quyền xác nhận, bởi hậu quả pháp lý chỉ có thể xuất hiện sau khi có sự công nhận chính thức.",
+        "C": "Một sự kiện thực tế chỉ được coi là sự kiện pháp lý khi pháp luật dự liệu và gắn sự kiện đó với việc làm phát sinh, thay đổi hoặc chấm dứt quyền, nghĩa vụ hoặc quan hệ pháp luật; vì vậy, sự tồn tại thực tế của sự kiện tự nó chưa đủ để tạo nên tư cách pháp lý của sự kiện.",
+        "D": "Chỉ những sự kiện do hành vi có ý chí của con người tạo ra mới có thể là sự kiện pháp lý; những biến cố xảy ra ngoài ý chí của con người chỉ là căn cứ thực tế chứ không phải sự kiện pháp lý."
+      }
+    },
+    {
+      "originalNumber": 13,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quá trình giải quyết một tranh chấp, cơ quan có thẩm quyền phát hiện\nhai quy phạm pháp luật cùng có khả năng được viện dẫn. Quy phạm X có phạm\nvi điều chỉnh rộng, được ban hành trước và vẫn còn hiệu lực. Quy phạm Y\nđược ban hành sau, có phạm vi điều chỉnh hẹp hơn nhưng quy định trực tiếp\nvề loại quan hệ đang tranh chấp. Ngoài ra, giữa hai quy phạm tồn tại điểm khác\nnhau về điều kiện áp dụng và hậu quả pháp lý. Việc lựa chọn quy phạm áp\ndụng không thể chỉ dựa vào một tiêu chí đơn lẻ như thời điểm ban hành hoặc\nphạm vi điều chỉnh. Trong trường hợp này, cách xử lý nào dưới đây là phù hợp\nnhất?",
+      "options": {
+        "A": "Phải áp dụng Y vì thời điểm ban hành sau là căn cứ quyết định thứ tự ưu tiên giữa mọi quy phạm có nội dung khác nhau, không phụ thuộc vào phạm vi điều chỉnh.",
+        "B": "Phải áp dụng X vì quy phạm có phạm vi điều chỉnh rộng hơn luôn có khả năng bao quát quy phạm có phạm vi hẹp hơn, nên không cần xem xét tính trực tiếp của quy phạm đối với vụ việc.",
+        "C": "Có thể lựa chọn X hoặc Y tùy thuộc vào kết quả có lợi hơn cho chủ thể có quyền và lợi ích bị ảnh hưởng, vì bảo vệ quyền lợi của chủ thể là căn cứ quan trọng nhất khi lựa chọn quy phạm.",
+        "D": "Phải xác định quan hệ pháp luật cụ thể cần giải quyết, đối chiếu phạm vi và điều kiện áp dụng của từng quy phạm, đồng thời xem xét hiệu lực, thẩm quyền ban hành và nguyên tắc xử lý trường hợp các quy phạm có nội dung khác nhau trước khi lựa chọn quy phạm áp dụng."
+      }
+    },
+    {
+      "originalNumber": 14,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cơ quan có thẩm quyền giải quyết một vụ việc đã xác định đúng chủ\nthể, đúng các tình tiết thực tế có ý nghĩa pháp lý và lựa chọn đúng quy phạm\npháp luật điều chỉnh. Tuy nhiên, trong quyết định cuối cùng, cơ quan này xác\nđịnh chủ thể phải chịu một biện pháp xử lý nghiêm khắc hơn mức mà quy\nphạm cho phép. Cơ quan ban hành cho rằng sai sót này không ảnh hưởng đến\ntính hợp pháp của quyết định vì “căn cứ pháp luật đã được lựa chọn đúng, còn\nmức độ xử lý thuộc phạm vi xem xét của cơ quan có thẩm quyền”. Xét về yêu\ncầu tuân thủ pháp luật trong hoạt động áp dụng pháp luật, nhận định nào dưới\nđây đúng?",
+      "options": {
+        "A": "Quyết định vẫn hợp pháp nếu cơ quan ban hành có thẩm quyền, bởi trong hoạt động áp dụng pháp luật, thẩm quyền cho phép cơ quan lựa chọn biện pháp xử lý phù hợp với yêu cầu quản lý.",
+        "B": "Quyết định không bảo đảm tính hợp pháp đối với phần vượt quá giới hạn pháp luật, bởi áp dụng đúng quy phạm không chỉ là xác định đúng văn bản điều chỉnh mà còn phải bảo đảm nội dung quyết định và biện pháp xử lý nằm trong giới hạn pháp luật cho phép.",
+        "C": "Quyết định vẫn hợp pháp nếu biện pháp xử lý nghiêm khắc hơn có khả năng bảo đảm tốt hơn mục tiêu phòng ngừa và giáo dục, bởi hiệu quả thực tế là căn cứ để đánh giá việc áp dụng pháp luật.",
+        "D": "Quyết định chỉ bị coi là sai về kỹ thuật áp dụng pháp luật nếu chủ thể bị xử lý chứng minh được rằng biện pháp được áp dụng gây thiệt hại thực tế; nếu chưa có thiệt hại thì quyết định vẫn có giá trị pháp lý."
+      }
+    },
+    {
+      "originalNumber": 15,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong quá trình phân tích vai trò của Nhà nước, việc xác định những\nchức năng mà Nhà nước thực hiện mới chỉ phản ánh một phương diện của sự\ntác động của Nhà nước đối với đời sống xã hội. Cùng một chức năng có thể\nđược thực hiện với phạm vi, mức độ và phương thức khác nhau tùy thuộc vào\nđiều kiện kinh tế – xã hội, tương quan giữa các lợi ích xã hội và yêu cầu quản\nlý trong từng giai đoạn. Đồng thời, hoạt động của Nhà nước cũng có khả năng\ntác động trở lại đối với các quan hệ kinh tế, chính trị và xã hội. Từ mối quan\nhệ đó, nhận định nào dưới đây phản ánh chính xác nhất cơ sở xác định vai trò\ncủa Nhà nước?",
+      "options": {
+        "A": "Vai trò của Nhà nước chủ yếu được quyết định bởi chức năng mà Nhà nước thực hiện, còn điều kiện kinh tế – xã hội chỉ ảnh hưởng đến phương thức thực hiện chức năng.",
+        "B": "Vai trò của Nhà nước được xác định từ sự kết hợp giữa những điều kiện khách quan quy định nhu cầu và phạm vi tác động của Nhà nước với khả năng chủ quan của Nhà nước trong việc nhận thức, tổ chức và tác động trở lại đời sống xã hội.",
+        "C": "Vai trò của Nhà nước về cơ bản phụ thuộc vào ý chí của chủ thể nắm quyền lực nhà nước, bởi các điều kiện kinh tế – xã hội chỉ tạo ra môi trường đề Nhà nước lựa chọn phương thức hoạt động.",
+        "D": "Vai trò của Nhà nước được quyết định chủ yếu bởi hệ thống pháp luật hiện hành, bởi pháp luật xác định phạm vi quyền lực và qua đó quyết định khả năng Nhà nước tác động đến các quan hệ xã hội."
+      }
+    },
+    {
+      "originalNumber": 16,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Nhà nước đồng thời thực hiện nhiều hoạt động nhằm duy trì trật tự, tổ\nchức đời sống xã hội, điều tiết các quan hệ kinh tế và giải quyết những vấn đề\nchung. Việc Nhà nước thực hiện ngày càng nhiều hoạt động mang tính xã hội\nkhông thể được xem xét tách rời khỏi cơ sở kinh tế, chính trị và lợi ích giai cấp\ntrong xã hội. Nhận định nào dưới đây phản ánh chính xác nhất mối quan hệ\ngiữa tính giai cấp và tính xã hội của Nhà nước?",
+      "options": {
+        "A": "Nhà nước có thể thực hiện các lợi ích chung của xã hội nhưng điều đó không tự động làm mất bản chất giai cấp của Nhà nước; trong những điều kiện có đối kháng giai cấp, hoạt động của Nhà nước vẫn gắn với việc duy trì trật tự phù hợp với lợi ích cơ bản của giai cấp thống trị.",
+        "B": "Nhà nước chỉ mang bản chất giai cấp khi sử dụng biện pháp cưỡng chế; đối với hoạt động kinh tế, xã hội và tổ chức đời sống chung, Nhà nước về nguyên tắc không còn chịu sự chi phối của lợi ích giai cấp.",
+        "C": "Khi Nhà nước thực hiện ngày càng nhiều chức năng xã hội thì tính giai cấp sẽ từng bước mất đi và cuối cùng Nhà nước có thể trở thành thiết chế trung lập giữa các giai cấp.",
+        "D": "Bản chất giai cấp của Nhà nước loại trừ khả năng Nhà nước thực hiện lợi ích chung, vì lợi ích chung và lợi ích giai cấp là hai loại lợi ích đối lập không thể đồng thời được phản ánh trong hoạt động của Nhà nước."
+      }
+    },
+    {
+      "originalNumber": 17,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong Nhà nước xã hội chủ nghĩa, quyền lực nhà nước được xác định\nlà thuộc về Nhân dân, đồng thời Nhà nước mang bản chất của giai cấp công\nnhân và có cơ sở xã hội rộng rãi. Việc đồng thời tồn tại các đặc điểm này đặt\nra yêu cầu phân biệt giữa bản chất giai cấp, tính nhân dân và tính xã hội của\nNhà nước, tránh đồng nhất hoặc tuyệt đối hóa bất kỳ phương diện nào. Nhận\nđịnh nào dưới đây phản ánh chính xác nhất mối quan hệ đó?",
+      "options": {
+        "A": "Khi Nhân dân trở thành chủ thể của quyền lực nhà nước thì Nhà nước không còn cơ sở để được xem là công cụ quyền lực của bất kỳ giai cấp nào, bởi quyền lực nhà nước đã chuyển hoàn toàn thành quyền lực của toàn xã hội.",
+        "B": "Tính nhân dân và bản chất giai cấp của Nhà nước xã hội chủ nghĩa không loại trừ nhau; tính nhân dân được thể hiện ở cơ sở xã hội, mục tiêu và phương thức tổ chức quyền lực, còn bản chất giai cấp thể hiện ở định hướng chính trị và cơ sở của quyền lực nhà nước.",
+        "C": "Nhà nước xã hội chủ nghĩa vẫn mang bản chất giai cấp trong lĩnh vực chính trị nhưng đã trở thành thiết chế trung lập trong lĩnh vực kinh tế và xã hội, bởi các hoạt động này chủ yếu nhằm đáp ứng lợi ích chung.",
+        "D": "Nhà nước xã hội chủ nghĩa chỉ có bản chất giai cấp; tính nhân dân chỉ phản ánh phạm vi đối tượng được Nhà nước quản lý chứ không phải là một phương diện cấu thành đặc điểm của Nhà nước."
+      }
+    },
+    {
+      "originalNumber": 18,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Xem xét các nhận định sau:\n(1) Một quy tắc xử sự được Nhà nước thừa nhận chưa vì thế mà có thể\nđồng nhất với mọi quy phạm pháp luật; để xác định tư cách pháp lý của quy\ntắc còn phải xem xét những đặc điểm và hình thức tồn tại mà pháp luật quy\nđịnh.\n(2) Tính quy phạm phổ biến của pháp luật thể hiện ở việc quy tắc xử sự\nđược đặt ra để áp dụng nhiều lần đối với các trường hợp thuộc phạm vi điều\nchỉnh, nhưng không đòi hỏi quy tắc đó phải áp dụng cho mọi chủ thể trong xã\nhội.\n(3) Vì pháp luật thể hiện ý chí của Nhà nước nên mọi quy phạm pháp\nluật đều trực tiếp nhằm bảo vệ lợi ích của cơ quan hoặc cá nhân có thẩm quyền\nban hành quy phạm đó.\n(4) Việc Nhà nước bảo đảm thực hiện pháp luật bằng quyền lực nhà\nnước không đồng nghĩa với việc mọi quy phạm đều phải được thực hiện bằng\ncưỡng chế trực tiếp; việc tuân thủ tự nguyện, thực hiện nghĩa vụ và các hình\nthức bảo đảm khác cũng là những phương thức làm cho pháp luật được thực\nhiện.\nCó bao nhiêu nhận định sai?",
+      "options": {
+        "A": "3",
+        "B": "2",
+        "C": "1",
+        "D": "4"
+      }
+    },
+    {
+      "originalNumber": 19,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Xem xét các nhận định sau:\n(1) Ba bộ phận giả định, quy định và chế tài phản ánh mối liên hệ logic\ncủa quy phạm pháp luật; việc một văn bản chỉ thể hiện một hoặc hai bộ phận\ntrong cùng một điều khoản không đồng nghĩa quy phạm tương ứng không có\ncấu trúc đầy đủ.\n(2) Phần giả định xác định những điều kiện, hoàn cảnh và chủ thể mà\ntrong đó quy tắc xử sự được áp dụng; vì vậy, mọi thông tin về chủ thể trong\nquy phạm pháp luật đều thuộc phần giả định.\n(3) Phần quy định xác định cách xử sự mà chủ thể phải thực hiện, được\nphép thực hiện hoặc bị cấm thực hiện khi những điều kiện áp dụng quy phạm\nđược đáp ứng.\n(4) Chế tài chỉ xuất hiện trong những quy phạm cấm thực hiện hành vi;\nđối với quy phạm trao quyền hoặc quy phạm xác định nghĩa vụ thì không thể\nxác định chế tài trong câu trúc logic.\nCó bao nhiêu nhận định đúng?",
+      "options": {
+        "A": "1",
+        "B": "3",
+        "C": "2",
+        "D": "4"
+      }
+    },
+    {
+      "originalNumber": 20,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cùng một hoạt động quản lý, Nhà nước có thể vừa sử dụng quyền lực\ncông để duy trì trật tự, xử lý hành vi xâm phạm lợi ích chung, vừa tổ chức cung\ncấp dịch vụ công, bảo đảm những điều kiện cần thiết cho đời sống xã hội và\nđiều phối các hoạt động có tính cộng đồng. Việc một hoạt động có sử dụng\nquyền lực nhà nước hoặc có tính bắt buộc không tự nó quyết định hoạt động\nđó chỉ mang một thuộc tính duy nhất của Nhà nước. Nhận định nào dưới đây\nđúng?",
+      "options": {
+        "A": "Hoạt động sử dụng quyền lực và cưỡng chế nhà nước về bản chất chỉ phản ánh tính giai cấp; tính xã hội chỉ được biểu hiện trong những hoạt động không mang tính bắt buộc.",
+        "B": "Tính xã hội của Nhà nước chỉ được xác định thông qua những hoạt động trực tiếp đáp ứng nhu cầu vật chất, tinh thần của cộng đồng; việc duy trì trật tự bằng quyền lực công không thuộc phạm vi này.",
+        "C": "Tính giai cấp và tính xã hội có thể đồng thời được biểu hiện trong cùng một hoạt động của Nhà nước; việc tổ chức, duy trì trật tự và giải quyết những công việc chung của xã hội vẫn có thể mang tính xã hội ngay cả khi được thực hiện bằng quyền lực nhà nước.",
+        "D": "Khi Nhà nước thực hiện một hoạt động nhằm lợi ích chung thì hoạt động đó không còn liên quan đến tính giai cấp, bởi lợi ích chung về bản chất đứng ngoài sự khác biệt về lợi ích giữa các giai cấp."
+      }
+    },
+    {
+      "originalNumber": 21,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Một địa phương sau khi rà soát hệ thống văn bản phát hiện ba nhóm\nvấn đề: một số quy định cùng điều chỉnh một vấn đề nhưng sử dụng cách diễn\nđạt khác nhau; một số quy định đã rõ nhưng cơ quan thực hiện áp dụng không\nthống nhất; một số quyền và nghĩa vụ đã được quy định nhưng cơ chế bảo đảm\nthực hiện còn thiếu. Nếu chỉ xử lý riêng từng nhóm bằng cách ban hành thêm\nvăn bản mới thì nguy cơ phát sinh quy định chồng chéo vẫn còn. Giải pháp nào\ndưới đây phản ánh đầy đủ nhất yêu cầu hoàn thiện pháp luật?",
+      "options": {
+        "A": "Ưu tiên ban hành các quy định mới chi tiết hơn để thay thế dần những quy định chưa thống nhất; vấn đề tổ chức thực hiện có thể được xử lý sau khi hệ thống quy phạm ổn định.",
+        "B": "Đồng thời hoàn thiện nội dung và cấu trúc của hệ thống quy phạm, xử lý những điểm mâu thuẫn hoặc chồng chéo, xác định rõ cơ chế thực hiện và nâng cao hoạt động áp dụng, kiểm tra, giám sát việc thi hành.",
+        "C": "Giảm tối đa số lượng quy phạm để hạn chế khả năng xung đột, đồng thời tăng cường trách nhiệm của cơ quan áp dụng trong việc tự lựa chọn cách giải quyết phù hợp với từng vụ việc.",
+        "D": "Tập trung vào việc tăng cường chế tài đối với hành vi không tuân thủ, bởi sự thiếu nghiêm minh trong xử lý mới là nguyên nhân chủ yếu khiến các quy định chưa phát huy hiệu quả."
+      }
+    },
+    {
+      "originalNumber": 22,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quá trình xem xét một hành vi, các dữ kiện cho thấy: hành vi đã được\nthực hiện; hành vi đó xâm phạm một quan hệ xã hội được pháp luật bảo vệ;\nchủ thể thực hiện có đủ điều kiện chịu trách nhiệm trong trường hợp tương\nứng. Tuy nhiên, thiệt hại vật chất thực tế chưa xảy ra. Ở một trường hợp khác,\nthiệt hại tài sản đã xảy ra nhưng hành vi gây thiệt hại không thuộc trường hợp\npháp luật xác định là vi phạm. Kết luận nào dưới đây đúng?",
+      "options": {
+        "A": "Cả hai trường hợp đều chưa thể đặt ra trách nhiệm pháp lý vì trách nhiệm chỉ phát sinh sau khi đã có thiệt hại thực tế.",
+        "B": "Trường hợp thứ nhất có thể đặt ra trách nhiệm pháp lý nếu hành vi đã hội đủ các dấu hiệu của vi phạm; trường hợp thứ hai không thể chỉ dựa vào thiệt hại để kết luận có vi phạm pháp luật.",
+        "C": "Trường hợp thứ nhất chỉ có thể đặt ra trách nhiệm pháp lý nếu cơ quan nhà nước chứng minh được thiệt hại tiềm ẩn; trường hợp thứ hai đương nhiên làm phát sinh trách nhiệm do đã có thiệt hại.",
+        "D": "Cả hai trường hợp đều có thể làm phát sinh trách nhiệm pháp lý vì yếu tố quyết định là hậu quả thực tế hoặc nguy cơ gây hậu quả của hành vi đối với xã hội."
+      }
+    },
+    {
+      "originalNumber": 23,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Một văn bản dưới luật được ban hành sau một đạo luật và được sử dụng\nđể hướng dẫn thực hiện đạo luật đó. Trong quá trình áp dụng, phát hiện một\nquy định của văn bản dưới luật đặt ra điều kiện hạn chế quyền của chủ thể mà\nđạo luật không quy định và cũng không trao quyền quy định thêm cho văn bản\nhướng dẫn. Cơ quan đang giải quyết vụ việc không thể chỉ dựa vào thời điểm\nban hành để lựa chọn quy định áp dụng. Cách xử lý nào dưới đây đúng?",
+      "options": {
+        "A": "Áp dụng văn bản dưới luật vì đây là quy định được ban hành sau và có tính cụ thể hơn đối với vụ việc.",
+        "B": "Áp dụng đồng thời cả hai văn bản, trong đó sử dụng luật để xác định nguyên tắc và văn bản dưới luật để xác định điều kiện thực hiện cụ thể.",
+        "C": "Áp dụng quy định của luật; đối với nội dung của văn bản dưới luật vượt quá hoặc không phù hợp với luật thì phải xử lý theo cơ chế kiểm tra, xử lý văn bản và thẩm quyền tương ứng.",
+        "D": "Tạm thời áp dụng văn bản dưới luật nếu việc áp dụng không gây thiệt hại trực tiếp, sau đó kiến nghị cơ quan ban hành xem xét sửa đổi."
+      }
+    },
+    {
+      "originalNumber": 24,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quy phạm pháp luật đã xác định những chủ thể, điều kiện và cách xử\nsự có tính chung. Tuy nhiên, trước khi sự kiện pháp lý tương ứng xuất hiện,\nchưa thể xác định một cá nhân cụ thể đang có quyền yêu cầu hay đang phải\nthực hiện nghĩa vụ trong quan hệ pháp luật cụ thể. Khi sự kiện pháp lý phát\nsinh, quy phạm chung được vận dụng đối với những chủ thể xác định và làm\nxuất hiện quyền, nghĩa vụ tương ứng. Nội dung này phản ánh:",
+      "options": {
+        "A": "Quy phạm pháp luật chỉ có giá trị điều chỉnh sau khi đã phát sinh quan hệ pháp luật cụ thể.",
+        "B": "Quyền và nghĩa vụ pháp lý cụ thể tồn tại độc lập với sự kiện pháp lý; sự kiện chỉ có tác dụng làm rõ chủ thể của quan hệ đã có sẵn.",
+        "C": "Quan hệ pháp luật là hình thức cá biệt hóa sự tác động của quy phạm pháp luật đối với các chủ thể xác định khi xuất hiện những điều kiện và sự kiện pháp lý tương ứng.",
+        "D": "Sự kiện pháp lý có vai trò thay thế quy phạm pháp luật trong những trường hợp quy phạm không quy định trực tiếp quyền và nghĩa vụ của từng chủ thể."
+      }
+    },
+    {
+      "originalNumber": 25,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Hành vi đồng thời gây thiệt hại về tài sản, tạo ra phản ứng tiêu cực trong\nxã hội và dẫn đến việc cơ quan có thẩm quyền áp dụng một biện pháp xử lý.\nTuy nhiên, khi xác định hành vi thuộc loại vi phạm nào, chỉ riêng ba dữ kiện\ntrên chưa đủ để kết luận. Việc phân loại phải đặt hành vi trong tổng thể những\ndấu hiệu pháp lý có liên quan. Căn cứ nào dưới đây có ý nghĩa quyết định?",
+      "options": {
+        "A": "Loại biện pháp xử lý được áp dụng, bởi biện pháp xử lý đã phản ánh sự đánh giá của Nhà nước về tính chất của hành vi.",
+        "B": "Mức độ thiệt hại và phản ứng xã hội, bởi đây là những căn cứ trực tiếp thể hiện mức độ nguy hiểm của hành vi.",
+        "C": "Tính chất, mức độ xâm hại đến quan hệ xã hội được pháp luật bảo vệ cùng các dấu hiệu pháp lý về chủ thể, hành vi và các yếu tố liên quan của từng loại vi phạm.",
+        "D": "Độ tuổi, nghề nghiệp và hoàn cảnh của chủ thể, bởi những yếu tố này quyết định hành vi thuộc loại vi phạm nào."
+      }
+    },
+    {
+      "originalNumber": 26,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Hệ thống pháp luật có quy định tương đối đầy đủ nhưng trên thực tế\nvẫn xuất hiện tình trạng quyền được quy định nhưng khó thực hiện, nghĩa vụ\nđược xác định nhưng việc kiểm tra chưa hiệu quả, cùng một quy định được áp\ndụng không thống nhất giữa các cơ quan. Việc tiếp tục gia tăng số lượng quy\nphạm trong khi những vấn đề trên chưa được giải quyết sẽ không đương nhiên\nnâng cao hiệu quả điều chỉnh. Yếu tố nào dưới đây cần được đặt cùng với việc\nhoàn thiện quy phạm?",
+      "options": {
+        "A": "Mở rộng tối đa phạm vi điều chỉnh của pháp luật để hạn chế khoảng trống và giảm sự phụ thuộc vào các cơ chế xã hội khác.",
+        "B": "Tăng cường cưỡng chế đối với mọi trường hợp không tuân thủ để bảo đảm quy phạm luôn được thực hiện bằng quyền lực nhà nước.",
+        "C": "Tăng cường tuyên truyền để chuyển trách nhiệm thực hiện pháp luật chủ yếu sang ý thức tự giác của cá nhân và tổ chức.",
+        "D": "Bảo đảm quá trình tổ chức thi hành, áp dụng, kiểm tra và giám sát việc thực hiện pháp luật được tiến hành thống nhất, đúng thẩm quyền và phù hợp với nội dung của quy phạm."
+      }
+    },
+    {
+      "originalNumber": 27,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Nền kinh tế duy trì tốc độ tăng trưởng cao nhưng đồng thời xuất hiện\nsự phân hóa về thu nhập, chênh lệch khả năng tiếp cận dịch vụ thiết yếu, áp\nlực đối với tài nguyên và môi trường, cùng những hệ quả xã hội phát sinh trong\nquá trình chuyển đổi mô hình phát triển. Nếu chỉ sử dụng chỉ tiêu tăng trưởng\nđể đánh giá kết quả quản lý kinh tế thì sẽ bỏ qua một phần quan trọng của mục\ntiêu phát triển. Yêu cầu đặt ra là:",
+      "options": {
+        "A": "Ưu tiên tăng trưởng trong giai đoạn đầu, sau đó sử dụng nguồn lực tạo ra từ tăng trưởng để xử lý các vấn đề xã hội và môi trường.",
+        "B": "Điều tiết mạnh quá trình phân phối để thu hẹp chênh lệch thu nhập, ngay cả khi phải đánh đổi một phần hiệu quả và động lực tăng trưởng.",
+        "C": "Hạn chế sự can thiệp của Nhà nước vào quá trình phân bổ nguồn lực để cơ chế thị trường tự điều chỉnh đồng thời các vấn đề về tăng trưởng và phân phối.",
+        "D": "Kết hợp yêu cầu tăng trưởng với nâng cao chất lượng phát triển, tiến bộ và công bằng xã hội, sử dụng hiệu quả nguồn lực, bảo vệ môi trường và bảo đảm khả năng phát triển lâu dài."
+      }
+    },
+    {
+      "originalNumber": 28,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong tổ chức quyền lực nhà nước, yêu cầu bảo đảm quyền lực thống\nnhất không đồng nghĩa với việc mọi quyền lực phải được tập trung vào một cơ\nquan duy nhất. Việc thiết kế cơ chế quyền lực phải đồng thời xử lý mối quan\nhệ giữa thống nhất quyền lực, phân công chức năng và kiểm soát việc thực\nhiện quyền lực. Nội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Quyền lực nhà nước được thống nhất thì việc phân công giữa các cơ quan chỉ có ý nghĩa về mặt tổ chức, không đặt ra yêu cầu kiểm soát quyền lực giữa các cơ quan.",
+        "B": "Phân công quyền lực giữa các cơ quan lập pháp, hành pháp và tư pháp đồng nghĩa với việc quyền lực nhà nước được chia thành những quyền lực độc lập, tách biệt hoàn toàn.",
+        "C": "Quyền lực nhà nước thuộc về Nhân dân nên cơ chế kiểm soát quyền lực chủ yếu phải được thực hiện từ bên ngoài bộ máy nhà nước; kiểm soát giữa các cơ quan nhà nước chỉ có ý nghĩa bổ trợ.",
+        "D": "Quyền lực nhà nước được tổ chức thống nhất nhưng phải có sự phân công, phối hợp và kiểm soát giữa các cơ quan trong thực hiện quyền lập pháp, hành pháp và tư pháp nhằm bảo đảm quyền lực được thực hiện đúng thẩm quyền và hạn chế lạm quyền."
+      }
+    },
+    {
+      "originalNumber": 29,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quá trình kiểm tra một văn bản quy phạm pháp luật do cơ quan nhà\nnước ở địa phương ban hành, phát hiện nội dung của văn bản có dấu hiệu không\nphù hợp với văn bản có hiệu lực pháp lý cao hơn. Việc xác định cơ quan có\nquyền xử lý không thể chỉ dựa vào vị trí “cấp trên” của cơ quan phát hiện vi\nphạm mà phải căn cứ vào quy định pháp luật về thẩm quyền kiểm tra, xử lý và\nloại văn bản cụ thể. Nội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Cơ quan hành chính cấp trên có thể tự mình đình chỉ hoặc bãi bỏ mọi văn bản của cơ quan cấp dưới nếu nhận thấy văn bản đó không còn phù hợp với yêu cầu quản lý.",
+        "B": "Thẩm quyền xử lý văn bản trái pháp luật được xác định theo quy định pháp luật về từng loại văn bản và từng chủ thể có thẩm quyền; quan hệ cấp trên – cấp dưới không tự động tạo ra quyền đình chỉ hoặc bãi bỏ văn bản.",
+        "C": "Cơ quan chuyên môn về tư pháp ở địa phương có thể trực tiếp bãi bỏ văn bản quy phạm pháp luật của mọi cơ quan nhà nước tại địa phương khi phát hiện nội dung trái pháp luật.",
+        "D": "Người đứng đầu cơ quan hành chính cấp tỉnh có thể đình chỉ mọi nghị quyết của HĐND cấp dưới vì HĐND cấp dưới thuộc cùng hệ thống chính quyền địa phương."
+      }
+    },
+    {
+      "originalNumber": 30,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Một văn bản quy phạm pháp luật của chính quyền địa phương đã được\nthông qua hoặc ký ban hành đúng thẩm quyền. Văn bản có quy định về thời\nđiểm bắt đầu có hiệu lực, đồng thời thuộc trường hợp phải được đăng tải, công\nkhai theo quy định. Việc xác định hiệu lực của văn bản không thể chỉ căn cứ\nvào việc văn bản đã được công bố trên Công báo hay chưa. Nội dung nào dưới\nđây đúng?",
+      "options": {
+        "A": "Văn bản chỉ phát sinh hiệu lực kể từ thời điểm được đăng Công báo, bất kể trong văn bản đã xác định thời điểm có hiệu lực như thế nào.",
+        "B": "Văn bản mặc nhiên có hiệu lực ngay sau khi được thông qua hoặc ký ban hành nếu đã bảo đảm đúng thẩm quyền, bởi việc công bố chỉ nhằm mục đích cung cấp thông tin.",
+        "C": "Thời điểm có hiệu lực phải được xác định theo quy định của pháp luật và quy định về hiệu lực được thể hiện trong chính văn bản; việc đăng tải, công khai là yêu cầu bảo đảm khả năng tiếp cận và thực hiện pháp luật, không thể mặc nhiên đồng nhất với thời điểm phát sinh hiệu lực.",
+        "D": "Chỉ những văn bản được ban hành theo trình tự thông thường mới phải tuân thủ thời hạn về hiệu lực; văn bản ban hành theo trình tự rút gọn đương nhiên có hiệu lực ngay sau khi ký."
+      }
+    },
+    {
+      "originalNumber": 31,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "UBND cấp tỉnh ban hành một văn bản quy phạm pháp luật để điều\nchỉnh một lĩnh vực thuộc phạm vi quản lý của địa phương. Trong quá trình\nthực hiện, một số quy định của văn bản được xác định không phù hợp với quy\nđịnh của luật và nghị quyết của Quốc hội đang có hiệu lực. Việc văn bản được\nban hành nhằm đáp ứng yêu cầu quản lý đặc thù của địa phương không làm\nthay đổi vị trí của nó trong hệ thống pháp luật. Nội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Văn bản của UBND cấp tỉnh vẫn có thể được áp dụng trong phạm vi địa phương nếu nội dung đó phù hợp với điều kiện thực tế và chưa có cơ quan có thẩm quyền tuyên bố hủy bỏ.",
+        "B": "Nếu nội dung của văn bản đã được HĐND cùng cấp thống nhất về chủ trương thì có thể tiếp tục áp dụng, kể cả khi có điểm khác với luật, vì đây là vấn đề thuộc quyền tự quản của địa phương.",
+        "C": "Chỉ những quy định của văn bản địa phương làm hạn chế quyền con người, quyền công dân mới phải bảo đảm phù hợp với luật; các quy định về quản lý kinh tế, hành chính có thể được thiết kế khác.",
+        "D": "Văn bản quy phạm pháp luật của UBND cấp tỉnh phải bảo đảm tính hợp hiến, hợp pháp và tính thống nhất của hệ thống pháp luật; yêu cầu quản lý đặc thù của địa phương không phải là căn cứ để đặt ra quy định trái với văn bản có hiệu lực pháp lý cao hơn."
+      }
+    },
+    {
+      "originalNumber": 32,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Xem xét các nhận định sau:\n(1) Quan hệ pháp luật không chỉ là quan hệ xã hội được pháp luật điều\nchỉnh mà còn bao hàm sự xác định quyền, nghĩa vụ pháp lý của những chủ thể\ncụ thể trong những điều kiện nhất định.\n(2) Việc một quan hệ xã hội được pháp luật thừa nhận về mặt nguyên\ntắc đồng nghĩa với việc mọi chủ thể tham gia quan hệ đó đương nhiên trở thành\nchủ thể của một quan hệ pháp luật cụ thể, không cần căn cứ vào sự kiện pháp\nlý.\n(3) Một sự kiện pháp lý không tự thân quyết định hậu quả pháp lý; hậu\nquả của sự kiện phụ thuộc vào việc pháp luật quy định sự kiện đó làm phát\nsinh, thay đổi hoặc chấm dứt quan hệ pháp luật nào.\n(4) Trong mọi quan hệ pháp luật, khách thể bắt buộc phải là một tài sản\nhoặc lợi ích vật chất mà các chủ thể hướng tới; quyền, lợi ích tinh thần và\nnhững giá trị xã hội không thể trở thành khách thể.\nCó bao nhiêu nhận định đúng?",
+      "options": {
+        "A": "1",
+        "B": "2",
+        "C": "3",
+        "D": "4"
+      }
+    },
+    {
+      "originalNumber": 33,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quá trình rà soát một văn bản quy phạm pháp luật do cơ quan nhà nước\nở địa phương ban hành, cơ quan kiểm tra xác định một số quy định của văn\nbản không phù hợp với văn bản có hiệu lực pháp lý cao hơn. Văn bản này đã\nđược áp dụng trong một thời gian và đã làm phát sinh một số trường hợp thực\ntế. Tình trạng đã được áp dụng trên thực tế không làm thay đổi yêu cầu xử lý\nvăn bản. Nội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Văn bản vẫn tiếp tục được áp dụng cho đến khi cơ quan ban hành tự mình sửa đổi, vì việc xử lý văn bản đã được áp dụng có thể ảnh hưởng đến sự ổn định của các quan hệ xã hội.",
+        "B": "Chỉ cần xác định văn bản được ban hành đúng thẩm quyền và đúng trình tự, thủ tục thì không thể xử lý nội dung của văn bản, dù có sự khác biệt với văn bản có hiệu lực pháp lý cao hơn.",
+        "C": "Việc văn bản đã được áp dụng trên thực tế không loại trừ trách nhiệm kiểm tra, xử lý; nội dung trái pháp luật phải được xem xét và xử lý bởi chủ thể có thẩm quyền theo trình tự pháp luật quy định.",
+        "D": "Khi phát hiện văn bản trái pháp luật, cơ quan kiểm tra phải trực tiếp bãi bỏ văn bản để bảo đảm hiệu quả xử lý, không phụ thuộc vào thẩm quyền của cơ quan ban hành."
+      }
+    },
+    {
+      "originalNumber": 34,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quy định pháp luật xác lập quyền và nghĩa vụ của các chủ thể trong\nmột quan hệ xã hội cụ thể. Đồng thời, việc phổ biến quy định đó giúp các chủ\nthể hiểu được giới hạn quyền, nghĩa vụ và hậu quả pháp lý của hành vi. Hai\nquá trình này có liên quan nhưng không đồng nhất về phương thức tác động.\nNội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Chức năng điều chỉnh và chức năng giáo dục đều tác động đến hành vi nên thực chất chỉ là hai biểu hiện của cùng một chức năng.",
+        "B": "Chức năng giáo dục chỉ xuất hiện sau khi chức năng điều chỉnh đã hoàn thành, bởi chủ thể chỉ có thể hình thành  thức pháp luật từ việc đã thực hiện quyền và nghĩa vụ.",
+        "C": "Chức năng điều chỉnh chủ yếu tác động đến nhận thức và thái độ pháp lý, còn chức năng giáo dục trực tiếp xác lập quyền và nghĩa vụ giữa các chủ thể.",
+        "D": "Chức năng điều chỉnh thiết lập khuôn khổ pháp lý về quyền, nghĩa vụ và cách xử sự; chức năng giáo dục tác động đến nhận thức, ý thức và thái độ của chủ thể đối với pháp luật, qua đó hỗ trợ việc hình thành hành vi phù hợp."
+      }
+    },
+    {
+      "originalNumber": 35,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Một quy định mới có hiệu lực và được công khai theo quy định. Mức\nđộ người dân biết đến quy định này không giống nhau; có người đã được phổ\nbiến trực tiếp, có người chỉ tiếp cận thông tin thông qua hoạt động của cơ quan,\ntổ chức hoặc những yêu cầu pháp lý phát sinh trong thực tế. Việc đánh giá tác\nđộng của pháp luật vì vậy không thể chỉ dựa vào mức độ tuyên truyền. Nội\ndung nào dưới đây đúng?",
+      "options": {
+        "A": "Nếu chủ thể chưa được tuyên truyền trực tiếp thì quy định chưa thể tác động đến hành vi của chủ thể đó, bởi nhận thức đầy đủ là điều kiện bắt buộc của mọi tác động pháp luật.",
+        "B": "Phổ biến, giáo dục pháp luật có vai trò quan trọng trong việc hình thành nhận thức và ý thức chấp hành, nhưng tác động của pháp luật còn được thực hiện thông qua cơ chế quyền, nghĩa vụ, trách nhiệm pháp lý và hoạt động tổ chức thi hành.",
+        "C": "Việc chủ thể không biết nội dung của quy định làm mất hoàn toàn khả năng áp dụng quy định đối với chủ thể đó, bởi pháp luật chỉ tác động khi có sự nhận thức thực tế.",
+        "D": "Tuyên truyền, phổ biến pháp luật chủ yếu có ý nghĩa về mặt giáo dục, còn việc thực hiện quyền và nghĩa vụ của chủ thể hoàn toàn phụ thuộc vào hoạt động cưỡng chế của Nhà nước."
+      }
+    },
+    {
+      "originalNumber": 36,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong một xã hội có sự phân hóa về lợi ích và tồn tại quyền lực nhà\nnước, pháp luật đồng thời thực hiện nhiều chức năng: xác lập khuôn khổ xử\nsự, duy trì trật tự, tổ chức các quan hệ xã hội và bảo đảm việc thực hiện những\nyêu cầu được Nhà nước xác lập. Nếu chỉ căn cứ vào chức năng điều chỉnh để\nxác định bản chất pháp luật thì sẽ bỏ qua mối quan hệ giữa pháp luật với điều\nkiện kinh tế – xã hội và quyền lực nhà nước. Nội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Pháp luật phản ánh lợi ích của giai cấp thống trị nên các quy định nhằm tổ chức đời sống chung không thuộc nội dung bản chất của pháp luật.",
+        "B": "Pháp luật chủ yếu là công cụ duy trì trật tự xã hội; tính giai cấp chỉ xuất hiện khi pháp luật điều chỉnh trực tiếp các quan hệ về quyền lực chính trị.",
+        "C": "Pháp luật vừa là hệ thống quy tắc xử sự do Nhà nước ban hành hoặc thừa nhận và bảo đảm thực hiện, vừa phản ánh những điều kiện kinh tế – xã hội và ý chí, lợi ích cơ bản của lực lượng nắm quyền lực nhà nước trong những điều kiện lịch sử nhất định.",
+        "D": "Pháp luật có tính bắt buộc chung nên về bản chất đứng ngoài những khác biệt về lợi ích giữa các giai cấp và chỉ phản ánh nhu cầu quản lý chung của xã hội."
+      }
+    },
+    {
+      "originalNumber": 37,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Một cộng đồng, một tập quán về giao dịch tài sản được hình thành và\nduy trì qua nhiều thế hệ. Khi quan hệ kinh tế phát triển, Nhà nước lựa chọn ghi\nnhận tập quán này trong pháp luật và xác định điều kiện, phạm vi áp dụng của\nnó. Từ thời điểm đó, việc tuân thủ quy tắc không còn chỉ dựa vào thói quen và\nsự thừa nhận của cộng đồng. Trường hợp này thể hiện:",
+      "options": {
+        "A": "Mọi tập quán tồn tại lâu dài đều đương nhiên trở thành pháp luật khi Nhà nước xuất hiện.",
+        "B": "Tập quán chỉ có thể trở thành pháp luật nếu toàn bộ cộng đồng thống nhất chuyển đổi nó thành quy tắc bắt buộc.",
+        "C": "Pháp luật thay thế hoàn toàn tập quán, vì một quy tắc đã được Nhà nước thừa nhận thì không còn mang dấu ấn của tập quán ban đầu.",
+        "D": "Nhà nước có thể thừa nhận những tập quán phù hợp với nhu cầu điều chỉnh xã hội và làm cho chúng mang giá trị pháp lý trong phạm vi, điều kiện được pháp luật xác định."
+      }
+    },
+    {
+      "originalNumber": 38,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quy tắc xử sự được cộng đồng duy trì ổn định trong thời gian dài. Quy\ntắc này được các thành viên tự nguyện tuân thủ chủ yếu do thói quen, niềm tin\nvà sức ép của cộng đồng, nhưng chưa được Nhà nước ban hành hoặc thừa nhận.\nSau đó, một đạo luật xác định quy tắc tương tự là chuẩn mực bắt buộc đối với\nnhững trường hợp thuộc phạm vi điều chỉnh. Sự thay đổi về tính chất pháp lý\ncủa quy tắc được giải thích bằng nội dung nào dưới đây?",
+      "options": {
+        "A": "Quy tắc trở thành pháp luật ngay từ thời điểm được cộng đồng sử dụng ổn định, bởi tính phổ biến quyết định giá trị pháp lý của quy tắc.",
+        "B": "Quy tắc chỉ trở thành pháp luật khi được Nhà nước ban hành hoặc thừa nhận và được bảo đảm thực hiện bằng quyền lực nhà nước; sự tồn tại trước đó của tập quán không tự nó tạo ra tính pháp lý.",
+        "C": "Quy tắc vốn đã là pháp luật nhưng chỉ đến khi được đưa vào đạo luật thì mới có hiệu lực thực tế.",
+        "D": "Việc Nhà nước ghi nhận quy tắc chỉ làm tăng mức độ phổ biến của tập quán, không làm thay đổi bản chất của quy tắc."
+      }
+    },
+    {
+      "originalNumber": 39,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quy phạm pháp luật quy định: khi một chủ thể đáp ứng những điều kiện\nnhất định thì phải thực hiện một cách xử sự cụ thể; nếu không thực hiện, chủ\nthể có thể phải chịu hậu quả pháp lý tương ứng. Trong quá trình áp dụng, người\nthực hiện chỉ tập trung vào phần hậu quả để xác định toàn bộ nội dung của quy\nphạm. Cách tiếp cận này bỏ qua mối liên hệ giữa các bộ phận cấu thành quy\nphạm. Nội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Phần chế tài là bộ phận quyết định duy nhất tính bắt buộc của quy phạm; giả định và quy định chỉ có ý nghĩa mô tả.",
+        "B": "Phần giả định xác định hậu quả pháp lý, phần quy định xác định chủ thể và phần chế tài xác định điều kiện áp dụng.",
+        "C": "Phần giả định xác định điều kiện, hoàn cảnh và chủ thể trong những trường hợp nhất định; phần quy định xác định cách xử sự; phần chế tài xác định hậu quả pháp lý bất lợi có thể áp dụng khi có hành vi vi phạm.",
+        "D": "Mỗi điều luật bắt buộc phải thể hiện đầy đủ ba bộ phận giả định, quy định và chế tài theo đúng thứ tự thì mới được coi là một quy phạm pháp luật."
+      }
+    },
+    {
+      "originalNumber": 40,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Quy phạm pháp luật ghi nhận quyền yêu cầu cung cấp thông tin khi đáp\nứng những điều kiện luật định; một quy phạm khác đặt ra lệnh cấm đối với\nviệc tiết lộ thông tin thuộc phạm vi bí mật nhà nước. Hai quy phạm đều có tính\nbắt buộc chung nhưng định hướng cách xử sự của chủ thể theo những phương\nthức khác nhau. Nội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Quy phạm giao quyền chỉ tạo ra khả năng lựa chọn về mặt thực tế, còn quyền pháp lý chỉ phát sinh khi chủ thể đã thực hiện quyền; quy phạm ngăn cấm mới trực tiếp xác lập nghĩa vụ pháp lý.",
+        "B": "Quy phạm giao quyền xác lập khả năng xử sự mà chủ thể được lựa chọn thực hiện trong phạm vi và điều kiện luật định; quy phạm ngăn cấm xác lập giới hạn xử sự mà chủ thể không được thực hiện.",
+        "C": "Quy phạm giao quyền và quy phạm ngăn cấm đều xác lập nghĩa vụ pháp lý như nhau, sự khác biệt chỉ năm ở việc một bên quy định hành vi được thực hiện và bên kia quy định hành vi bị xử lý.",
+        "D": "Quy phạm ngăn cấm chỉ phát sinh ý nghĩa khi hành vi đã xảy ra, còn quy phạm giao quyền chỉ có giá trị trong quá trình giải quyết tranh chấp."
+      }
+    },
+    {
+      "originalNumber": 41,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Điều khoản quy định: “Người sử dụng lao động có trách nhiệm bảo đảm\nđiều kiện an toàn, vệ sinh lao động cho người lao động”. Quy định này không\nđồng thời nêu biện pháp xử lý khi nghĩa vụ bị vi phạm. Khi xác định cấu trúc\ncủa quy phạm, việc không tìm thấy chế tài ngay trong điều khoản không đủ để\nphủ nhận tính chất pháp lý của quy định. Nội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Một quy phạm chỉ có giá trị bắt buộc khi cả ba bộ phận giả định, quy định và chế tài được thể hiện trong cùng một điều khoản.",
+        "B": "Chế tài không phải là bộ phận thuộc cấu trúc logic của quy phạm pháp luật; chỉ giả định và quy định mới có giá trị trong việc xác định cách xử sự.",
+        "C": "Việc không thể hiện chế tài trong cùng điều khoản chỉ có thể chấp nhận đối với các quy phạm mang tính nguyên tắc, còn quy phạm đặt ra nghĩa vụ bắt buộc phải có chế tài trực tiếp.",
+        "D": "Quy phạm vẫn có thể có cấu trúc logic đầy đủ mặc dù chế tài không được thể hiện ngay trong cùng điều khoản; bộ phận chế tài có thể được xác định từ quy phạm khác có liên quan."
+      }
+    },
+    {
+      "originalNumber": 42,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Một quy định ghi nhận quyền của cá nhân nhưng chỉ sử dụng những\nthuật ngữ có phạm vi rất rộng, không xác định rõ điều kiện thực hiện, giới hạn\ncủa quyền và trách nhiệm của chủ thể có liên quan. Khi cùng một quy định\nđược viện dẫn trong nhiều trường hợp, cách hiểu và cách áp dụng có thể khác\nnhau đáng kể. Nội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Yêu cầu về tính xác định đòi hỏi quy phạm phải thể hiện đủ rõ chủ thể, điều kiện, phạm vi và cách xử sự pháp lý cần thiết để hạn chế cách hiểu tùy tiện, nhưng không đồng nghĩa mọi trường hợp áp dụng đều phải cho một kết quả hoàn toàn giống nhau.",
+        "B": "Tính xác định chỉ được bảo đảm khi quy phạm dự liệu toàn bộ mọi tình huống có thể xảy ra, bởi càng nhiều trường hợp được liệt kê thì càng hạn chế được việc giải thích pháp luật.",
+        "C": "Tính xác định chỉ đặt ra đối với các quy phạm quy định nghĩa vụ và chế tài, còn quy phạm trao quyền có thể sử dụng ngôn ngữ khái quát mà không ảnh hưởng đến hiệu quả điều chỉnh.",
+        "D": "Một quy phạm có tính xác định khi được diễn đạt bằng thuật ngữ pháp lý thống nhất; nội dung và phạm vi áp dụng có thể được để mở cho cơ quan áp dụng tự xác định theo từng vụ việc."
+      }
+    },
+    {
+      "originalNumber": 43,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong cùng một lĩnh vực, một quy định cho phép thực hiện một hành\nvi trong điều kiện nhất định, trong khi quy định khác lại hạn chế hoặc cấm\nchính hành vi đó trong điều kiện về cơ bản tương tự. Các quy định được ban\nhành ở những thời điểm khác nhau và thuộc những văn bản có vị trí khác nhau\ntrong hệ thống pháp luật. Nếu không xử lý mối quan hệ giữa các quy định này,\nviệc áp dụng có thể dẫn đến những kết quả trái ngược nhau. Nội dung nào dưới\nđây đúng?",
+      "options": {
+        "A": "Chỉ cần ưu tiên quy phạm được ban hành sau, vì quy định mới luôn phản ánh điều kiện xã hội hiện tại và đương nhiên thay thế quy định trước đó.",
+        "B": "Tính nhất quán đòi hỏi mọi quy phạm phải có nội dung giống nhau ở những lĩnh vực có liên quan, qua đó loại bỏ hoàn toàn khả năng tồn tại những quy định có phạm vi điều chỉnh khác nhau.",
+        "C": "Tính nhất quán đòi hỏi các quy phạm phải được đặt trong mối quan hệ thống nhất, tương thích về nội dung và phù hợp với vị trí pháp lý của chúng, đồng thời phải có cơ chế xử lý khi xuất hiện mâu thuẫn, chồng chéo hoặc xung đột.",
+        "D": "Chỉ cần bảo đảm mỗi quy phạm không tự mâu thuẫn với chính nó thì hệ thống pháp luật vẫn được coi là nhất quán, bởi các văn bản khác nhau có thể quy định trái chiều tùy theo mục tiêu quản lý."
+      }
+    },
+    {
+      "originalNumber": 44,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Xem xét các nhận định sau:\n(1) Việc xây dựng lực lượng Công an nhân dân tinh, gọn, mạnh không\nthể chỉ được đánh giá qua việc giảm đầu mối hoặc sắp xếp lại tổ chức; hiệu\nquả của quá trình này còn phụ thuộc vào chất lượng đội ngũ, năng lực thực\nhiện nhiệm vụ và sự phù hợp giữa tổ chức lực lượng với yêu cầu bảo vệ an\nninh, trật tự trong tình hình mới.\n(2) Mục tiêu xây dựng lực lượng Công an nhân dân hiện đại có thể được\nxác định chủ yếu bằng mức độ ứng dụng khoa học, công nghệ và trang thiết bị\nkỹ thuật; các yếu tố về tổ chức, con người, bản lĩnh chính trị và năng lực nghiệp\nvụ thuộc nhóm điều kiện hỗ trợ.\n(3) Quá trình xây dựng lực lượng Công an nhân dân theo Nghị quyết số\n12-NQ/TW đòi hỏi sự kết hợp giữa xây dựng tổ chức, xây dựng đội ngũ cán\nbộ, nâng cao chất lượng thực hiện nhiệm vụ và bảo đảm các điều kiện cần thiết;\nvì vậy, tinh, gọn về tổ chức không đồng nghĩa với thu hẹp đơn thuần về quy\nmô.\n(4) Khi tổ chức bộ máy đã được sắp xếp theo hướng tinh, gọn, yêu cầu\nnâng cao chất lượng cán bộ và năng lực nghiệp vụ không còn giữ vai trò tương\nứng, bởi hiệu quả hoạt động chủ yếu được quyết định bởi cơ cấu tổ chức và cơ\nchế chỉ huy thống nhất.\nCó bao nhiêu nhận định đúng?",
+      "options": {
+        "A": "3",
+        "B": "1",
+        "C": "2",
+        "D": "4"
+      }
+    },
+    {
+      "originalNumber": 45,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong cùng một chuỗi hoạt động có sự tham gia của nhiều chủ thể: B\ngửi hồ sơ đến cơ quan có thẩm quyền để yêu cầu giải quyết một vấn đề mà\npháp luật trao cho mình quyền lựa chọn; C thực hiện đầy đủ nghĩa vụ tài chính\nđã được pháp luật xác định; D không thực hiện hành vi thuộc nhóm hành vi bị\npháp luật nghiêm cấm; E căn cứ vào quy định pháp luật, xem xét tình tiết của\nmột vụ việc cụ thể và nhân danh Nhà nước ban hành quyết định làm phát sinh\nquyền, nghĩa vụ pháp lý cụ thể cho các chủ thể liên quan. Việc phân loại các\nhình thức thực hiện pháp luật tương ứng là:",
+      "options": {
+        "A": "B – sử dụng; C – thi hành; D – tuân thủ; E – áp dụng.",
+        "B": "B  thi hành; C – sử dụng; D  tuân thủ; E – áp dụng.",
+        "C": "B – sử dụng; C – tuân thủ; D – thi hành; E – áp dụng.",
+        "D": "B  áp dụng; C – thi hành; D – tuân thủ; E – sử dụng."
+      }
+    },
+    {
+      "originalNumber": 46,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Một quy phạm quy định người điều khiển phương tiện không được thực\nhiện hành vi thuộc trường hợp pháp luật cấm khi tham gia giao thông. Xét riêng\nkhả năng lựa chọn của cá nhân trong đời sống, chủ thể vẫn có thể quyết định\nnhiều hành vi khác nhau trước khi tham gia giao thông. Tuy nhiên, khi rơi vào\nđiều kiện mà quy phạm xác định, một cách xử sự nhất định bị pháp luật loại\nkhỏi phạm vi được phép. Việc phân loại quy phạm này phải dựa vào dấu hiệu\nnào?",
+      "options": {
+        "A": "Chủ thể vẫn có quyền tự do lựa chọn hành vi trong đời sống nên quy phạm về bản chất là quy phạm giao quyền, còn hậu quả xử lý chỉ xuất hiện khi quyền lựa chọn bị lạm dụng.",
+        "B": "Quy phạm thuộc loại ngăn cấm, vì nó không trực tiếp yêu cầu chủ thể phải thực hiện một hành vi tích cực mà xác lập giới hạn pháp lý đối với hành vi mà chủ thể không được thực hiện trong điều kiện đã được xác định.",
+        "C": "Quy phạm thuộc loại bắt buộc, vì mọi quy định chứa từ “không được đều làm phát sinh nghĩa vụ phải thực hiện một hành vi thay thế.",
+        "D": "Quy phạm vừa là giao quyền vừa là ngăn cấm, bởi cùng một lúc chủ thể được tự do quyết định hành vi của mình và bị giới hạn bởi hậu quả pháp lý nếu lựa chọn sai."
+      }
+    },
+    {
+      "originalNumber": 47,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Một quy phạm sử dụng các cụm từ như “trong trường hợp cần thiết”,\n“khi có lý do chính đáng” và “phù hợp với yêu cầu thực tế”. Văn bản không\ngiải thích trực tiếp các thuật ngữ này nhưng những điều khoản khác lại quy\nđịnh một số căn cứ, điều kiện và giới hạn có liên quan. Khi đánh giá tính xác\nđịnh của quy phạm, kết luận nào dưới đây phù hợp?",
+      "options": {
+        "A": "Quy phạm đương nhiên thiếu tính xác định vì mọi thuật ngữ không có nội hàm định lượng cụ thể đều tạo ra quyền tùy nghi tuyệt đối cho chủ thể áp dụng.",
+        "B": "Quy phạm vẫn bảo đảm tính xác định nếu toàn bộ hệ thống quy định có liên quan đủ khả năng xác định được phạm vi, điều kiện và giới hạn áp dụng; ngược lại, nếu để khoảng trống quá lớn dẫn đến những cách hiểu tùy tiện thì tính xác định của quy phạm bị ảnh hưởng.",
+        "C": "Việc sử dụng thuật ngữ định tính luôn làm cho quy phạm có tính mềm dẻo cao hơn, vì vậy không thể xem đây là dấu hiệu có khả năng ảnh hưởng đến tính xác định.",
+        "D": "Chỉ cần cơ quan có thẩm quyền giải thích quy phạm sau khi phát sinh vụ việc thì mọi thiếu hụt về tiêu chí xác định ban đầu đều không còn ý nghĩa pháp lý."
+      }
+    },
+    {
+      "originalNumber": 48,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Xem xét các nhận định sau:\n(1) Việc xác định khoa học, công nghệ, đổi mới sáng tạo và chuyển đổi\nsố là động lực quan trọng của phát triển không thể được hiểu thành yêu cầu ưu\ntiên công nghệ trong mọi trường hợp; quá trình phát triển vẫn phải gắn với\nhoàn thiện thể chế, quản trị rủi ro, bảo đảm an toàn và khai thác hiệu quả các\nnguồn lực.\n(2) Khi người dân và doanh nghiệp được xác định là trung tâm, chủ thể,\nnguồn lực và động lực chính của phát triển khoa học, công nghệ, đổi mới sáng\ntạo và chuyển đổi số, vai trò của Nhà nước về nguyên tắc chuyển từ chủ thể\ntrực tiếp quyết định mọi hoạt động sang chủ yếu tạo lập môi trường, hoàn thiện\nthể chế và dẫn dắt những lĩnh vực chiến lược.\n(3) Nếu một cơ quan đã hoàn thành số hóa dữ liệu và chuyển phần lớn\nthủ tục lên môi trường điện tử thì có thể coi nhiệm vụ chuyển đổi số trong\nphạm vi cơ quan đó về cơ bản đã hoàn tất, bởi những thay đổi về mô hình quản\ntrị và phương thức cung cấp dịch vụ chỉ có ý nghĩa ở giai đoạn tiếp theo.\n(4) Cách tiếp cận về phát triển khoa học, công nghệ, đổi mới sáng tạo\nvà chuyển đổi số đặt ra yêu cầu xử lý đồng thời các vấn đề về thể chế, nhân\nlực, hạ tầng, dữ liệu và năng lực quản trị; do đó, đầu tư công nghệ nhưng không\nthay đổi phương thức vận hành có thể không tạo ra sự chuyển biến tương xứng.\nCó bao nhiêu nhận định sai?",
+      "options": {
+        "A": "3",
+        "B": "2",
+        "C": "4",
+        "D": "1"
+      }
+    },
+    {
+      "originalNumber": 49,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Xã hội có sự phân hóa về vị trí kinh tế, địa vị xã hội và lợi ích, các chủ\nthể không nhất thiết hình thành cùng một cách nhận thức và đánh giá đối với\npháp luật. Đặc biệt, khi lợi ích cơ bản giữa các giai cấp có sự đối lập, ý thức\npháp luật có thể phản ánh những cách nhìn khác nhau về cùng một quy định.\nNội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Sự khác biệt về lợi ích giai cấp chỉ ảnh hưởng đến thái độ chính trị, không ảnh hưởng trực tiếp đến nhận thức, đánh giá và thái độ đối với pháp luật.",
+        "B": "Vì pháp luật có tính bắt buộc chung nên khi một quy phạm đã được ban hành, sự khác biệt về địa vị và lợi ích xã hội không còn khả năng tạo ra sự khác biệt trong ý thức pháp luật.",
+        "C": "Ý thức pháp luật của giai cấp bị trị có thể tiếp nhận những chuẩn mực pháp lý đang tồn tại, nhưng đồng thời có thể hình thành những đánh giá và thái độ khác biệt hoặc đối lập với ý thức pháp luật của giai cấp thống trị khi lợi ích cơ bản giữa các giai cấp mâu thuẫn.",
+        "D": "Ý thức pháp luật của giai cấp bị trị về bản chất phải phủ nhận toàn bộ pháp luật hiện hành, bởi mọi quy phạm pháp luật đều chỉ phục vụ trực tiếp lợi ích của giai cấp thống trị."
+      }
+    },
+    {
+      "originalNumber": 50,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong một xã hội không còn sự đồng nhất tuyệt đối về nghề nghiệp,\ntrình độ, vị trí xã hội và lợi ích cụ thể, vẫn có thể hình thành sự thống nhất\ntương đối về những giá trị pháp lý cơ bản. Sự thống nhất này không xuất phát\ntừ việc mọi cá nhân có cùng nhận thức hoặc hoàn toàn không còn khác biệt về\nlợi ích. Yếu tố nào giữ vai trò nền tảng để giải thích hiện tượng đó?",
+      "options": {
+        "A": "Sự thống nhất về những lợi ích cơ bản, mục tiêu phát triển xã hội và các giá trị nền tảng được pháp luật phản ánh, qua đó tạo cơ sở cho sự thống nhất tương đối trong nhận thức và thái độ pháp lý.",
+        "B": "Việc tất cả cá nhân đều chịu sự điều chỉnh của cùng một hệ thống pháp luật, bởi tính bắt buộc chung của pháp luật có khả năng loại bỏ sự khác biệt trong ý thức pháp luật.",
+        "C": "Sự phát triển của xã hội làm cho các lợi ích riêng biệt ngày càng thu hẹp, từ đó sự khác biệt về nhận thức pháp luật giữa các nhóm xã hội về cơ bản không còn đáng kể.",
+        "D": "Hoạt động phổ biến, giáo dục pháp luật tạo ra cùng một khuôn mẫu nhận thức cho mọi chủ thể, nên sự thống nhất của ý thức pháp luật chủ yếu là kết quả của quá trình truyền đạt pháp luật."
+      }
+    },
+    {
+      "originalNumber": 51,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Xem xét các nhận định sau:\n(1) Trong nền kinh tế thị trường định hướng xã hội chủ nghĩa, việc Nhà\nnước thực hiện chức năng tổ chức và quản lý kinh tế không đồng nghĩa với\nviệc Nhà nước trực tiếp quyết định thay doanh nghiệp về sản phẩm, phương\nthức kinh doanh hay phân bổ mọi nguồn lực; chức năng này chủ yếu được thực\nhiện thông qua thể chế, chiến lược, quy hoạch, chính sách và các công cụ điều\ntiết phù hợp.\n(2) Sự tồn tại của nhiều thành phần kinh tế và yêu cầu bảo đảm bình\nđăng trước pháp luật không loại trừ việc Nhà nước xác định vị trí, vai trò khác\nnhau của từng khu vực trong nền kinh tế; tuy nhiên, sự khác biệt về vai trò kinh\ntế không tự động tạo ra sự khác biệt về địa vị pháp lý cơ bản của các chủ thể\nkhi tham gia thị trường.\n(3) Khi kinh tế nhà nước được xác định giữ vai trò chủ đạo, Nhà nước\ncó thể thiết lập những ưu đãi mang tính mặc nhiên cho doanh nghiệp thuộc khu\nvực kinh tế nhà nước trong mọi lĩnh vực, bởi sự ưu tiên về vai trò kinh tế là\ncăn cứ đủ để tạo ra sự khác biệt về quyền và nghĩa vụ pháp lý giữa các chủ thể.\n(4) Việc Nhà nước sử dụng các công cụ pháp lý có tính bắt buộc để điều\nchỉnh hoạt động của doanh nghiệp không đương nhiên làm mất bản chất thị\ntrường của nền kinh tế; vấn đề quyết định là các biện pháp đó có được thực\nhiện đúng thẩm quyền, đúng pháp luật và phù hợp với cơ chế vận hành của thị\ntrường hay không.\nCó bao nhiêu nhận định sai?",
+      "options": {
+        "A": "3",
+        "B": "1",
+        "C": "4",
+        "D": "2"
+      }
+    },
+    {
+      "originalNumber": 52,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Pháp luật được ban hành nhưng việc áp dụng giữa các cơ quan, địa\nphương và chủ thể lại thiếu thống nhất; có trường hợp cơ quan nhà nước viện\ndẫn yêu cầu quản lý để thực hiện vượt quá giới hạn pháp luật, trong khi một số\ntổ chức, cá nhân lại lựa chọn chỉ chấp hành những quy định có lợi cho mình.\nTrong điều kiện đó, yêu cầu cốt lõi của pháp chế xã hội chủ nghĩa được thể\nhiện ở:",
+      "options": {
+        "A": "Tăng cường quyền chủ động của cơ quan nhà nước trong việc lựa chọn cách áp dụng pháp luật phù hợp với từng hoàn cảnh cụ thể.",
+        "B": "Bảo đảm pháp luật được tôn trọng, chấp hành và thực hiện nghiêm chỉnh, thống nhất; mọi chủ thể, kể cả cơ quan thực hiện quyền lực nhà nước, đều phải hoạt động trong khuôn khổ pháp luật.",
+        "C": "Ưu tiên bảo đảm hiệu quả quản lý nhà nước, trong đó việc áp dụng pháp luật có thể linh hoạt nếu kết quả cuối cùng phù hợp với lợi ích chung.",
+        "D": "Tập trung kiểm soát hành vi của cá nhân và tổ chức xã hội, bởi đây là những chủ thể trực tiếp chịu sự điều chỉnh của pháp luật."
+      }
+    },
+    {
+      "originalNumber": 53,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Cơ quan nhà nước được giao thẩm quyền giải quyết một loại công việc\nnhất định. Trong quá trình thực hiện, cơ quan này viện dẫn yêu cầu bảo đảm\nhiệu quả quản lý để đặt ra thêm một điều kiện mà pháp luật không quy định,\nđồng thời cho rằng cơ quan nhà nước không thể bị xem xét dưới góc độ vi\nphạm pháp chế vì chính cơ quan nhà nước là chủ thể tổ chức thực hiện pháp\nluật. Nội dung nào dưới đây đúng?",
+      "options": {
+        "A": "Cơ quan nhà nước chỉ vi phạm pháp chế nếu thực hiện hành vi vượt quá thẩm quyền và gây thiệt hại thực tế cho cá nhân, tổ chức.",
+        "B": "Việc cơ quan nhà nước tự đặt thêm điều kiện quản lý chỉ là vấn đề nghiệp vụ, không liên quan đến pháp chế nếu mục đích nhằm bảo đảm lợi ích chung.",
+        "C": "Quyền lực công không tạo ra ngoại lệ đối với yêu cầu tuân thủ pháp luật; cơ quan nhà nước phải thực hiện đúng thẩm quyền, căn cứ, trình tự và giới hạn mà pháp luật xác định.",
+        "D": "Pháp chế chủ yếu điều chỉnh quan hệ giữa Nhà nước với công dân, còn quan hệ nội bộ trong hoạt động công quyền thuộc phạm vi quản lý hành chính."
+      }
+    },
+    {
+      "originalNumber": 54,
+      "type": "mcq",
+      "section": "independent",
+      "stem": "Trong cùng một vụ việc, cơ quan nhà nước ban hành quyết định đúng\nthẩm quyền nhưng áp dụng sai căn cứ pháp lý; cá nhân có nghĩa vụ theo quy\nđịnh nhưng tự ý thực hiện khác đi vì cho rằng quy định không còn phù hợp;\ndoanh nghiệp thực hiện quyền tự chủ kinh doanh nhưng từ chối một nghĩa vụ\nbắt buộc mà pháp luật đặt ra. Các biểu hiện trên khác nhau về chủ thể và cách\nthức vi phạm, nhưng cùng đặt ra vấn đề nào đối với pháp chế?",
+      "options": {
+        "A": "Pháp chế chỉ bị ảnh hưởng khi hành vi vi phạm xuất phát từ cơ quan nhà nước, bởi cơ quan nhà nước mới có khả năng làm thay đổi trật tự pháp lý.",
+        "B": "Việc tuân thủ pháp luật của cá nhân và doanh nghiệp có thể được xem xét linh hoạt hơn so với cơ quan nhà nước do họ không trực tiếp thực hiện quyền lực công.",
+        "C": "Chỉ cần quyết định của cơ quan nhà nước được ban hành đúng thẩm quyền thì sai sót về căn cứ pháp lý không ảnh hưởng đến yêu cầu pháp chế.",
+        "D": "Pháp chế đòi hỏi pháp luật phải được thực hiện đúng và thống nhất bởi cả chủ thể thực hiện quyền lực nhà nước lẫn chủ thể chịu sự tác động của quyền lực đó; không chủ thể nào có thể tự xác lập ngoại lệ cho mình."
+      }
+    },
+    {
+      "originalNumber": 55,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Việc Nhà nước tổ chức và giải quyết những công việc chung của xã hội không đủ để phủ nhận bản chất giai cấp của Nhà nước. Trong xã hội có sự phân hóa và đối kháng về lợi ích, Nhà nước vừa thực hiện chức năng xã hội, vừa duy trì một trật tự chính trị - pháp lý nhất định. Vì vậy, không thể đồng nhất ... của Nhà nước với ... của Nhà nước."
+    },
+    {
+      "originalNumber": 56,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Nhà nước có thể được tổ chức theo mô hình trong đó quyền lực nhà nước được phân định giữa các cơ quan, đồng thời thiết lập cơ chế phối hợp và kiểm soát quyền lực; trong một mô hình khác, quyền lực có thể được tổ chức theo nguyên tắc tập trung quyền lực với cơ chế vận hành khác biệt. Những đặc điểm này chủ yếu phản ánh ... tổ chức và thực hiện quyền lực nhà nước, qua đó là cơ sở nhận diện hình thức Nhà nước."
+    },
+    {
+      "originalNumber": 57,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Một quy tắc xử sự được cộng đồng thừa nhận và duy trì lâu dài có thể có giá trị xã hội nhưng chưa đương nhiên có giá trị pháp lý. Khi Nhà nước lựa chọn ghi nhận quy tắc đó và xác định phạm vi áp dụng, quy tắc mới được bảo đảm thực hiện bằng quyền lực nhà nước. Điều này cho thấy dấu hiệu quyết định để phân biệt pháp luật với các quy tắc xã hội khác là sự ... hoặc ... của Nhà nước."
+    },
+    {
+      "originalNumber": 58,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Một quy phạm pháp luật mới chỉ xác lập khuôn mẫu xử sự chung, chưa trực tiếp chỉ ra cá nhân cụ thể nào đang có quyền hoặc nghĩa vụ trong một trường hợp xác định. Khi sự kiện pháp lý được pháp luật dự liệu xảy ra, quy phạm chung được cá biệt hóa đối với những chủ thể cụ thể. Do đó, quan hệ pháp luật có thể được xem là hình thức ... của quan hệ xã hội được pháp luật điều chỉnh."
+    },
+    {
+      "originalNumber": 59,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Một hành vi gây thiệt hại thực tế cho xã hội chưa đủ để kết luận chủ thể phải chịu trách nhiệm pháp lý. Việc xác định trách nhiệm phải dựa trên sự tồn tại của hành vi trái pháp luật cùng những điều kiện pháp lý cần thiết khác và phải có căn cứ xác định loại trách nhiệm tương ứng. Vì vậy, ... không thể được xem là căn cứ duy nhất để xác định trách nhiệm pháp lý."
+    },
+    {
+      "originalNumber": 60,
+      "type": "fill",
+      "section": "fill",
+      "stem": "Trong xây dựng Nhà nước pháp quyền xã hội chủ nghĩa Việt Nam, yêu cầu hoàn thiện hệ thống pháp luật không chỉ nhằm gia tăng số lượng văn bản pháp luật mà quan trọng hơn là bảo đảm pháp luật có chất lượng, khả thi, đồng bộ và phù hợp với thực tiễn. Khi một quy định được ban hành nhưng khó thực hiện, chồng chéo với quy định khác hoặc không tạo được cơ chế để quyền và nghĩa vụ pháp lý được thực hiện trên thực tế, hạn chế đó phản ánh yêu cầu về ... của pháp luật chưa được bảo đảm đầy đủ."
+    }
+  ],
+  "answerKey": {
+    "1": "B",
+    "2": "B",
+    "3": "A",
+    "4": "D",
+    "5": "A",
+    "6": "B",
+    "7": "C",
+    "8": "C",
+    "9": "C",
+    "10": "C",
+    "11": "D",
+    "12": "C",
+    "13": "D",
+    "14": "B",
+    "15": "B",
+    "16": "A",
+    "17": "B",
+    "18": "C",
+    "19": "C",
+    "20": "C",
+    "21": "B",
+    "22": "B",
+    "23": "C",
+    "24": "C",
+    "25": "C",
+    "26": "D",
+    "27": "D",
+    "28": "D",
+    "29": "B",
+    "30": "C",
+    "31": "D",
+    "32": "B",
+    "33": "C",
+    "34": "D",
+    "35": "B",
+    "36": "C",
+    "37": "D",
+    "38": "B",
+    "39": "C",
+    "40": "B",
+    "41": "D",
+    "42": "A",
+    "43": "C",
+    "44": "C",
+    "45": "A",
+    "46": "B",
+    "47": "B",
+    "48": "D",
+    "49": "C",
+    "50": "A",
+    "51": "B",
+    "52": "B",
+    "53": "C",
+    "54": "D",
+    "55": "tính xã hội của Nhà nước với bản chất giai cấp",
+    "56": "phương thức",
+    "57": "ban hành hoặc thừa nhận",
+    "58": "cá biệt hóa",
+    "59": "thiệt hại thực tế",
+    "60": "tính khả thi"
+  }
+}

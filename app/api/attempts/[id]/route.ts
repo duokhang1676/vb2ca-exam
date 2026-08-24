@@ -90,3 +90,29 @@ export async function GET(_request: Request, { params }: Params) {
     },
   });
 }
+
+export async function DELETE(_request: Request, { params }: Params) {
+  const { id } = await params;
+  const { user, attempt, response } = await requireOwnedAttempt(id);
+  if (!attempt || !user) return response;
+
+  if (attempt.submitted_at) {
+    return NextResponse.json(
+      { error: "Không thể xóa bài đã nộp." },
+      { status: 409 },
+    );
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("attempts")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

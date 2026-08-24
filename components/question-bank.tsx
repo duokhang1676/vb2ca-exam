@@ -11,6 +11,7 @@ import {
 import { SampleExamBank, type BankSampleView } from "@/components/sample-exam-bank";
 import { MathText } from "@/components/math-text";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   CLUSTER_HEADER_TEMPLATES,
@@ -31,6 +32,7 @@ export type BankEssayView = {
   id: string;
   prompt: string;
   sourceFilename: string | null;
+  fingerprint: string;
   marked?: boolean;
 };
 
@@ -43,6 +45,7 @@ export type BankQuestionView = {
   answer: string;
   clusterId: string | null;
   clusterPosition: number | null;
+  fingerprint: string;
   marked?: boolean;
 };
 
@@ -116,6 +119,43 @@ export function QuestionBank({
     );
   }
 
+  function handleEssayDeleted(id: string) {
+    setEssayItems((current) => current.filter((item) => item.id !== id));
+  }
+
+  function handleQuestionDeleted(info: {
+    id: string;
+    clusterId: string | null;
+    clusterRemoved: boolean;
+  }) {
+    setQuestionItems((current) => current.filter((item) => item.id !== info.id));
+    if (info.clusterRemoved && info.clusterId) {
+      setClusterItems((current) =>
+        current.filter((item) => item.id !== info.clusterId),
+      );
+      return;
+    }
+    if (info.clusterId) {
+      setClusterItems((current) =>
+        current.map((cluster) =>
+          cluster.id === info.clusterId
+            ? {
+                ...cluster,
+                questions: cluster.questions.filter((item) => item.id !== info.id),
+              }
+            : cluster,
+        ),
+      );
+    }
+  }
+
+  function handleClusterDeleted(id: string) {
+    setClusterItems((current) => current.filter((item) => item.id !== id));
+    setQuestionItems((current) =>
+      current.filter((item) => item.clusterId !== id),
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -162,6 +202,7 @@ export function QuestionBank({
                 index={index}
                 signedIn={signedIn}
                 onSaved={handleEssaySaved}
+                onDeleted={handleEssayDeleted}
               />
             ))}
           </div>
@@ -180,6 +221,8 @@ export function QuestionBank({
               signedIn={signedIn}
               onClusterSaved={handleClusterSaved}
               onQuestionSaved={handleQuestionSaved}
+              onClusterDeleted={handleClusterDeleted}
+              onQuestionDeleted={handleQuestionDeleted}
             />
           ))}
           {standalone.map((question, index) => (
@@ -189,6 +232,7 @@ export function QuestionBank({
               index={index}
               signedIn={signedIn}
               onSaved={handleQuestionSaved}
+              onDeleted={handleQuestionDeleted}
             />
           ))}
         </div>
@@ -197,16 +241,48 @@ export function QuestionBank({
   );
 }
 
+function MarkedBadge({
+  marked,
+  signedIn,
+  busy,
+  onUnmark,
+}: {
+  marked?: boolean;
+  signedIn: boolean;
+  busy?: boolean;
+  onUnmark: () => void;
+}) {
+  if (!marked) return null;
+  return (
+    <>
+      <Badge>Đã đánh dấu</Badge>
+      {signedIn ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={busy}
+          onClick={onUnmark}
+        >
+          Bỏ đánh dấu
+        </Button>
+      ) : null}
+    </>
+  );
+}
+
 function EssayCard({
   essay,
   index,
   signedIn,
   onSaved,
+  onDeleted,
 }: {
   essay: BankEssayView;
   index: number;
   signedIn: boolean;
   onSaved: (essay: BankEssayView) => void;
+  onDeleted: (id: string) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [prompt, setPrompt] = useState(essay.prompt);
@@ -225,6 +301,31 @@ function EssayCard({
     setEditing(false);
   }
 
+  async function onDelete() {
+    if (!window.confirm("Xóa đề nghị luận này khỏi ngân hàng?")) return;
+    const data = await save<{ ok?: boolean }>(() =>
+      fetch(`/api/bank/essays/${essay.id}`, { method: "DELETE" }),
+    );
+    if (!data) return;
+    onDeleted(essay.id);
+  }
+
+  async function onUnmark() {
+    const data = await save<{ marked?: boolean }>(() =>
+      fetch("/api/question-marks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "essay",
+          fingerprint: essay.fingerprint,
+          marked: false,
+        }),
+      }),
+    );
+    if (!data) return;
+    onSaved({ ...essay, marked: false });
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -232,7 +333,14 @@ function EssayCard({
           <span className="flex flex-wrap items-center gap-2">
             <span>NL-{essay.id.slice(0, 8).toUpperCase()}</span>
             <Badge variant="secondary">Nghị luận {index + 1}</Badge>
-            {essay.marked ? <Badge>Đã đánh dấu</Badge> : null}
+            {essay.marked ? (
+              <MarkedBadge
+                marked
+                signedIn={signedIn}
+                busy={busy}
+                onUnmark={onUnmark}
+              />
+            ) : null}
           </span>
           <EditToolbar
             signedIn={signedIn}
@@ -249,6 +357,7 @@ function EssayCard({
               setEditing(false);
             }}
             onSave={onSave}
+            onDelete={onDelete}
           />
         </CardTitle>
       </CardHeader>
@@ -269,11 +378,17 @@ function StandaloneQuestionCard({
   index,
   signedIn,
   onSaved,
+  onDeleted,
 }: {
   question: BankQuestionView;
   index: number;
   signedIn: boolean;
   onSaved: (question: BankQuestionView) => void;
+  onDeleted: (info: {
+    id: string;
+    clusterId: string | null;
+    clusterRemoved: boolean;
+  }) => void;
 }) {
   return (
     <Card>
@@ -281,6 +396,7 @@ function StandaloneQuestionCard({
         question={question}
         signedIn={signedIn}
         onSaved={onSaved}
+        onDeleted={onDeleted}
         title={
           <>
             <span>
@@ -288,7 +404,6 @@ function StandaloneQuestionCard({
             </span>
             <Badge variant="secondary">Câu {index + 1}</Badge>
             <Badge variant="outline">{questionTypeLabel(question.type)}</Badge>
-            {question.marked ? <Badge>Đã đánh dấu</Badge> : null}
           </>
         }
       />
@@ -302,12 +417,20 @@ function ClusterCard({
   signedIn,
   onClusterSaved,
   onQuestionSaved,
+  onClusterDeleted,
+  onQuestionDeleted,
 }: {
   cluster: BankClusterView;
   index: number;
   signedIn: boolean;
   onClusterSaved: (cluster: BankClusterView) => void;
   onQuestionSaved: (question: BankQuestionView) => void;
+  onClusterDeleted: (id: string) => void;
+  onQuestionDeleted: (info: {
+    id: string;
+    clusterId: string | null;
+    clusterRemoved: boolean;
+  }) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [passage, setPassage] = useState(cluster.passage);
@@ -324,6 +447,15 @@ function ClusterCard({
     if (!data) return;
     onClusterSaved({ ...cluster, passage: data.passage });
     setEditing(false);
+  }
+
+  async function onDelete() {
+    if (!window.confirm("Xóa cả cụm và các câu trong cụm khỏi ngân hàng?")) return;
+    const data = await save<{ ok?: boolean }>(() =>
+      fetch(`/api/bank/clusters/${cluster.id}`, { method: "DELETE" }),
+    );
+    if (!data) return;
+    onClusterDeleted(cluster.id);
   }
 
   return (
@@ -355,6 +487,7 @@ function ClusterCard({
               setEditing(false);
             }}
             onSave={onSave}
+            onDelete={onDelete}
           />
         </CardTitle>
       </CardHeader>
@@ -381,11 +514,11 @@ function ClusterCard({
               question={question}
               signedIn={signedIn}
               onSaved={onQuestionSaved}
+              onDeleted={onQuestionDeleted}
               compact
               title={
                 <span className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
                   <span>Câu {questionIndex + 1}</span>
-                  {question.marked ? <Badge>Đã đánh dấu</Badge> : null}
                 </span>
               }
             />
@@ -400,12 +533,18 @@ function QuestionEditBlock({
   question,
   signedIn,
   onSaved,
+  onDeleted,
   title,
   compact,
 }: {
   question: BankQuestionView;
   signedIn: boolean;
   onSaved: (question: BankQuestionView) => void;
+  onDeleted?: (info: {
+    id: string;
+    clusterId: string | null;
+    clusterRemoved: boolean;
+  }) => void;
   title: ReactNode;
   compact?: boolean;
 }) {
@@ -439,6 +578,38 @@ function QuestionEditBlock({
     setEditing(false);
   }
 
+  async function onDelete() {
+    if (!window.confirm("Xóa câu hỏi này khỏi ngân hàng?")) return;
+    const data = await save<{
+      ok?: boolean;
+      clusterId?: string | null;
+      clusterRemoved?: boolean;
+    }>(() => fetch(`/api/bank/questions/${question.id}`, { method: "DELETE" }));
+    if (!data) return;
+    onDeleted?.({
+      id: question.id,
+      clusterId: data.clusterId ?? question.clusterId,
+      clusterRemoved: Boolean(data.clusterRemoved),
+    });
+  }
+
+  async function onUnmark() {
+    const data = await save<{ marked?: boolean }>(() =>
+      fetch("/api/question-marks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "question",
+          fingerprint: question.fingerprint,
+          examCode: question.examCode,
+          marked: false,
+        }),
+      }),
+    );
+    if (!data) return;
+    onSaved({ ...question, marked: false });
+  }
+
   const toolbar = (
     <EditToolbar
       signedIn={signedIn}
@@ -463,6 +634,7 @@ function QuestionEditBlock({
         setEditing(false);
       }}
       onSave={onSave}
+      onDelete={onDeleted ? onDelete : undefined}
     />
   );
 
@@ -489,7 +661,15 @@ function QuestionEditBlock({
     return (
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          {title}
+          <span className="flex flex-wrap items-center gap-2">
+            {title}
+            <MarkedBadge
+              marked={question.marked}
+              signedIn={signedIn}
+              busy={busy}
+              onUnmark={onUnmark}
+            />
+          </span>
           {toolbar}
         </div>
         {alertNode}
@@ -502,7 +682,15 @@ function QuestionEditBlock({
     <>
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-sm">
-          <span className="flex flex-wrap items-center gap-2">{title}</span>
+          <span className="flex flex-wrap items-center gap-2">
+            {title}
+            <MarkedBadge
+              marked={question.marked}
+              signedIn={signedIn}
+              busy={busy}
+              onUnmark={onUnmark}
+            />
+          </span>
           {toolbar}
         </CardTitle>
       </CardHeader>

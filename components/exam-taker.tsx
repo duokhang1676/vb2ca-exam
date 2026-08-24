@@ -58,7 +58,9 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
   const [flagged, setFlagged] = useState<number[]>([]);
   const [essayFlagged, setEssayFlagged] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [exiting, setExiting] = useState(false);
   const submittingRef = useRef(false);
+  const exitingRef = useRef(false);
   const snapshotRef = useRef({
     essayText: "",
     answers: {} as AttemptAnswers,
@@ -114,7 +116,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
   }, [attemptId, router]);
 
   const save = useCallback(async () => {
-    if (submittingRef.current) return;
+    if (submittingRef.current || exitingRef.current) return;
     const payload = {
       essayText: snapshotRef.current.essayText,
       answers: snapshotRef.current.answers,
@@ -139,8 +141,37 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
     return () => clearInterval(id);
   }, [save]);
 
+  const exitWithoutSaving = useCallback(async () => {
+    if (submittingRef.current || exitingRef.current) return;
+    if (
+      !window.confirm(
+        "Thoát mà không lưu lịch sử làm bài? Bài đang làm sẽ bị xóa và không hiện trong lịch sử.",
+      )
+    ) {
+      return;
+    }
+    exitingRef.current = true;
+    submittingRef.current = true;
+    setExiting(true);
+    try {
+      const response = await fetch(`/api/attempts/${attemptId}`, {
+        method: "DELETE",
+      });
+      const json = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(json.error || "Không thoát được bài thi.");
+      }
+      router.push("/");
+    } catch (err) {
+      exitingRef.current = false;
+      submittingRef.current = false;
+      setExiting(false);
+      setError(err instanceof Error ? err.message : "Không thoát được bài thi.");
+    }
+  }, [attemptId, router]);
+
   const submit = useCallback(async () => {
-    if (submittingRef.current) return;
+    if (submittingRef.current || exitingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
     try {
@@ -214,6 +245,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
     (showEssay ? 1 : 0) + (showPart2 ? data.exam.questions.length : 0);
   const blocks = toDisplayBlocks(data.exam.questions);
   const flaggedSet = new Set(flagged);
+  const locked = submitting || exiting;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_220px]">
@@ -225,13 +257,21 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
               {sectionModeLabel(sectionMode)} · Đã trả lời {answeredCount}/{totalItems} phần
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <ExamTimer
               endsAt={data.attempt.endsAt}
               serverNow={data.attempt.serverNow}
               onExpire={submit}
             />
-            <Button onClick={submit} disabled={submitting}>
+            <Button
+              variant="outline"
+              onClick={exitWithoutSaving}
+              disabled={locked}
+            >
+              {exiting ? <LoaderCircle className="animate-spin" /> : null}
+              {exiting ? "Đang thoát..." : "Thoát"}
+            </Button>
+            <Button onClick={submit} disabled={locked}>
               {submitting ? <LoaderCircle className="animate-spin" /> : null}
               {submitting ? "Đang chấm..." : "Nộp bài"}
             </Button>
@@ -251,7 +291,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
                 <span>Phần 1 · Nghị luận xã hội (30 điểm)</span>
                 <MarkButton
                   marked={essayFlagged}
-                  disabled={submitting}
+                  disabled={locked}
                   onClick={() => {
                     const next = !essayFlagged;
                     setEssayFlagged(next);
@@ -277,7 +317,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
                   onChange={(event) => setEssayText(event.currentTarget.value)}
                   placeholder="Nhập bài nghị luận tại đây..."
                   className="min-h-64 font-exam text-lg leading-8"
-                  disabled={submitting}
+                  disabled={locked}
                 />
               </div>
             </CardContent>
@@ -311,7 +351,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
                     question={question}
                     value={answers[String(question.originalNumber)] ?? ""}
                     marked={flaggedSet.has(question.originalNumber)}
-                    disabled={submitting}
+                    disabled={locked}
                     onChange={(value) =>
                       setAnswers((current) => ({
                         ...current,

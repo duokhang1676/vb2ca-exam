@@ -13,7 +13,7 @@ export default async function AccountPage() {
   const supabase = await createServerSupabase();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, avatar_path")
+    .select("display_name, avatar_path, updated_at")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -21,7 +21,7 @@ export default async function AccountPage() {
     <ProfileForm
       email={user.email ?? ""}
       displayName={profile?.display_name ?? ""}
-      avatarUrl={avatarPublicUrl(profile?.avatar_path)}
+      avatarUrl={avatarPublicUrl(profile?.avatar_path, profile?.updated_at)}
     />
   );
 }

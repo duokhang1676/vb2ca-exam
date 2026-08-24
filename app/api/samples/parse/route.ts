@@ -5,9 +5,8 @@ import {
   contributeErrorResponse,
 } from "@/lib/exam/contribute-error";
 import { EXAM_SPECS } from "@/lib/exam/constants";
-import { isDocxFile, isPdfFile } from "@/lib/exam/document";
-import { parseAnswerKey } from "@/lib/exam/parse-answers";
-import { parseNativeExamFile } from "@/lib/exam/parse-native";
+import { isJsonFile } from "@/lib/exam/document";
+import { parseSampleJsonText } from "@/lib/exam/parse-sample-json";
 import { saveGeneratedSampleExam } from "@/lib/exam/sample";
 import { isExamCode } from "@/lib/exam/types";
 
@@ -22,7 +21,6 @@ export async function POST(request: Request) {
     const form = await request.formData();
     const examCodeRaw = form.get("examCode");
     const file = form.get("file");
-    const answers = form.get("answers");
 
     if (!isExamCode(examCodeRaw)) {
       throw new ContributeError(
@@ -35,64 +33,70 @@ export async function POST(request: Request) {
     if (!(file instanceof File)) {
       throw new ContributeError(
         "INVALID_FILE_TYPE",
-        "Cần upload file đề PDF hoặc DOCX có chữ đọc được.",
+        `Cần upload file JSON đề minh họa ${examCodeRaw}.`,
         "Thiếu file đề",
-        ["Chọn file PDF hoặc DOCX đề đầy đủ phần 1 và phần 2."],
+        [
+          `Chọn file .json theo định dạng đề ${examCodeRaw} (essayPrompt, questions, answerKey).`,
+        ],
       );
     }
-    if (!(answers instanceof File)) {
-      throw new ContributeError(
-        "EMPTY_ANSWER_KEY",
-        "Cần file đáp án TXT kèm file đề.",
-        "Thiếu file đáp án",
-        ["Upload thêm file .txt, mỗi dòng một câu."],
-      );
-    }
-    if (!isPdfFile(file.name, file.type) && !isDocxFile(file.name, file.type)) {
+    if (!isJsonFile(file.name, file.type)) {
       throw new ContributeError(
         "INVALID_FILE_TYPE",
-        "Đề minh họa chỉ nhận PDF hoặc DOCX.",
+        `Đề minh họa ${examCodeRaw} chỉ nhận file JSON.`,
         "Sai loại file đề",
-        ["Chọn .pdf hoặc .docx có chữ chọn được, không dùng file scan."],
-      );
-    }
-
-    const answerText = await answers.text();
-    let answerKey;
-    try {
-      answerKey = parseAnswerKey(answerText, EXAM_SPECS[examCodeRaw].total);
-    } catch (error) {
-      throw new ContributeError(
-        "EMPTY_ANSWER_KEY",
-        error instanceof Error ? error.message : "Không đọc được file đáp án.",
-        "File đáp án không đúng format",
         [
-          "Mỗi dòng: `1 A`, `46 72` hoặc `55 Năng lực pháp luật`.",
-          `Cần đủ ${EXAM_SPECS[examCodeRaw].total} câu cho mã ${examCodeRaw}.`,
+          "Chọn file .json có examCode, essayPrompt, questions và answerKey.",
         ],
       );
     }
 
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    const parsed = await parseNativeExamFile({
-      bytes,
-      filename: file.name,
-      mimeType: file.type,
-      examCode: examCodeRaw,
-      answerKey,
-    });
+    const spec = EXAM_SPECS[examCodeRaw];
+    const sampleFile =
+      examCodeRaw === "CA1"
+        ? "fixtures/generated/ca1-so-2.json"
+        : "fixtures/generated/ca4-so-2.json";
 
-    const saved = await saveGeneratedSampleExam({
-      examCode: examCodeRaw,
-      essayPrompt: parsed.essayPrompt,
-      questions: parsed.questions,
-      answerKey,
-      pdf: { bytes: Buffer.from(bytes), filename: file.name },
-      answerFile: {
-        bytes: Buffer.from(answerText, "utf8"),
-        filename: answers.name,
-      },
-    });
+    let payload;
+    try {
+      payload = parseSampleJsonText(await file.text(), examCodeRaw);
+    } catch (error) {
+      throw new ContributeError(
+        "INVALID_CONTENT",
+        error instanceof Error ? error.message : "Không đọc được file JSON.",
+        "JSON đề minh họa không đúng format",
+        [
+          `Cần examCode ${examCodeRaw}, essayPrompt, ${spec.total} câu questions và answerKey.`,
+          `Đối chiếu với file mẫu ${sampleFile}.`,
+        ],
+      );
+    }
+
+    let saved;
+    try {
+      saved = await saveGeneratedSampleExam({
+        examCode: examCodeRaw,
+        essayPrompt: payload.essayPrompt,
+        questions: payload.questions,
+        answerKey: payload.answerKey,
+        diversity: payload.diversity,
+      });
+    } catch (error) {
+      throw new ContributeError(
+        "INVALID_CONTENT",
+        error instanceof Error ? error.message : "Không lưu được đề JSON.",
+        `JSON đề minh họa không đúng cấu trúc ${examCodeRaw}`,
+        examCodeRaw === "CA1"
+          ? [
+              "Cần đúng 50 câu: 1–39 độc lập, 40–45 thuộc cụm, 46–50 điền.",
+              `Đối chiếu với file mẫu ${sampleFile}.`,
+            ]
+          : [
+              "Cần đúng 60 câu: 1–54 trắc nghiệm (cụm 49–54 nếu có), 55–60 điền chữ.",
+              `Đối chiếu với file mẫu ${sampleFile}.`,
+            ],
+      );
+    }
 
     return NextResponse.json({
       examId: saved.examId,

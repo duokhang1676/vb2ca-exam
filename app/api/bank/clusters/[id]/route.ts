@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth/session";
-import { updateClusterPassage } from "@/lib/exam/bank";
+import { deleteCluster, updateClusterPassage } from "@/lib/exam/bank";
 import {
   ContributeError,
   contributeErrorResponse,
@@ -31,5 +31,18 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json(cluster);
   } catch (error) {
     return contributeErrorResponse(error, "Không lưu được cụm câu hỏi.");
+  }
+}
+
+export async function DELETE(_request: Request, { params }: Params) {
+  const { user, response } = await requireAuthUser();
+  if (!user) return response;
+  const { id } = await params;
+
+  try {
+    const result = await deleteCluster(id);
+    return NextResponse.json(result);
+  } catch (error) {
+    return contributeErrorResponse(error, "Không xóa được cụm câu hỏi.");
   }
 }

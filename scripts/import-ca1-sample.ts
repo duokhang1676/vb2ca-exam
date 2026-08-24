@@ -1,19 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { parseSampleJsonText } from "../lib/exam/parse-sample-json";
 import { saveGeneratedSampleExam } from "../lib/exam/sample";
-import {
-  isExamCode,
-  type AnswerKey,
-  type Question,
-} from "../lib/exam/types";
-
-type Payload = {
-  examCode?: string;
-  diversity?: number;
-  essayPrompt?: string;
-  questions?: Question[];
-  answerKey?: AnswerKey;
-};
 
 async function loadEnvLocal() {
   try {
@@ -47,15 +35,9 @@ async function main() {
   await loadEnvLocal();
 
   const filePath = path.resolve(process.cwd(), fileArg);
-  const payload = JSON.parse(await readFile(filePath, "utf8")) as Payload;
-  const examCode = isExamCode(payload.examCode) ? payload.examCode : "CA1";
-
-  if (!payload.essayPrompt || !payload.questions || !payload.answerKey) {
-    throw new Error("JSON thiếu essayPrompt, questions hoặc answerKey.");
-  }
-
+  const payload = parseSampleJsonText(await readFile(filePath, "utf8"));
   const result = await saveGeneratedSampleExam({
-    examCode,
+    examCode: payload.examCode,
     essayPrompt: payload.essayPrompt,
     questions: payload.questions,
     answerKey: payload.answerKey,

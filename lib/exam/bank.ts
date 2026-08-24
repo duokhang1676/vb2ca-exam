@@ -87,6 +87,7 @@ export async function importEssays(
   rawPrompt: string,
   sourceFilename?: string,
   attribution?: ImportAttribution,
+  checkNearDuplicates = true,
 ): Promise<ImportSummary> {
   const prompts = splitEssayPrompts(rawPrompt);
   if (prompts.length === 0) {
@@ -118,10 +119,12 @@ export async function importEssays(
     uniqueNew.push({ prompt, fingerprint });
   }
 
-  const nearDup = await detectNearDuplicateIndexes({
-    incoming: uniqueNew.map((item, index) => ({ index, text: item.prompt })),
-    existing: existing.map((row) => ({ id: row.id, text: row.prompt })),
-  });
+  const nearDup = checkNearDuplicates
+    ? await detectNearDuplicateIndexes({
+        incoming: uniqueNew.map((item, index) => ({ index, text: item.prompt })),
+        existing: existing.map((row) => ({ id: row.id, text: row.prompt })),
+      })
+    : new Set<number>();
 
   const toInsert = uniqueNew.filter((_, index) => {
     if (nearDup.has(index)) {
@@ -177,6 +180,7 @@ async function insertStandaloneQuestions(params: {
   examCode: ExamCode;
   incoming: IncomingQuestion[];
   attribution?: ImportAttribution;
+  checkNearDuplicates?: boolean;
 }): Promise<ImportSummary> {
   if (params.incoming.length === 0) return { added: 0, skipped: 0 };
 
@@ -206,10 +210,13 @@ async function insertStandaloneQuestions(params: {
     uniqueNew.push(item);
   }
 
-  const nearDup = await detectNearDuplicateIndexes({
-    incoming: uniqueNew.map((item, index) => ({ index, text: item.stem })),
-    existing: existing.map((row) => ({ id: row.id, text: row.stem })),
-  });
+  const nearDup =
+    params.checkNearDuplicates === false
+      ? new Set<number>()
+      : await detectNearDuplicateIndexes({
+          incoming: uniqueNew.map((item, index) => ({ index, text: item.stem })),
+          existing: existing.map((row) => ({ id: row.id, text: row.stem })),
+        });
 
   const toInsert = uniqueNew.filter((_, index) => {
     if (nearDup.has(index)) {
@@ -247,6 +254,7 @@ async function importCluster(params: {
   passage: string;
   members: IncomingQuestion[];
   attribution?: ImportAttribution;
+  checkNearDuplicates?: boolean;
 }): Promise<ImportSummary> {
   const members = [...params.members]
     .sort((a, b) => (a.clusterPosition ?? 0) - (b.clusterPosition ?? 0))
@@ -256,6 +264,7 @@ async function importCluster(params: {
       examCode: params.examCode,
       incoming: members,
       attribution: params.attribution,
+      checkNearDuplicates: params.checkNearDuplicates,
     });
   }
 
@@ -278,12 +287,14 @@ async function importCluster(params: {
     return { added: 0, skipped: members.length };
   }
 
-  const nearDup = await detectNearDuplicateIndexes({
-    incoming: [{ index: 0, text: params.passage }],
-    existing: rows.map((row) => ({ id: row.id, text: row.passage })),
-  });
-  if (nearDup.has(0)) {
-    return { added: 0, skipped: members.length };
+  if (params.checkNearDuplicates !== false) {
+    const nearDup = await detectNearDuplicateIndexes({
+      incoming: [{ index: 0, text: params.passage }],
+      existing: rows.map((row) => ({ id: row.id, text: row.passage })),
+    });
+    if (nearDup.has(0)) {
+      return { added: 0, skipped: members.length };
+    }
   }
 
   const { data: cluster, error: clusterError } = await supabase
@@ -325,6 +336,7 @@ export async function importQuestions(params: {
   questions: Question[];
   answerKey: AnswerKey;
   attribution?: ImportAttribution;
+  checkNearDuplicates?: boolean;
 }): Promise<ImportSummary> {
   const standalone: IncomingQuestion[] = [];
   const clusters = new Map<
@@ -371,6 +383,7 @@ export async function importQuestions(params: {
       passage: cluster.passage,
       members: cluster.members,
       attribution: params.attribution,
+      checkNearDuplicates: params.checkNearDuplicates,
     });
     added += result.added;
     skipped += result.skipped;
@@ -380,6 +393,7 @@ export async function importQuestions(params: {
     examCode: params.examCode,
     incoming: standalone,
     attribution: params.attribution,
+    checkNearDuplicates: params.checkNearDuplicates,
   });
   added += standaloneResult.added;
   skipped += standaloneResult.skipped;
@@ -397,12 +411,19 @@ export async function importParsedIntoBank(params: {
   questions: Question[];
   answerKey: AnswerKey;
   sourceFilename?: string;
+  checkNearDuplicates?: boolean;
 }): Promise<{ essays: ImportSummary; questions: ImportSummary }> {
-  const essays = await importEssays(params.essayPrompt, params.sourceFilename);
+  const essays = await importEssays(
+    params.essayPrompt,
+    params.sourceFilename,
+    undefined,
+    params.checkNearDuplicates,
+  );
   const questions = await importQuestions({
     examCode: params.examCode,
     questions: params.questions,
     answerKey: params.answerKey,
+    checkNearDuplicates: params.checkNearDuplicates,
   });
   return { essays, questions };
 }
@@ -750,4 +771,217 @@ export async function updateClusterPassage(
     );
   }
   return { id: data.id, passage: data.passage };
+}
+
+function notFoundBankItem(kind: "essay" | "question" | "cluster") {
+  if (kind === "essay") {
+    return new ContributeError(
+      "NOT_FOUND",
+      "Không tìm thấy đề nghị luận.",
+      "Đề không còn trong ngân hàng",
+      ["Tải lại trang rồi thử xóa mục khác."],
+    );
+  }
+  if (kind === "cluster") {
+    return new ContributeError(
+      "NOT_FOUND",
+      "Không tìm thấy cụm câu hỏi.",
+      "Cụm không còn trong ngân hàng",
+      ["Tải lại trang rồi thử xóa mục khác."],
+    );
+  }
+  return new ContributeError(
+    "NOT_FOUND",
+    "Không tìm thấy câu hỏi.",
+    "Câu không còn trong ngân hàng",
+    ["Tải lại trang rồi thử xóa mục khác."],
+  );
+}
+
+export async function deleteEssay(id: string) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("essays")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw notFoundBankItem("essay");
+  return { ok: true as const };
+}
+
+export async function deleteQuestion(id: string) {
+  const supabase = getSupabaseAdmin();
+  const { data: row, error: loadError } = await supabase
+    .from("questions")
+    .select("id, cluster_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (loadError) throw new Error(loadError.message);
+  if (!row) throw notFoundBankItem("question");
+
+  const { error } = await supabase.from("questions").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  let clusterRemoved = false;
+  if (row.cluster_id) {
+    const { count, error: countError } = await supabase
+      .from("questions")
+      .select("id", { count: "exact", head: true })
+      .eq("cluster_id", row.cluster_id);
+    if (countError) throw new Error(countError.message);
+    if ((count ?? 0) === 0) {
+      const { error: clusterError } = await supabase
+        .from("question_clusters")
+        .delete()
+        .eq("id", row.cluster_id);
+      if (clusterError) throw new Error(clusterError.message);
+      clusterRemoved = true;
+    }
+  }
+
+  return {
+    ok: true as const,
+    clusterId: row.cluster_id,
+    clusterRemoved,
+  };
+}
+
+export async function deleteCluster(id: string) {
+  const supabase = getSupabaseAdmin();
+  const { data: cluster, error: loadError } = await supabase
+    .from("question_clusters")
+    .select("id")
+    .eq("id", id)
+    .maybeSingle();
+  if (loadError) throw new Error(loadError.message);
+  if (!cluster) throw notFoundBankItem("cluster");
+
+  const { error: questionsError } = await supabase
+    .from("questions")
+    .delete()
+    .eq("cluster_id", id);
+  if (questionsError) throw new Error(questionsError.message);
+
+  const { error } = await supabase.from("question_clusters").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  return { ok: true as const };
+}
+
+export type SampleBankFingerprints = {
+  essay: string;
+  questions: Set<string>;
+  clusters: Set<string>;
+};
+
+export function fingerprintsFromParsedSample(params: {
+  examCode: ExamCode;
+  essayPrompt: string;
+  questions: Question[];
+}): SampleBankFingerprints {
+  const questionHashes = new Set<string>();
+  const clusters = new Map<
+    string,
+    { kind: ClusterKind; passage: string; members: { stem: string; position: number }[] }
+  >();
+
+  for (const question of params.questions) {
+    const type = normalizeQuestionType(question.type);
+    questionHashes.add(
+      questionFingerprint({
+        examCode: params.examCode,
+        type,
+        stem: question.stem,
+        options: type === "mcq" ? question.options : undefined,
+      }),
+    );
+    if (question.clusterId && isMcq(type)) {
+      const current = clusters.get(question.clusterId) ?? {
+        kind: isClusterKind(question.clusterKind) ? question.clusterKind : "passage",
+        passage: question.passage ?? "",
+        members: [],
+      };
+      if (!current.passage && question.passage) current.passage = question.passage;
+      current.members.push({
+        stem: question.stem,
+        position: question.clusterPosition ?? current.members.length + 1,
+      });
+      clusters.set(question.clusterId, current);
+    }
+  }
+
+  const clusterHashes = new Set<string>();
+  for (const cluster of clusters.values()) {
+    const members = [...cluster.members]
+      .sort((a, b) => a.position - b.position)
+      .slice(0, CLUSTER_SIZE);
+    if (!cluster.passage.trim() || members.length < 2) continue;
+    clusterHashes.add(
+      clusterFingerprint({
+        examCode: params.examCode,
+        kind: cluster.kind,
+        passage: cluster.passage,
+        stems: members.map((item) => item.stem),
+      }),
+    );
+  }
+
+  return {
+    essay: essayFingerprint(params.essayPrompt),
+    questions: questionHashes,
+    clusters: clusterHashes,
+  };
+}
+
+export async function deleteBankItemsNotShared(params: {
+  examCode: ExamCode;
+  essay: string | null;
+  questions: string[];
+  clusters: string[];
+}) {
+  const supabase = getSupabaseAdmin();
+
+  if (params.clusters.length > 0) {
+    const { data: clusters, error: clusterLoadError } = await supabase
+      .from("question_clusters")
+      .select("id")
+      .eq("exam_code", params.examCode)
+      .in("fingerprint", params.clusters);
+    if (clusterLoadError) throw new Error(clusterLoadError.message);
+    for (const cluster of clusters ?? []) {
+      await deleteCluster(cluster.id);
+    }
+  }
+
+  if (params.questions.length > 0) {
+    const { data: rows, error: questionLoadError } = await supabase
+      .from("questions")
+      .select("id, fingerprint")
+      .eq("exam_code", params.examCode);
+    if (questionLoadError) throw new Error(questionLoadError.message);
+    const hashes = new Set(params.questions);
+    const ids = (rows ?? [])
+      .filter((row) => {
+        if (hashes.has(row.fingerprint)) return true;
+        const contentHash = row.fingerprint.split(":")[0];
+        return hashes.has(contentHash);
+      })
+      .map((row) => row.id);
+    if (ids.length > 0) {
+      const { error: questionDeleteError } = await supabase
+        .from("questions")
+        .delete()
+        .in("id", ids);
+      if (questionDeleteError) throw new Error(questionDeleteError.message);
+    }
+  }
+
+  if (params.essay) {
+    const { error: essayError } = await supabase
+      .from("essays")
+      .delete()
+      .eq("fingerprint", params.essay);
+    if (essayError) throw new Error(essayError.message);
+  }
 }

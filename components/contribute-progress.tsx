@@ -27,6 +27,11 @@ export const SAMPLE_PARSE_STEPS: ContributeProgressStep[] = [
   { label: "Đang lưu đề minh họa và ngân hàng...", holdMs: 20_000 },
 ];
 
+export const SAMPLE_JSON_STEPS: ContributeProgressStep[] = [
+  { label: "Đang đọc JSON...", holdMs: 1500 },
+  { label: "Đang lưu đề minh họa và ngân hàng...", holdMs: 12_000 },
+];
+
 export const COMMIT_STEPS: ContributeProgressStep[] = [
   { label: "Đang kiểm tra câu trùng...", holdMs: 8000 },
   { label: "Đang lưu vào ngân hàng...", holdMs: 20_000 },

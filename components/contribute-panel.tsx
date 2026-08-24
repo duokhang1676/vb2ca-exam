@@ -13,7 +13,7 @@ import {
   ContributeProgress,
   ESSAY_PARSE_STEPS,
   QUESTION_PARSE_STEPS,
-  SAMPLE_PARSE_STEPS,
+  SAMPLE_JSON_STEPS,
 } from "@/components/contribute-progress";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,9 +33,9 @@ export function ContributePanel({ signedIn }: { signedIn: boolean }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Đóng góp vào ngân hàng</CardTitle>
+          <CardTitle>Đóng góp đề minh họa</CardTitle>
           <CardDescription>
-            Cần đăng nhập để upload đề, review câu OCR rồi mới nạp vào ngân hàng.
+            Cần đăng nhập để upload file JSON đề minh họa CA1 hoặc CA4.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -47,12 +47,16 @@ export function ContributePanel({ signedIn }: { signedIn: boolean }) {
     );
   }
 
+  const showPartContribute = false;
+
   return (
     <div className="grid gap-4">
-      <div className="grid gap-4 md:grid-cols-2">
-        <EssayContributeForm />
-        <QuestionContributeForm />
-      </div>
+      {showPartContribute ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          <EssayContributeForm />
+          <QuestionContributeForm />
+        </div>
+      ) : null}
       <SampleContributeForm />
     </div>
   );
@@ -309,7 +313,7 @@ function SampleContributeForm() {
         tone: "error",
         title: "Không gửi được file",
         message: "Kiểm tra kết nối mạng rồi thử lại.",
-        steps: ["Giữ nguyên hai file đã chọn.", "Đăng nhập lại nếu phiên hết hạn."],
+        steps: ["Giữ nguyên file JSON đã chọn.", "Đăng nhập lại nếu phiên hết hạn."],
       });
     } finally {
       setBusy(false);
@@ -321,9 +325,9 @@ function SampleContributeForm() {
       <CardHeader>
         <CardTitle>Đóng góp đề minh họa</CardTitle>
         <CardDescription>
-          Upload đề đầy đủ PDF/DOCX có chữ đọc được và TXT đáp án. Hệ thống đọc
-          file thuần (không OCR) để giữ nguyên ký tự toán, rồi thêm đề vào danh
-          sách minh họa với số tăng dần.
+          {examCode === "CA1"
+            ? "Upload file JSON đề CA1 (essayPrompt, 50 câu và answerKey). Hệ thống lưu đề minh họa với số tăng dần."
+            : "Upload file JSON đề CA4 (essayPrompt, 60 câu và answerKey). Hệ thống lưu đề minh họa với số tăng dần."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -347,41 +351,40 @@ function SampleContributeForm() {
             ))}
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="sample-file">File đề đầy đủ (PDF/DOCX)</Label>
+            <Label htmlFor="sample-file">File đề JSON</Label>
             <Input
               id="sample-file"
+              key={`${examCode}-json`}
               name="file"
               type="file"
-              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              accept=".json,application/json"
               required
               disabled={busy}
             />
-            <FormatHelp title="Yêu cầu file đề minh họa">
-              <ul className="list-disc pl-5">
-                <li>Phải có lớp chữ chọn được. PDF scan ảnh sẽ bị từ chối — dùng form OCR phía trên.</li>
-                <li>Đủ Phần 1 nghị luận và Phần 2 đánh số Câu 1, Câu 2, …</li>
-                <li>Công thức trong DOCX (Word Equation) được giữ bằng LaTeX. PDF giữ Unicode toán.</li>
-                <li>Cụm đọc hiểu/tình huống: đoạn thông tin chung rồi đúng 3 câu MCQ.</li>
-              </ul>
-            </FormatHelp>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="sample-answers">File đáp án (TXT)</Label>
-            <Input
-              id="sample-answers"
-              name="answers"
-              type="file"
-              accept="text/plain,.txt"
-              required
-              disabled={busy}
-            />
+            {examCode === "CA1" ? (
+              <FormatHelp title="Yêu cầu file JSON CA1">
+                <ul className="list-disc pl-5">
+                  <li>Đúng cấu trúc: examCode, essayPrompt, questions (50 câu), answerKey.</li>
+                  <li>Câu 1–39 trắc nghiệm độc lập, 40–45 thuộc 2 cụm đọc hiểu, 46–50 điền đáp án.</li>
+                  <li>Đối chiếu file mẫu fixtures/generated/ca1-so-2.json.</li>
+                </ul>
+              </FormatHelp>
+            ) : (
+              <FormatHelp title="Yêu cầu file JSON CA4">
+                <ul className="list-disc pl-5">
+                  <li>Đúng cấu trúc: examCode, essayPrompt, questions (60 câu), answerKey.</li>
+                  <li>Câu 1–54 trắc nghiệm (cụm tình huống 49–54 nếu có), 55–60 điền chữ.</li>
+                  <li>Đối chiếu file mẫu fixtures/generated/ca4-so-2.json.</li>
+                </ul>
+              </FormatHelp>
+            )}
           </div>
           {alert ? <ContributeAlert {...alert} /> : null}
           <Button type="submit" disabled={busy}>
             {busy ? <LoaderCircle className="animate-spin" /> : <FileUp />}
             {busy ? "Đang đọc file..." : "Tạo đề minh họa"}
           </Button>
-          <ContributeProgress active={busy} steps={SAMPLE_PARSE_STEPS} />
+          <ContributeProgress active={busy} steps={SAMPLE_JSON_STEPS} />
         </form>
       </CardContent>
     </Card>

@@ -19,10 +19,10 @@ export default async function HomePage() {
         <p className="text-sm font-medium text-primary">Kỳ thi Văn bằng 2 Công an</p>
         <h1 className="text-3xl font-semibold tracking-tight">Ôn thi VB2CA</h1>
         <p className="text-muted-foreground">
-          Đóng góp câu hỏi vào ngân hàng dùng chung, rồi tạo bài làm CA1 hoặc
-          CA4. Có thể làm toàn bộ (150 phút), chỉ phần 1 (50 phút) hoặc chỉ phần
-          2 (100 phút). Phần 1 nghị luận xã hội dùng chung; phần 2 lấy ngẫu nhiên
-          theo mã đề.
+          Đóng góp đề minh họa JSON vào ngân hàng dùng chung, rồi tạo bài làm CA1
+          hoặc CA4. Có thể làm toàn bộ (150 phút), chỉ phần 1 (50 phút) hoặc chỉ
+          phần 2 (100 phút). Phần 1 nghị luận xã hội dùng chung; phần 2 lấy ngẫu
+          nhiên theo mã đề.
         </p>
       </div>
       <HomeExamPanel
@@ -30,10 +30,10 @@ export default async function HomePage() {
         samples={{ CA1: ca1Samples, CA4: ca4Samples }}
       />
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Đóng góp vào ngân hàng</h2>
+        <h2 className="text-lg font-semibold">Đóng góp đề minh họa</h2>
         <p className="text-sm text-muted-foreground">
-          Nạp độc lập phần 1 hoặc phần 2. Hệ thống OCR, bạn review/sửa rồi mới
-          đưa vào ngân hàng.
+          Upload file JSON đề CA1 hoặc CA4. Hệ thống lưu đề minh họa và nạp câu
+          hỏi vào ngân hàng.
         </p>
         <ContributePanel signedIn={signedIn} />
       </div>
