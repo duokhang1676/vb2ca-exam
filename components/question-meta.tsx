@@ -16,13 +16,15 @@ export function SolutionReveal({
   solution,
   className,
   textClassName = "font-exam text-sm leading-7",
+  defaultOpen = false,
 }: {
   solution?: string | null;
   className?: string;
   textClassName?: string;
+  defaultOpen?: boolean;
 }) {
   const value = solution?.trim();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   if (!value) return null;
 
   return (

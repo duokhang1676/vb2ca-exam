@@ -2,10 +2,17 @@ import { NextResponse } from "next/server";
 import { requireOwnedAttempt } from "@/lib/auth/attempt";
 import { examDurationMs } from "@/lib/exam/constants";
 import { essayFingerprint, questionFingerprint } from "@/lib/exam/fingerprint";
-import { parseAnswers, parseFlagged, parseQuestions, parseShuffle } from "@/lib/exam/json";
+import { correctDisplayAnswer } from "@/lib/exam/grade";
+import {
+  parseAnswerKeyJson,
+  parseAnswers,
+  parseFlagged,
+  parseQuestions,
+  parseShuffle,
+} from "@/lib/exam/json";
 import { listUserMarks, markSet } from "@/lib/exam/marks";
 import { toDisplayQuestions } from "@/lib/exam/shuffle";
-import { isExamCode, isSectionMode } from "@/lib/exam/types";
+import { isAttemptMode, isExamCode, isSectionMode, type AnswerKey } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -21,7 +28,7 @@ export async function GET(_request: Request, { params }: Params) {
 
   const { data: exam, error: examError } = await supabase
     .from("exams")
-    .select("id, title, essay_prompt, essay_topic, questions, exam_code")
+    .select("id, title, essay_prompt, essay_topic, essay_solution, questions, exam_code, answer_key")
     .eq("id", attempt.exam_id)
     .single();
 
@@ -32,6 +39,10 @@ export async function GET(_request: Request, { params }: Params) {
   const sectionMode = isSectionMode(attempt.section_mode)
     ? attempt.section_mode
     : "full";
+  const attemptMode = isAttemptMode(attempt.attempt_mode)
+    ? attempt.attempt_mode
+    : "exam";
+  const isPractice = attemptMode === "practice";
   const examCode = isExamCode(exam.exam_code) ? exam.exam_code : "CA1";
   const questions = parseQuestions(exam.questions);
   const shuffle = parseShuffle(attempt.shuffle);
@@ -59,8 +70,18 @@ export async function GET(_request: Request, { params }: Params) {
   const essayFp = exam.essay_prompt ? essayFingerprint(exam.essay_prompt) : "";
 
   const showTopic = Boolean(attempt.show_topic);
-  const endsAt =
-    new Date(attempt.started_at).getTime() + examDurationMs(sectionMode);
+  const endsAt = isPractice
+    ? null
+    : new Date(attempt.started_at).getTime() + examDurationMs(sectionMode);
+
+  let answerKey: AnswerKey = {};
+  if (isPractice) {
+    try {
+      answerKey = parseAnswerKeyJson(exam.answer_key);
+    } catch {
+      answerKey = {};
+    }
+  }
 
   return NextResponse.json({
     attempt: {
@@ -73,6 +94,7 @@ export async function GET(_request: Request, { params }: Params) {
       flagged: parseFlagged(attempt.flagged),
       essayFlagged: Boolean(attempt.essay_flagged) || (essayFp ? essayMarks.has(essayFp) : false),
       sectionMode,
+      attemptMode,
       showTopic,
       endsAt,
       serverNow: Date.now(),
@@ -83,15 +105,26 @@ export async function GET(_request: Request, { params }: Params) {
       examCode,
       essayPrompt: sectionMode === "part2" ? "" : exam.essay_prompt,
       essayTopic: showTopic ? exam.essay_topic ?? "" : "",
+      essaySolution: isPractice ? exam.essay_solution ?? "" : "",
       essayFingerprint: essayFp,
       questions: withFingerprints.map((question) => {
-        const { solution: _solution, ...rest } = question;
-        return {
+        const { solution, ...rest } = question;
+        const base = {
           ...rest,
           topic: showTopic ? rest.topic : undefined,
           marked: rest.fingerprint
             ? questionMarks.has(rest.fingerprint)
             : false,
+        };
+        if (!isPractice) return base;
+        return {
+          ...base,
+          solution,
+          correctDisplayAnswer: correctDisplayAnswer(
+            question,
+            answerKey,
+            shuffle,
+          ),
         };
       }),
     },

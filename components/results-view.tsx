@@ -13,7 +13,14 @@ import {
   sectionModeLabel,
 } from "@/lib/exam/constants";
 import { toDisplayBlocks } from "@/lib/exam/shuffle";
-import { isMcq, isSectionMode, type McqDetailItem, type SectionMode } from "@/lib/exam/types";
+import {
+  isAttemptMode,
+  isMcq,
+  isSectionMode,
+  type AttemptMode,
+  type McqDetailItem,
+  type SectionMode,
+} from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
 export function ResultsView({
@@ -30,6 +37,7 @@ export function ResultsView({
   totalScore,
   detail,
   sectionMode = "full",
+  attemptMode = "exam",
 }: {
   title: string;
   essayPrompt: string;
@@ -44,13 +52,18 @@ export function ResultsView({
   totalScore: number;
   detail: McqDetailItem[];
   sectionMode?: SectionMode;
+  attemptMode?: AttemptMode;
 }) {
   const mode = isSectionMode(sectionMode) ? sectionMode : "full";
+  const practice =
+    isAttemptMode(attemptMode) && attemptMode === "practice";
   const showEssay = mode !== "part2";
   const showPart2 = mode !== "part1";
-  const maxEssay = showEssay ? ESSAY_MAX_SCORE : 0;
+  const showEssayScore = showEssay && !practice;
+  const maxEssay = showEssayScore ? ESSAY_MAX_SCORE : 0;
   const maxMcq = showPart2 ? MCQ_MAX_SCORE : 0;
   const maxTotal = maxEssay + maxMcq;
+  const showScores = showEssayScore || showPart2;
   const blocks = toDisplayBlocks(
     detail.map((item) => ({
       originalNumber: item.originalNumber,
@@ -73,7 +86,8 @@ export function ResultsView({
         <div>
           <h1 className="text-2xl font-semibold">{title}</h1>
           <p className="text-sm text-muted-foreground">
-            Kết quả bài làm · {sectionModeLabel(mode)}
+            {practice ? "Kết quả luyện tập" : "Kết quả bài làm"} ·{" "}
+            {sectionModeLabel(mode, practice ? "practice" : "exam")}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -86,8 +100,9 @@ export function ResultsView({
         </div>
       </div>
 
+      {showScores ? (
       <div className="grid gap-3 sm:grid-cols-3">
-        {showEssay ? (
+        {showEssayScore ? (
           <ScoreCard label="Tự luận" value={`${essayScore}/${ESSAY_MAX_SCORE}`} />
         ) : null}
         {showPart2 ? (
@@ -103,12 +118,13 @@ export function ResultsView({
           highlight
         />
       </div>
+      ) : null}
 
       {showEssay ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex flex-wrap items-center gap-2">
-              <span>Phần 1 · Chấm nghị luận</span>
+              <span>{practice ? "Phần 1 · Nghị luận" : "Phần 1 · Chấm nghị luận"}</span>
               <TopicBadge topic={essayTopic} />
             </CardTitle>
           </CardHeader>

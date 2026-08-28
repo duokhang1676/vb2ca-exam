@@ -17,9 +17,25 @@ function normalizeFill(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
-function isFillMatch(user: string, correct: string): boolean {
+export function isFillMatch(user: string, correct: string): boolean {
   if (isNumericMatch(user, correct)) return true;
   return normalizeFill(user) === normalizeFill(correct);
+}
+
+export function correctDisplayAnswer(
+  question: Pick<DisplayQuestion, "originalNumber" | "type">,
+  answerKey: AnswerKey,
+  shuffle: ShuffleMap,
+): string {
+  const correctOriginal = answerKey[String(question.originalNumber)] ?? "";
+  if (isMcq(question.type)) {
+    return originalLetterToDisplay(
+      shuffle,
+      question.originalNumber,
+      correctOriginal,
+    );
+  }
+  return correctOriginal;
 }
 
 export function gradeMultipleChoice(params: {
@@ -35,13 +51,11 @@ export function gradeMultipleChoice(params: {
     const key = String(question.originalNumber);
     const userAnswer = params.answers[key]?.trim() || null;
     const correctOriginal = params.answerKey[key] ?? "";
-    const correctDisplay = isMcq(question.type)
-      ? originalLetterToDisplay(
-          params.shuffle,
-          question.originalNumber,
-          correctOriginal,
-        )
-      : correctOriginal;
+    const correctDisplay = correctDisplayAnswer(
+      question,
+      params.answerKey,
+      params.shuffle,
+    );
 
     let isCorrect = false;
     if (userAnswer) {

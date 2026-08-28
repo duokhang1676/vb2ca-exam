@@ -15,6 +15,7 @@ export type Database = {
       attempts: {
         Row: {
           answers: Json
+          attempt_mode: string
           essay_feedback: string | null
           essay_flagged: boolean
           essay_score: number | null
@@ -34,6 +35,7 @@ export type Database = {
         }
         Insert: {
           answers?: Json
+          attempt_mode?: string
           essay_feedback?: string | null
           essay_flagged?: boolean
           essay_score?: number | null
@@ -53,6 +55,7 @@ export type Database = {
         }
         Update: {
           answers?: Json
+          attempt_mode?: string
           essay_feedback?: string | null
           essay_flagged?: boolean
           essay_score?: number | null

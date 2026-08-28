@@ -13,8 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { EXAM_SPECS, sectionModeLabel } from "@/lib/exam/constants";
-import type { ExamCode, SampleExamOption, SectionMode } from "@/lib/exam/types";
+import { EXAM_SPECS, attemptModeLabel, sectionModeLabel } from "@/lib/exam/constants";
+import type { ExamCode, SampleExamOption, SectionMode, AttemptMode } from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
 const OFFICIAL_SAMPLE_VALUE = "official";
@@ -42,6 +42,7 @@ export function HomeExamPanel({
   const [generating, setGenerating] = useState(false);
   const [sampling, setSampling] = useState(false);
   const [sectionMode, setSectionMode] = useState<SectionMode>("full");
+  const [attemptMode, setAttemptMode] = useState<AttemptMode>("exam");
   const [shuffleSample, setShuffleSample] = useState(false);
   const [showTopic, setShowTopic] = useState(false);
 
@@ -75,6 +76,7 @@ export function HomeExamPanel({
       body: JSON.stringify({
         sectionMode,
         showTopic,
+        attemptMode,
         ...(shuffle !== undefined ? { shuffle } : {}),
       }),
     });
@@ -100,11 +102,12 @@ export function HomeExamPanel({
       <CardHeader>
         <CardTitle>Tạo bài làm</CardTitle>
         <CardDescription>
-          Chọn mã đề và phạm vi làm bài. Hệ thống lấy ngẫu nhiên 1 câu nghị luận
+          Chọn mã đề, phạm vi và chế độ làm bài. Hệ thống lấy ngẫu nhiên 1 câu nghị luận
           và phần 2 từ ngân hàng ({spec.independentMcq} trắc nghiệm +{" "}
           {spec.clusters} cụm × {spec.clusterSize} + {spec.fill} điền,{" "}
-          {spec.total} câu). Hoặc chọn một đề minh họa có sẵn. Toàn bộ 150 phút;
-          chỉ phần 1: 50 phút; chỉ phần 2: 100 phút.
+          {spec.total} câu). Hoặc chọn một đề minh họa có sẵn. Thi thử có thời gian
+          (toàn bộ 150 phút; phần 1: 50 phút; phần 2: 100 phút). Luyện tập không
+          giới hạn thời gian và hiện đáp án, lời giải ngay sau khi trả lời.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
@@ -143,6 +146,32 @@ export function HomeExamPanel({
                 )}
               >
                 {sectionModeLabel(mode)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-2">
+          <Label>Chế độ làm bài</Label>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {(["exam", "practice"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                disabled={busy}
+                onClick={() => setAttemptMode(mode)}
+                className={cn(
+                  "rounded-lg border px-3 py-2 text-left text-sm",
+                  attemptMode === mode
+                    ? "border-primary bg-primary/5 text-foreground"
+                    : "border-border text-muted-foreground",
+                )}
+              >
+                <span className="block font-medium">{attemptModeLabel(mode)}</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                  {mode === "practice"
+                    ? "Không giới hạn thời gian, hiện đáp án và lời giải ngay sau khi trả lời"
+                    : "Có thời gian, ẩn đáp án đến khi nộp bài"}
+                </span>
               </button>
             ))}
           </div>

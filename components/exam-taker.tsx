@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Bookmark, LoaderCircle } from "lucide-react";
 import { ExamTimer } from "@/components/exam-timer";
 import { MathText } from "@/components/math-text";
-import { TopicBadge } from "@/components/question-meta";
+import { SolutionReveal, TopicBadge } from "@/components/question-meta";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -14,14 +15,18 @@ import { Input } from "@/components/ui/input";
 import {
   AUTOSAVE_INTERVAL_MS,
   OPTION_LETTERS,
+  attemptModeLabel,
   questionTypeLabel,
   sectionModeLabel,
 } from "@/lib/exam/constants";
+import { isFillMatch } from "@/lib/exam/grade";
 import { toDisplayBlocks } from "@/lib/exam/shuffle";
 import {
+  isAttemptMode,
   isMcq,
   isSectionMode,
   type AttemptAnswers,
+  type AttemptMode,
   type DisplayQuestion,
   type ExamCode,
   type SectionMode,
@@ -38,8 +43,9 @@ type ExamPayload = {
     flagged: number[];
     essayFlagged: boolean;
     sectionMode: SectionMode;
+    attemptMode?: AttemptMode;
     showTopic?: boolean;
-    endsAt: number;
+    endsAt: number | null;
     serverNow: number;
   };
   exam: {
@@ -47,6 +53,7 @@ type ExamPayload = {
     examCode: ExamCode;
     essayPrompt: string;
     essayTopic?: string;
+    essaySolution?: string;
     essayFingerprint: string;
     questions: Array<DisplayQuestion & { fingerprint?: string; marked?: boolean }>;
   };
@@ -88,6 +95,9 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
         const sectionMode = isSectionMode(json.attempt.sectionMode)
           ? json.attempt.sectionMode
           : "full";
+        const attemptMode = isAttemptMode(json.attempt.attemptMode)
+          ? json.attempt.attemptMode
+          : "exam";
         const flaggedNumbers = Array.from(
           new Set<number>([
             ...(json.attempt.flagged ?? []),
@@ -98,7 +108,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
         );
         setData({
           ...json,
-          attempt: { ...json.attempt, sectionMode },
+          attempt: { ...json.attempt, sectionMode, attemptMode },
         });
         setEssayText(json.attempt.essayText);
         setAnswers(json.attempt.answers);
@@ -242,6 +252,10 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
   }
 
   const sectionMode = data.attempt.sectionMode;
+  const attemptMode = isAttemptMode(data.attempt.attemptMode)
+    ? data.attempt.attemptMode
+    : "exam";
+  const practice = attemptMode === "practice";
   const showEssay = sectionMode !== "part2";
   const showPart2 = sectionMode !== "part1";
   const totalItems =
@@ -257,15 +271,19 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
           <div>
             <h1 className="text-lg font-semibold">{data.exam.title}</h1>
             <p className="text-xs text-muted-foreground">
-              {sectionModeLabel(sectionMode)} · Đã trả lời {answeredCount}/{totalItems} phần
+              {attemptModeLabel(attemptMode)} ·{" "}
+              {sectionModeLabel(sectionMode, attemptMode)} · Đã trả lời{" "}
+              {answeredCount}/{totalItems} phần
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <ExamTimer
-              endsAt={data.attempt.endsAt}
-              serverNow={data.attempt.serverNow}
-              onExpire={submit}
-            />
+            {practice || data.attempt.endsAt == null ? null : (
+              <ExamTimer
+                endsAt={data.attempt.endsAt}
+                serverNow={data.attempt.serverNow}
+                onExpire={submit}
+              />
+            )}
             <Button
               variant="outline"
               onClick={exitWithoutSaving}
@@ -276,7 +294,11 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
             </Button>
             <Button onClick={submit} disabled={locked}>
               {submitting ? <LoaderCircle className="animate-spin" /> : null}
-              {submitting ? "Đang chấm..." : "Nộp bài"}
+              {submitting
+                ? "Đang chấm..."
+                : practice
+                  ? "Kết thúc luyện tập"
+                  : "Nộp bài"}
             </Button>
           </div>
         </div>
@@ -326,6 +348,12 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
                   disabled={locked}
                 />
               </div>
+              {practice ? (
+                <SolutionReveal
+                  solution={data.exam.essaySolution}
+                  textClassName="font-exam text-lg leading-8"
+                />
+              ) : null}
             </CardContent>
           </Card>
         ) : null}
@@ -358,6 +386,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
                     value={answers[String(question.originalNumber)] ?? ""}
                     marked={flaggedSet.has(question.originalNumber)}
                     disabled={locked}
+                    practice={practice}
                     onChange={(value) =>
                       setAnswers((current) => ({
                         ...current,
@@ -458,6 +487,7 @@ function QuestionCard({
   onChange,
   onToggleMark,
   disabled,
+  practice = false,
 }: {
   question: DisplayQuestion & { fingerprint?: string };
   value: string;
@@ -465,7 +495,20 @@ function QuestionCard({
   onChange: (value: string) => void;
   onToggleMark: () => void;
   disabled: boolean;
+  practice?: boolean;
 }) {
+  const [fillDraft, setFillDraft] = useState(value);
+  const revealed = practice && Boolean(value.trim());
+  const correct = question.correctDisplayAnswer ?? "";
+  const isCorrect = isMcq(question.type)
+    ? value.trim().toUpperCase() === correct.trim().toUpperCase()
+    : isFillMatch(value, correct);
+  const inputLocked = disabled || revealed;
+
+  useEffect(() => {
+    if (value) setFillDraft(value);
+  }, [value]);
+
   return (
     <Card id={`q-${question.displayIndex}`}>
       <CardHeader>
@@ -478,6 +521,11 @@ function QuestionCard({
               </span>
             </span>
             <TopicBadge topic={question.topic} />
+            {revealed ? (
+              <Badge variant={isCorrect ? "secondary" : "destructive"}>
+                {isCorrect ? "Đúng" : "Sai"}
+              </Badge>
+            ) : null}
           </span>
           <MarkButton marked={marked} disabled={disabled} onClick={onToggleMark} />
         </CardTitle>
@@ -486,44 +534,89 @@ function QuestionCard({
         <MathText className="font-exam text-lg leading-8" text={question.stem} />
         {isMcq(question.type) && question.options ? (
           <div className="grid gap-2">
-            {OPTION_LETTERS.map((letter) => (
-              <label
-                key={letter}
-                className={cn(
-                  "flex cursor-pointer items-start gap-3 rounded-lg border p-3",
-                  value === letter ? "border-primary bg-primary/5" : "border-border",
-                )}
-              >
-                <input
-                  type="radio"
-                  className="mt-1"
-                  name={`q-${question.originalNumber}`}
-                  value={letter}
-                  checked={value === letter}
-                  disabled={disabled}
-                  onChange={() => onChange(letter)}
-                />
-                <span className="font-exam text-lg font-medium">{letter}.</span>
-                <MathText
-                  className="font-exam text-lg leading-8"
-                  text={question.options![letter]}
-                />
-              </label>
-            ))}
+            {OPTION_LETTERS.map((letter) => {
+              const isCorrectOption = revealed && letter === correct;
+              const isWrongPick =
+                revealed && letter === value && letter !== correct;
+              return (
+                <label
+                  key={letter}
+                  className={cn(
+                    "flex items-start gap-3 rounded-lg border p-3",
+                    inputLocked ? "cursor-default" : "cursor-pointer",
+                    isCorrectOption
+                      ? "border-emerald-600 bg-emerald-50 text-emerald-800"
+                      : isWrongPick
+                        ? "border-destructive bg-destructive/5 text-destructive"
+                        : value === letter
+                          ? "border-primary bg-primary/5"
+                          : "border-border",
+                  )}
+                >
+                  <input
+                    type="radio"
+                    className="mt-1"
+                    name={`q-${question.originalNumber}`}
+                    value={letter}
+                    checked={value === letter}
+                    disabled={inputLocked}
+                    onChange={() => onChange(letter)}
+                  />
+                  <span className="font-exam text-lg font-medium">{letter}.</span>
+                  <MathText
+                    className="font-exam text-lg leading-8"
+                    text={question.options![letter]}
+                  />
+                </label>
+              );
+            })}
           </div>
         ) : (
-          <div className="max-w-xl">
+          <div className="max-w-xl space-y-3">
             <Label htmlFor={`num-${question.originalNumber}`}>Đáp án</Label>
-            <Input
-              id={`num-${question.originalNumber}`}
-              value={value}
-              disabled={disabled}
-              onChange={(event) => onChange(event.target.value)}
-              placeholder="Nhập đáp án"
-              className="font-exam text-lg"
-            />
+            <div className="flex items-end gap-2">
+              <div className="min-w-0 flex-1">
+                <Input
+                  id={`num-${question.originalNumber}`}
+                  value={practice ? fillDraft : value}
+                  disabled={inputLocked}
+                  onChange={(event) => {
+                    const next = event.target.value;
+                    if (practice) setFillDraft(next);
+                    else onChange(next);
+                  }}
+                  placeholder="Nhập đáp án"
+                  className="font-exam text-lg"
+                />
+              </div>
+              {practice && !revealed ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="shrink-0"
+                  disabled={disabled || !fillDraft.trim()}
+                  onClick={() => onChange(fillDraft.trim())}
+                >
+                  Kiểm tra
+                </Button>
+              ) : null}
+            </div>
           </div>
         )}
+        {revealed ? (
+          <>
+            <p className="text-xs text-muted-foreground">
+              Bạn chọn:{" "}
+              {value ? <MathText inline text={value} /> : "—"} · Đáp án đúng:{" "}
+              <MathText inline text={correct} />
+            </p>
+            <SolutionReveal
+              defaultOpen
+              solution={question.solution}
+              textClassName="font-exam text-lg leading-8"
+            />
+          </>
+        ) : null}
       </CardContent>
     </Card>
   );

@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { ResultsView } from "@/components/results-view";
 import { getAuthUser } from "@/lib/auth/session";
 import { parseQuestions } from "@/lib/exam/json";
-import { isSectionMode, type McqDetailItem } from "@/lib/exam/types";
+import { isAttemptMode, isSectionMode, type McqDetailItem } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +53,9 @@ export default async function ResultPage({
   const sectionMode = isSectionMode(attempt.section_mode)
     ? attempt.section_mode
     : "full";
+  const attemptMode = isAttemptMode(attempt.attempt_mode)
+    ? attempt.attempt_mode
+    : "exam";
 
   return (
     <ResultsView
@@ -69,6 +72,7 @@ export default async function ResultPage({
       totalScore={Number(attempt.total_score ?? 0)}
       detail={detail}
       sectionMode={sectionMode}
+      attemptMode={attemptMode}
     />
   );
 }

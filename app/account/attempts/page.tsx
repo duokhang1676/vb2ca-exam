@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getAuthUser } from "@/lib/auth/session";
-import { sectionModeShortLabel } from "@/lib/exam/constants";
-import { isSectionMode } from "@/lib/exam/types";
+import { attemptModeLabel, sectionModeShortLabel } from "@/lib/exam/constants";
+import { isAttemptMode, isSectionMode } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export default async function AttemptHistoryPage() {
   const supabase = getSupabaseAdmin();
   const { data: rows } = await supabase
     .from("attempts")
-    .select("id, started_at, submitted_at, total_score, section_mode, exams(title, exam_code)")
+    .select("id, started_at, submitted_at, total_score, section_mode, attempt_mode, exams(title, exam_code)")
     .eq("user_id", user.id)
     .order("started_at", { ascending: false });
 
@@ -45,6 +45,9 @@ export default async function AttemptHistoryPage() {
         const sectionMode = isSectionMode(attempt.section_mode)
           ? attempt.section_mode
           : "full";
+        const attemptMode = isAttemptMode(attempt.attempt_mode)
+          ? attempt.attempt_mode
+          : "exam";
         return (
           <Link key={attempt.id} href={href}>
             <Card className="transition-colors hover:border-primary">
@@ -63,6 +66,9 @@ export default async function AttemptHistoryPage() {
                     <Badge variant="outline">{exam.exam_code}</Badge>
                   ) : null}
                   <Badge variant="outline">{sectionModeShortLabel(sectionMode)}</Badge>
+                  {attemptMode === "practice" ? (
+                    <Badge variant="outline">{attemptModeLabel("practice")}</Badge>
+                  ) : null}
                   {submitted ? (
                     <Badge variant="secondary">
                       {Number(attempt.total_score ?? 0)} điểm

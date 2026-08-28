@@ -20,9 +20,10 @@ export default async function HomePage() {
         <h1 className="text-3xl font-semibold tracking-tight">Ôn thi VB2CA</h1>
         <p className="text-muted-foreground">
           Đóng góp đề minh họa JSON vào ngân hàng dùng chung, rồi tạo bài làm CA1
-          hoặc CA4. Có thể làm toàn bộ (150 phút), chỉ phần 1 (50 phút) hoặc chỉ
-          phần 2 (100 phút). Phần 1 nghị luận xã hội dùng chung; phần 2 lấy ngẫu
-          nhiên theo mã đề.
+          hoặc CA4. Có thể làm toàn bộ, chỉ phần 1 hoặc chỉ phần 2 — theo chế độ
+          thi thử (có giờ) hoặc luyện tập (không giới hạn thời gian, hiện đáp án
+          ngay). Phần 1 nghị luận xã hội dùng chung; phần 2 lấy ngẫu nhiên theo
+          mã đề.
         </p>
       </div>
       <HomeExamPanel

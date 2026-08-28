@@ -5,6 +5,7 @@ export type ExamSource = "random" | "sample";
 export type ClusterKind = "passage" | "situation";
 export type QuestionSection = "independent" | "cluster" | "fill";
 export type SectionMode = "full" | "part1" | "part2";
+export type AttemptMode = "exam" | "practice";
 export type MarkKind = "essay" | "question";
 
 export type SampleExamOption = {
@@ -53,6 +54,7 @@ export type DisplayQuestion = {
   fingerprint?: string;
   topic?: string;
   solution?: string;
+  correctDisplayAnswer?: string;
 };
 
 export type DisplayBlock =
@@ -139,6 +141,10 @@ export function isExamCode(value: unknown): value is ExamCode {
 
 export function isSectionMode(value: unknown): value is SectionMode {
   return value === "full" || value === "part1" || value === "part2";
+}
+
+export function isAttemptMode(value: unknown): value is AttemptMode {
+  return value === "exam" || value === "practice";
 }
 
 export function isClusterKind(value: unknown): value is ClusterKind {

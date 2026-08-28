@@ -1,4 +1,4 @@
-import type { ClusterKind, ExamCode, SectionMode } from "./types";
+import type { AttemptMode, ClusterKind, ExamCode, SectionMode } from "./types";
 
 export const EXAM_DURATION_MS = 150 * 60 * 1000;
 export const PART1_DURATION_MS = 50 * 60 * 1000;
@@ -68,10 +68,25 @@ export function examDurationMs(mode: SectionMode = "full"): number {
   return SECTION_DURATION_MS[mode];
 }
 
-export function sectionModeLabel(mode: SectionMode): string {
+export const PRACTICE_ESSAY_FEEDBACK =
+  "Chế độ luyện tập không chấm nghị luận bằng AI. Xem lời giải mẫu.";
+
+export function sectionModeLabel(
+  mode: SectionMode,
+  attemptMode: AttemptMode = "exam",
+): string {
+  if (attemptMode === "practice") {
+    if (mode === "part1") return "Phần 1 · Nghị luận";
+    if (mode === "part2") return "Phần 2 · Trắc nghiệm";
+    return "Toàn bộ đề";
+  }
   if (mode === "part1") return "Phần 1 · Nghị luận (50 phút)";
   if (mode === "part2") return "Phần 2 · Trắc nghiệm (100 phút)";
   return "Toàn bộ đề (150 phút)";
+}
+
+export function attemptModeLabel(mode: AttemptMode): string {
+  return mode === "practice" ? "Luyện tập" : "Thi thử";
 }
 
 export function sectionModeShortLabel(mode: SectionMode): string {

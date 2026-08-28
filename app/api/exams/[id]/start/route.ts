@@ -6,7 +6,7 @@ import {
   createIdentityShuffle,
   createShuffle,
 } from "@/lib/exam/shuffle";
-import { isSectionMode } from "@/lib/exam/types";
+import { isAttemptMode, isSectionMode } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -22,10 +22,12 @@ export async function POST(request: Request, { params }: Params) {
     sectionMode?: string;
     shuffle?: boolean;
     showTopic?: boolean;
+    attemptMode?: string;
   };
   const sectionMode = isSectionMode(body.sectionMode) ? body.sectionMode : "full";
   const shouldShuffle = body.shuffle !== false;
   const showTopic = Boolean(body.showTopic);
+  const attemptMode = isAttemptMode(body.attemptMode) ? body.attemptMode : "exam";
   const supabase = getSupabaseAdmin();
 
   const { data: exam, error } = await supabase
@@ -57,6 +59,7 @@ export async function POST(request: Request, { params }: Params) {
       essay_flagged: false,
       section_mode: sectionMode,
       show_topic: showTopic,
+      attempt_mode: attemptMode,
     })
     .select("id")
     .single();

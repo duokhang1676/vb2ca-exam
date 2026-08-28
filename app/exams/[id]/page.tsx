@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { AutoStartExam } from "@/components/auto-start-exam";
-import { isSectionMode } from "@/lib/exam/types";
+import { isAttemptMode, isSectionMode } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -10,12 +10,13 @@ export default async function ExamStartPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ section?: string; shuffle?: string }>;
+  searchParams: Promise<{ section?: string; shuffle?: string; mode?: string }>;
 }) {
   const { id } = await params;
-  const { section, shuffle } = await searchParams;
+  const { section, shuffle, mode } = await searchParams;
   const sectionMode = isSectionMode(section) ? section : "full";
   const shouldShuffle = shuffle !== "0" && shuffle !== "false";
+  const attemptMode = isAttemptMode(mode) ? mode : "exam";
   const supabase = getSupabaseAdmin();
   const { data: exam } = await supabase
     .from("exams")
@@ -30,6 +31,7 @@ export default async function ExamStartPage({
       examId={exam.id}
       sectionMode={sectionMode}
       shuffle={shouldShuffle}
+      attemptMode={attemptMode}
     />
   );
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireOwnedAttempt } from "@/lib/auth/attempt";
-import { pointsPerQuestion } from "@/lib/exam/constants";
+import { pointsPerQuestion, PRACTICE_ESSAY_FEEDBACK } from "@/lib/exam/constants";
 import { gradeEssay } from "@/lib/exam/grade-essay";
 import { gradeMultipleChoice, roundTotal } from "@/lib/exam/grade";
 import {
@@ -12,7 +12,7 @@ import {
   parseShuffle,
 } from "@/lib/exam/json";
 import { toDisplayQuestions } from "@/lib/exam/shuffle";
-import { isSectionMode } from "@/lib/exam/types";
+import { isAttemptMode, isSectionMode } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -50,6 +50,9 @@ export async function POST(request: Request, { params }: Params) {
   const sectionMode = isSectionMode(attempt.section_mode)
     ? attempt.section_mode
     : "full";
+  const attemptMode = isAttemptMode(attempt.attempt_mode)
+    ? attempt.attempt_mode
+    : "exam";
   const answers = {
     ...parseAnswers(attempt.answers),
     ...(body.answers ?? {}),
@@ -83,10 +86,15 @@ export async function POST(request: Request, { params }: Params) {
           score: 0,
           feedback: "Bài làm chỉ gồm phần 2 nên không chấm nghị luận.",
         }
-      : await gradeEssay({
-          prompt: exam.essay_prompt,
-          essayText,
-        });
+      : attemptMode === "practice"
+        ? {
+            score: 0,
+            feedback: PRACTICE_ESSAY_FEEDBACK,
+          }
+        : await gradeEssay({
+            prompt: exam.essay_prompt,
+            essayText,
+          });
 
   const total = roundTotal(essay.score, mcq.mcqScore);
 
