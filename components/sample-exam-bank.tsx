@@ -166,11 +166,11 @@ function SampleExamCard({
   }
 
   async function onDeleteQuestion(originalNumber: number) {
-    if (questions.length <= 1) {
+    if (questions.length <= 1 && !essayPrompt.trim()) {
       setAlert({
         tone: "error",
         title: "Không xóa được câu",
-        message: "Đề minh họa cần ít nhất 1 câu phần 2.",
+        message: "Đề minh họa cần phần 1 hoặc ít nhất 1 câu phần 2.",
       });
       setOpen(true);
       return;
@@ -293,14 +293,19 @@ function SampleExamCard({
                     setEssaySolution(next.solution);
                   }}
                 />
-              ) : (
+              ) : essayPrompt.trim() ? (
                 <>
                   <MathText className="font-exam text-sm leading-7" text={essayPrompt} />
                   <SolutionReveal solution={essaySolution || sample.essaySolution} />
                 </>
+              ) : (
+                <p className="text-sm text-muted-foreground">Đề này không có phần 1.</p>
               )}
           </div>
-          {blocks.map((block, blockIndex) => (
+          {blocks.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Đề này không có phần 2.</p>
+          ) : (
+            blocks.map((block, blockIndex) => (
             <div key={`sample-block-${blockIndex}`} className="space-y-3">
               <p className="text-sm font-medium">
                 {block.kind === "independent"
@@ -407,7 +412,8 @@ function SampleExamCard({
                 );
               })}
             </div>
-          ))}
+            ))
+          )}
         </CardContent>
       ) : null}
     </Card>

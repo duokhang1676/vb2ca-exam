@@ -256,8 +256,9 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
     ? data.attempt.attemptMode
     : "exam";
   const practice = attemptMode === "practice";
-  const showEssay = sectionMode !== "part2";
-  const showPart2 = sectionMode !== "part1";
+  const showEssay =
+    sectionMode !== "part2" && Boolean(data.exam.essayPrompt.trim());
+  const showPart2 = sectionMode !== "part1" && data.exam.questions.length > 0;
   const totalItems =
     (showEssay ? 1 : 0) + (showPart2 ? data.exam.questions.length : 0);
   const blocks = toDisplayBlocks(data.exam.questions);

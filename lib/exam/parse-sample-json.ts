@@ -26,16 +26,13 @@ export function parseSampleJsonText(
   }
 
   const payload = raw as Record<string, unknown>;
-  if (typeof payload.essayPrompt !== "string" || !payload.essayPrompt.trim()) {
-    throw new Error("JSON thiếu essayPrompt.");
-  }
-  if (!payload.questions || !payload.answerKey) {
-    throw new Error("JSON thiếu questions hoặc answerKey.");
-  }
-  if (!Array.isArray(payload.questions)) {
+  const essayPrompt =
+    typeof payload.essayPrompt === "string" ? payload.essayPrompt : "";
+  const questionsRaw = payload.questions ?? [];
+  if (!Array.isArray(questionsRaw)) {
     throw new Error("JSON questions phải là mảng.");
   }
-  for (const item of payload.questions) {
+  for (const item of questionsRaw) {
     if (!item || typeof item !== "object" || Array.isArray(item)) {
       throw new Error("JSON có câu hỏi không hợp lệ.");
     }
@@ -50,6 +47,10 @@ export function parseSampleJsonText(
         `Loại câu không hỗ trợ: ${String(type)}. Chỉ nhận mcq (độc lập/cụm) hoặc fill.`,
       );
     }
+  }
+
+  if (questionsRaw.length > 0 && payload.answerKey == null) {
+    throw new Error("JSON thiếu answerKey.");
   }
 
   if (payload.examCode != null && !isExamCode(payload.examCode)) {
@@ -68,10 +69,11 @@ export function parseSampleJsonText(
       typeof payload.diversity === "number" && Number.isFinite(payload.diversity)
         ? payload.diversity
         : undefined,
-    essayPrompt: payload.essayPrompt,
+    essayPrompt,
     essayTopic: optionalText(payload.essayTopic),
     essaySolution: optionalText(payload.essaySolution),
-    questions: parseQuestions(payload.questions),
-    answerKey: parseAnswerKeyJson(payload.answerKey),
+    questions: parseQuestions(questionsRaw),
+    answerKey:
+      payload.answerKey == null ? {} : parseAnswerKeyJson(payload.answerKey),
   };
 }

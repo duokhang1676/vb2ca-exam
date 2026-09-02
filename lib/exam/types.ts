@@ -13,6 +13,8 @@ export type SampleExamOption = {
   title: string;
   kind: "official" | "generated";
   number: number;
+  hasPart1: boolean;
+  hasPart2: boolean;
 };
 
 export type McqOptions = Record<OptionLetter, string>;
@@ -141,6 +143,16 @@ export function isExamCode(value: unknown): value is ExamCode {
 
 export function isSectionMode(value: unknown): value is SectionMode {
   return value === "full" || value === "part1" || value === "part2";
+}
+
+export function sectionModesForParts(
+  hasPart1: boolean,
+  hasPart2: boolean,
+): SectionMode[] {
+  if (hasPart1 && hasPart2) return ["full", "part1", "part2"];
+  if (hasPart1) return ["part1"];
+  if (hasPart2) return ["part2"];
+  return ["full", "part1", "part2"];
 }
 
 export function isAttemptMode(value: unknown): value is AttemptMode {

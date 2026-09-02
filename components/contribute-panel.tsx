@@ -363,7 +363,8 @@ function SampleContributeForm() {
             <FormatHelp title={`Yêu cầu file JSON ${examCode}`}>
               <ul className="list-disc pl-5">
                 <li>
-                  Cấu trúc: examCode, essayPrompt, questions (≥ 1 câu), answerKey.
+                  Cấu trúc: examCode; có thể chỉ phần 1 (essayPrompt), chỉ phần 2
+                  (questions + answerKey), hoặc cả hai.
                 </li>
                 <li>
                   Chỉ 3 dạng: trắc nghiệm chọn đáp án (mcq độc lập), trắc nghiệm

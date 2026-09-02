@@ -14,13 +14,26 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { EXAM_SPECS, attemptModeLabel, sectionModeLabel } from "@/lib/exam/constants";
-import type { ExamCode, SampleExamOption, SectionMode, AttemptMode } from "@/lib/exam/types";
+import {
+  type AttemptMode,
+  type ExamCode,
+  type SampleExamOption,
+  type SectionMode,
+  sectionModesForParts,
+} from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
 const OFFICIAL_SAMPLE_VALUE = "official";
 
 function sampleValue(sample: SampleExamOption): string {
   return sample.id ?? OFFICIAL_SAMPLE_VALUE;
+}
+
+function sampleLabel(sample: SampleExamOption): string {
+  if (sample.hasPart1 && sample.hasPart2) return sample.title;
+  if (sample.hasPart1) return `${sample.title} (phần 1)`;
+  if (sample.hasPart2) return `${sample.title} (phần 2)`;
+  return sample.title;
 }
 
 export function HomeExamPanel({
@@ -50,16 +63,26 @@ export function HomeExamPanel({
   const selectedId =
     selectedByCode[examCode] ??
     (options[0] ? sampleValue(options[0]) : OFFICIAL_SAMPLE_VALUE);
+  const selectedSample =
+    options.find((sample) => sampleValue(sample) === selectedId) ?? options[0];
+  const availableSectionModes = selectedSample
+    ? sectionModesForParts(selectedSample.hasPart1, selectedSample.hasPart2)
+    : (["full", "part1", "part2"] as SectionMode[]);
+  const activeSectionMode =
+    availableSectionModes.includes(sectionMode)
+      ? sectionMode
+      : (availableSectionModes[0] ?? "full");
 
   async function postExam(
     url: string,
-    extra?: { examId?: string; shuffle?: boolean },
+    extra?: { examId?: string; shuffle?: boolean; sectionMode?: SectionMode },
   ) {
-    const { shuffle, ...createBody } = extra ?? {};
+    const { shuffle, sectionMode: modeOverride, ...createBody } = extra ?? {};
+    const mode = modeOverride ?? sectionMode;
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ examCode, sectionMode, ...createBody }),
+      body: JSON.stringify({ examCode, sectionMode: mode, ...createBody }),
     });
     if (response.status === 401) {
       router.push("/login?next=/");
@@ -74,7 +97,7 @@ export function HomeExamPanel({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        sectionMode,
+        sectionMode: mode,
         showTopic,
         attemptMode,
         ...(shuffle !== undefined ? { shuffle } : {}),
@@ -253,7 +276,7 @@ export function HomeExamPanel({
               >
                 {options.map((sample) => (
                   <option key={sampleValue(sample)} value={sampleValue(sample)}>
-                    {sample.title}
+                    {sampleLabel(sample)}
                   </option>
                 ))}
               </select>
@@ -296,6 +319,7 @@ export function HomeExamPanel({
                     await postExam("/api/exams/sample", {
                       examId: selectedId,
                       shuffle: shuffleSample,
+                      sectionMode: activeSectionMode,
                     });
                   } catch (err) {
                     setError(

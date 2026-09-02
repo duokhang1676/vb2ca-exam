@@ -434,20 +434,26 @@ export async function importParsedIntoBank(params: {
   checkNearDuplicates?: boolean;
   attribution?: ImportAttribution;
 }): Promise<{ essays: ImportSummary; questions: ImportSummary }> {
-  const essays = await importEssays(
-    params.essayPrompt,
-    params.sourceFilename,
-    params.attribution,
-    params.checkNearDuplicates,
-    { topic: params.essayTopic, solution: params.essaySolution },
-  );
-  const questions = await importQuestions({
-    examCode: params.examCode,
-    questions: params.questions,
-    answerKey: params.answerKey,
-    checkNearDuplicates: params.checkNearDuplicates,
-    attribution: params.attribution,
-  });
+  const empty: ImportSummary = { added: 0, skipped: 0 };
+  const essays = params.essayPrompt.trim()
+    ? await importEssays(
+        params.essayPrompt,
+        params.sourceFilename,
+        params.attribution,
+        params.checkNearDuplicates,
+        { topic: params.essayTopic, solution: params.essaySolution },
+      )
+    : empty;
+  const questions =
+    params.questions.length > 0
+      ? await importQuestions({
+          examCode: params.examCode,
+          questions: params.questions,
+          answerKey: params.answerKey,
+          checkNearDuplicates: params.checkNearDuplicates,
+          attribution: params.attribution,
+        })
+      : empty;
   return { essays, questions };
 }
 

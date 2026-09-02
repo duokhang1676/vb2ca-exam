@@ -164,16 +164,23 @@ export async function listSampleExams(
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("exams")
-    .select("id, title, created_at")
+    .select("id, title, created_at, essay_prompt, questions")
     .eq("exam_code", examCode)
     .eq("source", "sample")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
 
-  const byTitle = new Map<string, { id: string; title: string }>();
+  const byTitle = new Map<
+    string,
+    { id: string; title: string; hasPart1: boolean; hasPart2: boolean }
+  >();
   for (const row of data ?? []) {
     if (!byTitle.has(row.title)) {
-      byTitle.set(row.title, { id: row.id, title: row.title });
+      byTitle.set(row.title, {
+        id: row.id,
+        title: row.title,
+        ...samplePartsFromRow(row),
+      });
     }
   }
 
@@ -191,6 +198,8 @@ export async function listSampleExams(
         title: row.title,
         kind: "generated",
         number,
+        hasPart1: row.hasPart1,
+        hasPart2: row.hasPart2,
       });
     } else {
       other.push({
@@ -198,6 +207,8 @@ export async function listSampleExams(
         title: row.title,
         kind: "generated",
         number: 0,
+        hasPart1: row.hasPart1,
+        hasPart2: row.hasPart2,
       });
     }
   }
@@ -211,6 +222,8 @@ export async function listSampleExams(
       title: officialTitle,
       kind: "official",
       number: 1,
+      hasPart1: official?.hasPart1 ?? true,
+      hasPart2: official?.hasPart2 ?? true,
     },
     ...generated,
     ...other,
@@ -260,6 +273,36 @@ function fillClusterPassages(questions: Question[]): Question[] {
     const passage = passages.get(question.clusterId);
     return passage ? { ...question, passage } : question;
   });
+}
+
+function samplePartsFromRow(row: {
+  essay_prompt?: string | null;
+  questions?: unknown;
+}): { hasPart1: boolean; hasPart2: boolean } {
+  const questions = Array.isArray(row.questions) ? row.questions : [];
+  return {
+    hasPart1: Boolean(row.essay_prompt?.trim()),
+    hasPart2: questions.length > 0,
+  };
+}
+
+function assertSampleParts(
+  essayPrompt: string,
+  questions: Question[],
+  answerKey: AnswerKey,
+) {
+  const prompt = essayPrompt.trim();
+  const hasPart1 = prompt.length > 0;
+  const hasPart2 = questions.length > 0;
+  if (!hasPart1 && !hasPart2) {
+    throw new Error("Đề minh họa cần phần 1 hoặc phần 2.");
+  }
+  if (hasPart1 && prompt.length < 80) {
+    throw new Error("Đề nghị luận quá ngắn.");
+  }
+  if (hasPart2) {
+    assertFlexibleSample(questions, answerKey);
+  }
 }
 
 export function assertFlexibleSample(
@@ -350,16 +393,19 @@ export async function listSampleExamDetails(): Promise<SampleExamDetail[]> {
     const examCode = row.exam_code;
     const official = isOfficialSampleTitle(row.title, examCode);
     const generatedNumber = parseGeneratedSampleNumber(row.title, examCode);
+    const questions = parseQuestions(row.questions);
     details.push({
       id: row.id,
       title: row.title,
       examCode,
       kind: official ? "official" : "generated",
       number: official ? 1 : (generatedNumber ?? 0),
+      hasPart1: Boolean(row.essay_prompt.trim()),
+      hasPart2: questions.length > 0,
       essayPrompt: row.essay_prompt,
       essayTopic: optionalText(row.essay_topic),
       essaySolution: optionalText(row.essay_solution),
-      questions: parseQuestions(row.questions),
+      questions,
       answerKey: parseAnswerKeyJson(row.answer_key),
     });
   }
@@ -397,11 +443,8 @@ export async function updateSampleExam(params: {
     throw new Error("Không được sửa đề minh họa chính thức.");
   }
   const prompt = params.essayPrompt.trim();
-  if (prompt.length < 80) {
-    throw new Error("Đề nghị luận quá ngắn.");
-  }
   const questions = fillClusterPassages(params.questions);
-  assertFlexibleSample(questions, params.answerKey);
+  assertSampleParts(prompt, questions, params.answerKey);
 
   const nextTitle = params.title?.trim();
   if (nextTitle !== undefined) {
@@ -491,7 +534,10 @@ export async function deleteSampleExam(examId: string) {
 
   await deleteBankItemsNotShared({
     examCode,
-    essay: kept.essay.has(mine.essay) ? null : mine.essay,
+    essay:
+      existing.essay_prompt.trim() && !kept.essay.has(mine.essay)
+        ? mine.essay
+        : null,
     questions: [...mine.questions].filter((hash) => !kept.questions.has(hash)),
     clusters: [...mine.clusters].filter((hash) => !kept.clusters.has(hash)),
   });
@@ -515,12 +561,8 @@ export async function saveGeneratedSampleExam(params: {
   sourceFilename?: string;
 }) {
   const prompt = params.essayPrompt.trim();
-  if (prompt.length < 80) {
-    throw new Error("Đề nghị luận quá ngắn.");
-  }
-
   const questions = fillClusterPassages(params.questions);
-  assertFlexibleSample(questions, params.answerKey);
+  assertSampleParts(prompt, questions, params.answerKey);
 
   const number = await nextGeneratedSampleNumber(params.examCode);
   const title = generatedSampleTitle(params.examCode, number);

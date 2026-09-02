@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
@@ -75,12 +74,6 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
         {busy ? <LoaderCircle className="animate-spin" /> : null}
         {busy ? "Đang đăng nhập..." : "Đăng nhập"}
       </Button>
-      <p className="text-sm text-muted-foreground">
-        Chưa có tài khoản?{" "}
-        <Link className="text-primary underline-offset-4 hover:underline" href="/register">
-          Đăng ký
-        </Link>
-      </p>
     </form>
   );
 }

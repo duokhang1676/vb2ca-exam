@@ -1,11 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PROTECTED_PREFIXES = ["/account", "/contribute", "/exams", "/attempts"];
+const PUBLIC_PATHS = ["/login", "/auth/callback"];
 
-function isProtectedPage(pathname: string): boolean {
-  return PROTECTED_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+function isPublicPage(pathname: string): boolean {
+  return PUBLIC_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
 }
 
@@ -39,10 +39,11 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isApi = pathname.startsWith("/api");
 
-  if (!isApi && isProtectedPage(pathname) && !user) {
+  if (!isApi && !user && !isPublicPage(pathname)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
-    redirectUrl.search = `?next=${encodeURIComponent(pathname)}`;
+    redirectUrl.search =
+      pathname === "/" ? "" : `?next=${encodeURIComponent(pathname)}`;
     return NextResponse.redirect(redirectUrl);
   }
 

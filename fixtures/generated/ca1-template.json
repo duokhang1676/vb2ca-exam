@@ -7,7 +7,7 @@
       "điền: type=fill, không options, answerKey là chuỗi/số"
     ],
     "rules": [
-      "Bắt buộc: examCode, essayPrompt (≥80 ký tự), questions (≥1), answerKey",
+      "Bắt buộc: examCode, và ít nhất phần 1 (essayPrompt ≥80 ký tự) hoặc phần 2 (questions ≥1 + answerKey)",
       "Tùy chọn: essayTopic, essaySolution; mỗi câu có thể có topic (dạng bài) và solution (lời giải)",
       "Thiếu topic/solution thì để trống; hệ thống vẫn nhận file",
       "Chỉ 3 dạng trên; có thể thiếu dạng, lẫn thứ tự, không giới hạn số câu hay số thành phần cụm",

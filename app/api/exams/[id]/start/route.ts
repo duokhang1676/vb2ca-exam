@@ -6,7 +6,7 @@ import {
   createIdentityShuffle,
   createShuffle,
 } from "@/lib/exam/shuffle";
-import { isAttemptMode, isSectionMode } from "@/lib/exam/types";
+import { isAttemptMode, isSectionMode, sectionModesForParts } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -32,7 +32,7 @@ export async function POST(request: Request, { params }: Params) {
 
   const { data: exam, error } = await supabase
     .from("exams")
-    .select("id, questions, source")
+    .select("id, questions, source, essay_prompt")
     .eq("id", id)
     .single();
 
@@ -41,6 +41,14 @@ export async function POST(request: Request, { params }: Params) {
   }
 
   const questions = parseQuestions(exam.questions);
+  const hasPart1 = Boolean(exam.essay_prompt?.trim());
+  const hasPart2 = questions.length > 0;
+  if (!sectionModesForParts(hasPart1, hasPart2).includes(sectionMode)) {
+    const message = !hasPart1
+      ? "Đề này không có phần 1."
+      : "Đề này không có phần 2.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
   const activeQuestions = sectionMode === "part1" ? [] : questions;
   const shuffle = !shouldShuffle
     ? createIdentityShuffle(activeQuestions)

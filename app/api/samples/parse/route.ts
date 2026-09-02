@@ -35,7 +35,7 @@ export async function POST(request: Request) {
         `Cần upload file JSON đề minh họa ${examCodeRaw}.`,
         "Thiếu file đề",
         [
-          `Chọn file .json theo định dạng đề ${examCodeRaw} (essayPrompt, questions, answerKey).`,
+          `Chọn file .json theo định dạng đề ${examCodeRaw} (essayPrompt và/hoặc questions + answerKey).`,
         ],
       );
     }
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         `Đề minh họa ${examCodeRaw} chỉ nhận file JSON.`,
         "Sai loại file đề",
         [
-          "Chọn file .json có examCode, essayPrompt, questions và answerKey.",
+          "Chọn file .json có examCode và ít nhất phần 1 (essayPrompt) hoặc phần 2 (questions, answerKey).",
         ],
       );
     }
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         error instanceof Error ? error.message : "Không đọc được file JSON.",
         "JSON đề minh họa không đúng format",
         [
-          `Cần examCode ${examCodeRaw}, essayPrompt, questions (≥ 1 câu) và answerKey.`,
+          `Cần examCode ${examCodeRaw} và ít nhất phần 1 (essayPrompt ≥ 80 ký tự) hoặc phần 2 (questions + answerKey).`,
           "Chỉ nhận 3 dạng: trắc nghiệm độc lập, trắc nghiệm cụm, điền đáp án.",
           `Đối chiếu với file mẫu ${sampleFile}.`,
         ],
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
         error instanceof Error ? error.message : "Không lưu được đề JSON.",
         `JSON đề minh họa không đúng cấu trúc ${examCodeRaw}`,
         [
-          "Cần essayPrompt, ít nhất 1 câu, mỗi câu thuộc mcq độc lập / mcq cụm / fill.",
+          "Cần phần 1 (essayPrompt) hoặc phần 2 (≥ 1 câu mcq độc lập / mcq cụm / fill).",
           "Số câu, thứ tự dạng và số thành phần cụm không bắt buộc.",
           `Đối chiếu với file mẫu ${sampleFile}.`,
         ],

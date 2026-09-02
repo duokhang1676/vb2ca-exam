@@ -26,19 +26,19 @@ export async function PATCH(request: Request, { params }: Params) {
       answerKey?: unknown;
       title?: unknown;
     };
-    if (typeof body.essayPrompt !== "string") {
+    if (body.essayPrompt != null && typeof body.essayPrompt !== "string") {
       throw new ContributeError(
         "INVALID_CONTENT",
-        "Thiếu đề nghị luận.",
+        "Đề nghị luận không hợp lệ.",
         "Nội dung chưa hợp lệ",
-        ["Nhập đề phần 1 rồi bấm Lưu."],
+        ["Nhập đề phần 1 hoặc giữ trống nếu đề chỉ có phần 2."],
       );
     }
-    const questions = parseQuestions(body.questions) as Question[];
-    const answerKey = parseAnswerKeyJson(body.answerKey) as AnswerKey;
+    const questions = parseQuestions(body.questions ?? []) as Question[];
+    const answerKey = parseAnswerKeyJson(body.answerKey ?? {}) as AnswerKey;
     const updated = await updateSampleExam({
       examId: id,
-      essayPrompt: body.essayPrompt,
+      essayPrompt: typeof body.essayPrompt === "string" ? body.essayPrompt : "",
       essayTopic: typeof body.essayTopic === "string" ? body.essayTopic : "",
       essaySolution: typeof body.essaySolution === "string" ? body.essaySolution : "",
       questions,
