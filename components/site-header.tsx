@@ -26,6 +26,9 @@ export async function SiteHeader() {
           {user ? (
             <>
               <Button variant="outline" size="sm" asChild>
+                <Link href="/nlxh">Luyện nghị luận</Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
                 <Link href="/bank">Ngân hàng câu hỏi</Link>
               </Button>
               <p className="hidden text-muted-foreground sm:block">

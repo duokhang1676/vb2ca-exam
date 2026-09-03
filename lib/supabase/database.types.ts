@@ -244,6 +244,347 @@ export type Database = {
         }
         Relationships: []
       }
+      nlxh_ai_usage: {
+        Row: {
+          action: string
+          cached: boolean
+          created_at: string
+          id: string
+          input_tokens: number | null
+          model: string | null
+          output_tokens: number | null
+          source: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          cached?: boolean
+          created_at?: string
+          id?: string
+          input_tokens?: number | null
+          model?: string | null
+          output_tokens?: number | null
+          source?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          cached?: boolean
+          created_at?: string
+          id?: string
+          input_tokens?: number | null
+          model?: string | null
+          output_tokens?: number | null
+          source?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      nlxh_exercise_seeds: {
+        Row: {
+          ai_model: string | null
+          created_at: string
+          data: Json
+          essay_id: string
+          framework_version: string
+          id: string
+          level: number
+          practice_mode: string
+          prompt_version: string
+          status: string
+        }
+        Insert: {
+          ai_model?: string | null
+          created_at?: string
+          data: Json
+          essay_id: string
+          framework_version?: string
+          id?: string
+          level?: number
+          practice_mode: string
+          prompt_version?: string
+          status?: string
+        }
+        Update: {
+          ai_model?: string | null
+          created_at?: string
+          data?: Json
+          essay_id?: string
+          framework_version?: string
+          id?: string
+          level?: number
+          practice_mode?: string
+          prompt_version?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nlxh_exercise_seeds_essay_id_fkey"
+            columns: ["essay_id"]
+            isOneToOne: false
+            referencedRelation: "essays"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nlxh_pack_drafts: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          payload: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payload: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payload?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      nlxh_path_enrollments: {
+        Row: {
+          current_essay_id: string | null
+          current_step_id: string
+          path_version: string
+          remedial_return_step_id: string | null
+          remedial_skill: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_essay_id?: string | null
+          current_step_id?: string
+          path_version?: string
+          remedial_return_step_id?: string | null
+          remedial_skill?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_essay_id?: string | null
+          current_step_id?: string
+          path_version?: string
+          remedial_return_step_id?: string | null
+          remedial_skill?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nlxh_path_enrollments_current_essay_id_fkey"
+            columns: ["current_essay_id"]
+            isOneToOne: false
+            referencedRelation: "essays"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nlxh_practice_attempts: {
+        Row: {
+          answer: Json
+          created_at: string
+          duration_seconds: number | null
+          essay_id: string
+          exercise_seed_id: string | null
+          feedback: Json | null
+          id: string
+          level: number
+          path_mode: string
+          practice_mode: string
+          rubric_scores: Json | null
+          score: number | null
+          step_id: string | null
+          used_hint_count: number
+          user_id: string
+          word_count: number | null
+        }
+        Insert: {
+          answer?: Json
+          created_at?: string
+          duration_seconds?: number | null
+          essay_id: string
+          exercise_seed_id?: string | null
+          feedback?: Json | null
+          id?: string
+          level?: number
+          path_mode?: string
+          practice_mode: string
+          rubric_scores?: Json | null
+          score?: number | null
+          step_id?: string | null
+          used_hint_count?: number
+          user_id: string
+          word_count?: number | null
+        }
+        Update: {
+          answer?: Json
+          created_at?: string
+          duration_seconds?: number | null
+          essay_id?: string
+          exercise_seed_id?: string | null
+          feedback?: Json | null
+          id?: string
+          level?: number
+          path_mode?: string
+          practice_mode?: string
+          rubric_scores?: Json | null
+          score?: number | null
+          step_id?: string | null
+          used_hint_count?: number
+          user_id?: string
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nlxh_practice_attempts_essay_id_fkey"
+            columns: ["essay_id"]
+            isOneToOne: false
+            referencedRelation: "essays"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nlxh_practice_attempts_exercise_seed_id_fkey"
+            columns: ["exercise_seed_id"]
+            isOneToOne: false
+            referencedRelation: "nlxh_exercise_seeds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nlxh_question_analyses: {
+        Row: {
+          ai_model: string | null
+          core_issue: string
+          created_at: string
+          essay_id: string
+          framework_version: string
+          id: string
+          keywords: string[]
+          main_topic: string
+          question_type: string
+          source: string
+          suggested_position: string | null
+        }
+        Insert: {
+          ai_model?: string | null
+          core_issue: string
+          created_at?: string
+          essay_id: string
+          framework_version?: string
+          id?: string
+          keywords?: string[]
+          main_topic: string
+          question_type: string
+          source: string
+          suggested_position?: string | null
+        }
+        Update: {
+          ai_model?: string | null
+          core_issue?: string
+          created_at?: string
+          essay_id?: string
+          framework_version?: string
+          id?: string
+          keywords?: string[]
+          main_topic?: string
+          question_type?: string
+          source?: string
+          suggested_position?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nlxh_question_analyses_essay_id_fkey"
+            columns: ["essay_id"]
+            isOneToOne: false
+            referencedRelation: "essays"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nlxh_reference_essays: {
+        Row: {
+          created_at: string
+          essay: string
+          essay_id: string
+          framework_version: string
+          id: string
+          outline: string[]
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          essay: string
+          essay_id: string
+          framework_version?: string
+          id?: string
+          outline?: string[]
+          source: string
+        }
+        Update: {
+          created_at?: string
+          essay?: string
+          essay_id?: string
+          framework_version?: string
+          id?: string
+          outline?: string[]
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nlxh_reference_essays_essay_id_fkey"
+            columns: ["essay_id"]
+            isOneToOne: false
+            referencedRelation: "essays"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nlxh_skill_progress: {
+        Row: {
+          attempts: number
+          average_score: number
+          best_score: number
+          mastery: string
+          recent_average_score: number
+          skill: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          average_score?: number
+          best_score?: number
+          mastery?: string
+          recent_average_score?: number
+          skill: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          average_score?: number
+          best_score?: number
+          mastery?: string
+          recent_average_score?: number
+          skill?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_path: string | null

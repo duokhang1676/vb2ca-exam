@@ -1,7 +1,9 @@
 import { ContributePanel } from "@/components/contribute-panel";
 import { HomeExamPanel } from "@/components/home-exam-panel";
+import { Button } from "@/components/ui/button";
 import { getAuthUser } from "@/lib/auth/session";
 import { listSampleExams } from "@/lib/exam/sample";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +28,18 @@ export default async function HomePage() {
           mã đề.
         </p>
       </div>
+      {signedIn ? (
+        <div className="rounded-xl border bg-card p-4 text-sm">
+          <p className="font-medium">Luyện nghị luận xã hội theo từng kỹ năng</p>
+          <p className="mt-1 text-muted-foreground">
+            Hệ thống chỉ định từng học phần: nhận diện đề, mở bài, luận điểm… rồi mới
+            viết bài hoàn chỉnh.
+          </p>
+          <Button className="mt-3" asChild>
+            <Link href="/nlxh">Vào lộ trình NLXH</Link>
+          </Button>
+        </div>
+      ) : null}
       <HomeExamPanel
         signedIn={signedIn}
         samples={{ CA1: ca1Samples, CA4: ca4Samples }}
