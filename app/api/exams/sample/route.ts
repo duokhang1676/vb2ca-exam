@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuthUser } from "@/lib/auth/session";
-import {
-  getExistingSampleExam,
-  getOrCreateSampleExam,
-  listSampleExams,
-} from "@/lib/exam/sample";
+import { getExistingSampleExam, listSampleExams } from "@/lib/exam/sample";
 import { isExamCode, isSectionMode } from "@/lib/exam/types";
 
 export const runtime = "nodejs";
@@ -47,13 +43,15 @@ export async function POST(request: Request) {
     const examId = body.examId?.trim();
     const sectionMode = isSectionMode(body.sectionMode) ? body.sectionMode : "full";
 
-    if (examId && examId !== "official") {
-      const existing = await getExistingSampleExam(examCode, examId);
-      return NextResponse.json({ examId: existing.examId, sectionMode });
+    if (!examId || examId === "official") {
+      return NextResponse.json(
+        { error: "Chọn một đề minh họa." },
+        { status: 400 },
+      );
     }
 
-    const created = await getOrCreateSampleExam(examCode);
-    return NextResponse.json({ examId: created.examId, sectionMode });
+    const existing = await getExistingSampleExam(examCode, examId);
+    return NextResponse.json({ examId: existing.examId, sectionMode });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

@@ -23,10 +23,8 @@ import {
 } from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
-const OFFICIAL_SAMPLE_VALUE = "official";
-
 function sampleValue(sample: SampleExamOption): string {
-  return sample.id ?? OFFICIAL_SAMPLE_VALUE;
+  return sample.id ?? "";
 }
 
 function sampleLabel(sample: SampleExamOption): string {
@@ -47,8 +45,8 @@ export function HomeExamPanel({
   const [examCode, setExamCode] = useState<ExamCode>("CA1");
   const [selectedByCode, setSelectedByCode] = useState<Record<ExamCode, string>>(
     {
-      CA1: samples.CA1[0] ? sampleValue(samples.CA1[0]) : OFFICIAL_SAMPLE_VALUE,
-      CA4: samples.CA4[0] ? sampleValue(samples.CA4[0]) : OFFICIAL_SAMPLE_VALUE,
+      CA1: samples.CA1[0] ? sampleValue(samples.CA1[0]) : "",
+      CA4: samples.CA4[0] ? sampleValue(samples.CA4[0]) : "",
     },
   );
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +60,7 @@ export function HomeExamPanel({
   const options = samples[examCode];
   const selectedId =
     selectedByCode[examCode] ??
-    (options[0] ? sampleValue(options[0]) : OFFICIAL_SAMPLE_VALUE);
+    (options[0] ? sampleValue(options[0]) : "");
   const selectedSample =
     options.find((sample) => sampleValue(sample) === selectedId) ?? options[0];
   const availableSectionModes = selectedSample
@@ -264,7 +262,7 @@ export function HomeExamPanel({
               <Label htmlFor="sample-exam">Đề minh họa</Label>
               <select
                 id="sample-exam"
-                disabled={busy}
+                disabled={busy || options.length === 0}
                 value={selectedId}
                 onChange={(event) =>
                   setSelectedByCode((current) => ({
@@ -274,11 +272,15 @@ export function HomeExamPanel({
                 }
                 className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
               >
-                {options.map((sample) => (
-                  <option key={sampleValue(sample)} value={sampleValue(sample)}>
-                    {sampleLabel(sample)}
-                  </option>
-                ))}
+                {options.length === 0 ? (
+                  <option value="">Chưa có đề minh họa</option>
+                ) : (
+                  options.map((sample) => (
+                    <option key={sampleValue(sample)} value={sampleValue(sample)}>
+                      {sampleLabel(sample)}
+                    </option>
+                  ))
+                )}
               </select>
               <Label>Thứ tự câu hỏi</Label>
               <div className="grid gap-2 sm:grid-cols-2">
@@ -311,7 +313,7 @@ export function HomeExamPanel({
               </div>
               <Button
                 variant="outline"
-                disabled={busy}
+                disabled={busy || !selectedId}
                 onClick={async () => {
                   setError(null);
                   setSampling(true);

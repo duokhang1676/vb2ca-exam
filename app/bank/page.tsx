@@ -17,9 +17,14 @@ export const dynamic = "force-dynamic";
 export default async function BankPage({
   searchParams,
 }: {
-  searchParams: Promise<{ added?: string; skipped?: string; tab?: string }>;
+  searchParams: Promise<{
+    added?: string;
+    skipped?: string;
+    tab?: string;
+    examCode?: string;
+  }>;
 }) {
-  const { added, skipped, tab } = await searchParams;
+  const { added, skipped, tab, examCode } = await searchParams;
   const user = await getAuthUser();
   const signedIn = Boolean(user);
   const supabase = getSupabaseAdmin();
@@ -141,6 +146,7 @@ export default async function BankPage({
         samples={sampleViews}
         signedIn={signedIn}
         initialTab={initialTab}
+        initialExamCode={isExamCode(examCode) ? examCode : "CA1"}
       />
     </div>
   );

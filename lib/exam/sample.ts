@@ -175,6 +175,7 @@ export async function listSampleExams(
     { id: string; title: string; hasPart1: boolean; hasPart2: boolean }
   >();
   for (const row of data ?? []) {
+    if (isOfficialSampleTitle(row.title, examCode)) continue;
     if (!byTitle.has(row.title)) {
       byTitle.set(row.title, {
         id: row.id,
@@ -184,13 +185,10 @@ export async function listSampleExams(
     }
   }
 
-  const officialTitle = SAMPLE_TITLES[examCode];
-  const official = byTitle.get(officialTitle);
   const generated: SampleExamOption[] = [];
   const other: SampleExamOption[] = [];
 
   for (const row of byTitle.values()) {
-    if (row.title === officialTitle) continue;
     const number = parseGeneratedSampleNumber(row.title, examCode);
     if (number != null) {
       generated.push({
@@ -216,18 +214,7 @@ export async function listSampleExams(
   generated.sort((a, b) => a.number - b.number);
   other.sort((a, b) => a.title.localeCompare(b.title, "vi"));
 
-  return [
-    {
-      id: official?.id ?? null,
-      title: officialTitle,
-      kind: "official",
-      number: 1,
-      hasPart1: official?.hasPart1 ?? true,
-      hasPart2: official?.hasPart2 ?? true,
-    },
-    ...generated,
-    ...other,
-  ];
+  return [...generated, ...other];
 }
 
 export async function nextGeneratedSampleNumber(
@@ -247,14 +234,15 @@ export async function getExistingSampleExam(
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("exams")
-    .select("id, exam_code, source")
+    .select("id, title, exam_code, source")
     .eq("id", examId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (
     !data?.id ||
     data.exam_code !== examCode ||
-    data.source !== "sample"
+    data.source !== "sample" ||
+    isOfficialSampleTitle(data.title, examCode)
   ) {
     throw new Error("Không tìm thấy đề minh họa.");
   }
@@ -391,15 +379,15 @@ export async function listSampleExamDetails(): Promise<SampleExamDetail[]> {
   for (const row of data ?? []) {
     if (row.exam_code !== "CA1" && row.exam_code !== "CA4") continue;
     const examCode = row.exam_code;
-    const official = isOfficialSampleTitle(row.title, examCode);
+    if (isOfficialSampleTitle(row.title, examCode)) continue;
     const generatedNumber = parseGeneratedSampleNumber(row.title, examCode);
     const questions = parseQuestions(row.questions);
     details.push({
       id: row.id,
       title: row.title,
       examCode,
-      kind: official ? "official" : "generated",
-      number: official ? 1 : (generatedNumber ?? 0),
+      kind: "generated",
+      number: generatedNumber ?? 0,
       hasPart1: Boolean(row.essay_prompt.trim()),
       hasPart2: questions.length > 0,
       essayPrompt: row.essay_prompt,
@@ -415,6 +403,71 @@ export async function listSampleExamDetails(): Promise<SampleExamDetail[]> {
     return a.title.localeCompare(b.title, "vi");
   });
   return details;
+}
+
+export async function getSampleExamDetail(
+  examId: string,
+): Promise<SampleExamDetail | null> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("exams")
+    .select(
+      "id, title, exam_code, essay_prompt, essay_topic, essay_solution, questions, answer_key",
+    )
+    .eq("id", examId)
+    .eq("source", "sample")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  if (data.exam_code !== "CA1" && data.exam_code !== "CA4") return null;
+  const examCode = data.exam_code;
+  if (isOfficialSampleTitle(data.title, examCode)) return null;
+  const questions = parseQuestions(data.questions);
+  const generatedNumber = parseGeneratedSampleNumber(data.title, examCode);
+  return {
+    id: data.id,
+    title: data.title,
+    examCode,
+    kind: "generated",
+    number: generatedNumber ?? 0,
+    hasPart1: Boolean(data.essay_prompt.trim()),
+    hasPart2: questions.length > 0,
+    essayPrompt: data.essay_prompt,
+    essayTopic: optionalText(data.essay_topic),
+    essaySolution: optionalText(data.essay_solution),
+    questions,
+    answerKey: parseAnswerKeyJson(data.answer_key),
+  };
+}
+
+export function filterMarkedSample(params: {
+  essayPrompt: string;
+  essayMarked?: boolean;
+  questions: Question[];
+  markedNumbers?: number[];
+  answerKey: AnswerKey;
+}): {
+  essayPrompt: string;
+  questions: Question[];
+  answerKey: AnswerKey;
+  hasMarked: boolean;
+} {
+  const marked = new Set(params.markedNumbers ?? []);
+  const questions = params.questions.filter((question) =>
+    marked.has(question.originalNumber),
+  );
+  const answerKey: AnswerKey = {};
+  for (const question of questions) {
+    const answer = params.answerKey[String(question.originalNumber)];
+    if (answer != null) answerKey[String(question.originalNumber)] = answer;
+  }
+  const showEssay = Boolean(params.essayPrompt.trim() && params.essayMarked);
+  return {
+    essayPrompt: showEssay ? params.essayPrompt : "",
+    questions,
+    answerKey,
+    hasMarked: showEssay || questions.length > 0,
+  };
 }
 
 export async function updateSampleExam(params: {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import {
   BankEssayFields,
   BankPassageFields,
@@ -71,6 +72,7 @@ export function QuestionBank({
   samples,
   signedIn,
   initialTab = "essay",
+  initialExamCode = "CA1",
 }: {
   essays: BankEssayView[];
   questions: BankQuestionView[];
@@ -78,19 +80,45 @@ export function QuestionBank({
   samples: BankSampleView[];
   signedIn: boolean;
   initialTab?: Tab;
+  initialExamCode?: ExamCode;
 }) {
+  const router = useRouter();
   const [essayItems, setEssayItems] = useState(essays);
   const [questionItems, setQuestionItems] = useState(questions);
   const [clusterItems, setClusterItems] = useState(clusters);
   const [tab, setTab] = useState<Tab>(initialTab);
+  const [examCode, setExamCode] = useState<ExamCode>(initialExamCode);
+  const visibleSamples = useMemo(
+    () => samples.filter((sample) => sample.examCode === examCode),
+    [samples, examCode],
+  );
   const counts = useMemo(
     () => ({
       essay: essayItems.length,
       CA1: questionItems.filter((item) => item.examCode === "CA1").length,
       CA4: questionItems.filter((item) => item.examCode === "CA4").length,
+      sample: visibleSamples.length,
     }),
-    [essayItems.length, questionItems],
+    [essayItems.length, questionItems, visibleSamples.length],
   );
+
+  function replaceBankUrl(nextTab: Tab, nextCode: ExamCode) {
+    const params = new URLSearchParams();
+    params.set("tab", nextTab);
+    if (nextTab === "sample") params.set("examCode", nextCode);
+    router.replace(`/bank?${params.toString()}`, { scroll: false });
+  }
+
+  function handleTab(next: Tab) {
+    setTab(next);
+    replaceBankUrl(next, examCode);
+  }
+
+  function handleSampleExamCode(next: ExamCode) {
+    setExamCode(next);
+    setTab("sample");
+    replaceBankUrl("sample", next);
+  }
   const standalone = questionItems.filter(
     (item) => item.examCode === tab && !item.clusterId,
   );
@@ -176,13 +204,13 @@ export function QuestionBank({
             ["essay", `Nghị luận (${counts.essay})`],
             ["CA1", `CA1 (${counts.CA1})`],
             ["CA4", `CA4 (${counts.CA4})`],
-            ["sample", `Đề minh họa (${samples.length})`],
+            ["sample", `Đề minh họa (${counts.sample})`],
           ] as const
         ).map(([id, label]) => (
           <button
             key={id}
             type="button"
-            onClick={() => setTab(id)}
+            onClick={() => handleTab(id)}
             className={cn(
               "rounded-full border px-3 py-1.5 text-sm",
               tab === id
@@ -213,7 +241,31 @@ export function QuestionBank({
           </div>
         )
       ) : tab === "sample" ? (
-        <SampleExamBank samples={samples} signedIn={signedIn} />
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {(["CA1", "CA4"] as const).map((code) => (
+              <button
+                key={code}
+                type="button"
+                onClick={() => handleSampleExamCode(code)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-sm",
+                  examCode === code
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {code}
+              </button>
+            ))}
+          </div>
+          <SampleExamBank
+            key={examCode}
+            samples={visibleSamples}
+            examCode={examCode}
+            signedIn={signedIn}
+          />
+        </div>
       ) : standalone.length === 0 && visibleClusters.length === 0 ? (
         <Empty text={`Chưa có câu hỏi mã ${tab}.`} />
       ) : (

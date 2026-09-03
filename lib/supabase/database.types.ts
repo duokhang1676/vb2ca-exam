@@ -400,6 +400,75 @@ export type Database = {
         }
         Relationships: []
       }
+      sample_exam_groups: {
+        Row: {
+          created_at: string
+          exam_code: string
+          id: string
+          name: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exam_code: string
+          id?: string
+          name: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exam_code?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sample_exam_group_items: {
+        Row: {
+          exam_id: string
+          group_id: string
+          id: string
+          section_mode: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          exam_id: string
+          group_id: string
+          id?: string
+          section_mode: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          exam_id?: string
+          group_id?: string
+          id?: string
+          section_mode?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_exam_group_items_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sample_exam_group_items_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "sample_exam_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
