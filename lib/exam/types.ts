@@ -87,6 +87,7 @@ export type McqDetailItem = {
   topic?: string;
   solution?: string;
   marked?: boolean;
+  fingerprint?: string;
 };
 
 export type GradeResult = {

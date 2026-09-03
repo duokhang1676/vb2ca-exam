@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bookmark } from "lucide-react";
+import { MarkButton } from "@/components/mark-button";
 import { MathText } from "@/components/math-text";
+import { QuestionToc, tocItem } from "@/components/question-toc";
 import { SolutionReveal, TopicBadge } from "@/components/question-meta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { OPTION_LETTERS, questionTypeLabel } from "@/lib/exam/constants";
 import { isFillMatch } from "@/lib/exam/grade";
+import { persistQuestionMark } from "@/lib/exam/persist-mark";
 import { toDisplayBlocks } from "@/lib/exam/shuffle";
 import {
   isMcq,
@@ -22,7 +24,10 @@ import {
 } from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
-export type DrillQuestion = DisplayQuestion & { fingerprint?: string };
+export type DrillQuestion = DisplayQuestion & {
+  fingerprint?: string;
+  marked?: boolean;
+};
 
 export function MarkedDrillTaker({
   title,
@@ -33,6 +38,9 @@ export function MarkedDrillTaker({
   essayFingerprint,
   essayMarked,
   questions,
+  subtitle,
+  exitHref,
+  part2Title,
 }: {
   title: string;
   examCode: ExamCode;
@@ -42,13 +50,18 @@ export function MarkedDrillTaker({
   essayFingerprint: string;
   essayMarked: boolean;
   questions: DrillQuestion[];
+  subtitle?: string;
+  exitHref?: string;
+  part2Title?: string;
 }) {
   const router = useRouter();
   const [essayText, setEssayText] = useState("");
   const [answers, setAnswers] = useState<AttemptAnswers>({});
   const [essayFlagged, setEssayFlagged] = useState(essayMarked);
   const [flagged, setFlagged] = useState<number[]>(() =>
-    questions.map((question) => question.originalNumber),
+    questions
+      .filter((question) => question.marked !== false)
+      .map((question) => question.originalNumber),
   );
   const flaggedSet = new Set(flagged);
   const showEssay = Boolean(essayPrompt.trim());
@@ -59,22 +72,18 @@ export function MarkedDrillTaker({
     questions.filter((question) =>
       Boolean(answers[String(question.originalNumber)]?.trim()),
     ).length;
+  const doneHref = exitHref ?? `/bank?tab=sample&examCode=${examCode}`;
 
   async function persistMark(params: {
     kind: "essay" | "question";
     fingerprint?: string;
     marked: boolean;
   }) {
-    if (!params.fingerprint) return;
-    await fetch("/api/question-marks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        kind: params.kind,
-        fingerprint: params.fingerprint,
-        examCode,
-        marked: params.marked,
-      }),
+    await persistQuestionMark({
+      kind: params.kind,
+      fingerprint: params.fingerprint,
+      examCode,
+      marked: params.marked,
     });
   }
 
@@ -85,16 +94,12 @@ export function MarkedDrillTaker({
           <div>
             <h1 className="text-lg font-semibold">{title}</h1>
             <p className="text-xs text-muted-foreground">
-              Luyện tập câu đánh dấu · Không chấm điểm, không lưu lịch sử · Đã
-              trả lời {answeredCount}/{totalItems} phần
+              {subtitle ??
+                "Luyện tập câu đánh dấu · Không chấm điểm, không lưu lịch sử"}{" "}
+              · Đã trả lời {answeredCount}/{totalItems} phần
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() =>
-              router.push(`/bank?tab=sample&examCode=${examCode}`)
-            }
-          >
+          <Button variant="outline" onClick={() => router.push(doneHref)}>
             Xong
           </Button>
         </div>
@@ -147,13 +152,15 @@ export function MarkedDrillTaker({
         {questions.length > 0 ? (
           <section className="space-y-4">
             <h2 className="text-lg font-semibold">
-              Phần 2 · {questions.length} câu đánh dấu
+              {part2Title ?? `Phần 2 · ${questions.length} câu đánh dấu`}
             </h2>
             {blocks.map((block, blockIndex) => (
               <div key={`drill-block-${blockIndex}`} className="space-y-4">
                 {block.kind === "cluster" ? (
                   <div className="space-y-3 rounded-xl border bg-card p-4">
-                    <p className="font-exam text-lg font-semibold">{block.header}</p>
+                    <p className="font-exam text-lg font-semibold">
+                      {block.header}
+                    </p>
                     {block.passage ? (
                       <MathText
                         className="font-exam rounded-lg bg-muted/50 p-4 text-lg leading-8"
@@ -163,7 +170,9 @@ export function MarkedDrillTaker({
                   </div>
                 ) : null}
                 {block.kind === "fill" ? (
-                  <p className="font-exam text-lg font-semibold">{block.header}</p>
+                  <p className="font-exam text-lg font-semibold">
+                    {block.header}
+                  </p>
                 ) : null}
                 {block.questions.map((question) => (
                   <QuestionCard
@@ -197,61 +206,24 @@ export function MarkedDrillTaker({
           </section>
         ) : null}
       </div>
-      <aside className="lg:sticky lg:top-20 lg:self-start">
-        <p className="mb-2 text-xs font-medium text-muted-foreground">Mục lục</p>
-        <div className="grid grid-cols-5 gap-1.5">
-          {showEssay ? (
-            <a
-              href="#essay"
-              className={cn(
-                "flex h-8 items-center justify-center rounded-md text-xs",
-                essayText.trim() ? "bg-primary text-primary-foreground" : "bg-muted",
-              )}
-            >
-              NL
-            </a>
-          ) : null}
-          {questions.map((question) => {
-            const filled = Boolean(
-              answers[String(question.originalNumber)]?.trim(),
-            );
-            return (
-              <a
-                key={question.originalNumber}
-                href={`#q-${question.displayIndex}`}
-                className={cn(
-                  "flex h-8 items-center justify-center rounded-md text-xs",
-                  filled ? "bg-primary text-primary-foreground" : "bg-muted",
-                )}
-              >
-                {question.displayIndex}
-              </a>
-            );
-          })}
-        </div>
-      </aside>
+      <QuestionToc
+        items={[
+          ...(showEssay
+            ? [tocItem("#essay", "TL", essayText.trim() ? "filled" : "empty", essayFlagged)]
+            : []),
+          ...questions.map((question) =>
+            tocItem(
+              `#q-${question.displayIndex}`,
+              String(question.displayIndex),
+              Boolean(answers[String(question.originalNumber)]?.trim())
+                ? "filled"
+                : "empty",
+              flaggedSet.has(question.originalNumber),
+            ),
+          ),
+        ]}
+      />
     </div>
-  );
-}
-
-function MarkButton({
-  marked,
-  onClick,
-}: {
-  marked: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <Button
-      type="button"
-      variant={marked ? "default" : "outline"}
-      size="sm"
-      onClick={onClick}
-      aria-pressed={marked}
-    >
-      <Bookmark className={cn("size-4", marked && "fill-current")} />
-      {marked ? "Đã đánh dấu" : "Đánh dấu"}
-    </Button>
   );
 }
 

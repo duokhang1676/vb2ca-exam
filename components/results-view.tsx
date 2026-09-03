@@ -1,5 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { MarkButton } from "@/components/mark-button";
 import { MathText } from "@/components/math-text";
+import { QuestionToc, tocItem } from "@/components/question-toc";
 import { SolutionReveal, TopicBadge } from "@/components/question-meta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,22 +17,27 @@ import {
   questionTypeLabel,
   sectionModeLabel,
 } from "@/lib/exam/constants";
+import { persistQuestionMark } from "@/lib/exam/persist-mark";
 import { toDisplayBlocks } from "@/lib/exam/shuffle";
 import {
   isAttemptMode,
   isMcq,
   isSectionMode,
   type AttemptMode,
+  type ExamCode,
   type McqDetailItem,
   type SectionMode,
 } from "@/lib/exam/types";
 import { cn } from "@/lib/utils";
 
 export function ResultsView({
+  attemptId,
+  examCode,
   title,
   essayPrompt,
   essayTopic,
   essaySolution,
+  essayFingerprint,
   essayText,
   essayScore,
   essayFeedback,
@@ -40,10 +50,13 @@ export function ResultsView({
   attemptMode = "exam",
   essayFlagged = false,
 }: {
+  attemptId: string;
+  examCode: ExamCode;
   title: string;
   essayPrompt: string;
   essayTopic?: string | null;
   essaySolution?: string | null;
+  essayFingerprint?: string;
   essayText: string;
   essayScore: number;
   essayFeedback: string;
@@ -81,111 +94,215 @@ export function ResultsView({
   const detailByNumber = new Map(
     detail.map((item) => [item.originalNumber, item]),
   );
+  const [essayMarked, setEssayMarked] = useState(essayFlagged);
+  const [markedNumbers, setMarkedNumbers] = useState<number[]>(() =>
+    detail.filter((item) => item.marked).map((item) => item.originalNumber),
+  );
+  const markedSet = new Set(markedNumbers);
+  const wrongCount = detail.filter((item) => !item.isCorrect).length;
+
+  function persistMark(params: {
+    kind: "essay" | "question";
+    fingerprint?: string;
+    marked: boolean;
+  }) {
+    void persistQuestionMark({
+      kind: params.kind,
+      fingerprint: params.fingerprint,
+      examCode,
+      marked: params.marked,
+    });
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">{title}</h1>
-          <p className="text-sm text-muted-foreground">
-            {practice ? "Kết quả luyện tập" : "Kết quả bài làm"} ·{" "}
-            {sectionModeLabel(mode, practice ? "practice" : "exam")}
-          </p>
+    <div className="grid gap-6 lg:grid-cols-[1fr_220px]">
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold">{title}</h1>
+            <p className="text-sm text-muted-foreground">
+              {practice ? "Kết quả luyện tập" : "Kết quả bài làm"} ·{" "}
+              {sectionModeLabel(mode, practice ? "practice" : "exam")}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {showPart2 ? (
+              wrongCount > 0 ? (
+                <Button asChild>
+                  <Link href={`/attempts/${attemptId}/practice`}>
+                    Làm bài luyện tập
+                  </Link>
+                </Button>
+              ) : (
+                <Button disabled>Làm bài luyện tập</Button>
+              )
+            ) : null}
+            <Button asChild variant="outline">
+              <Link href="/account/attempts">Lịch sử làm bài</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/">Làm đề khác</Link>
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline">
-            <Link href="/account/attempts">Lịch sử làm bài</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/">Làm đề khác</Link>
-          </Button>
-        </div>
-      </div>
 
-      {showScores ? (
-      <div className="grid gap-3 sm:grid-cols-3">
-        {showEssayScore ? (
-          <ScoreCard label="Tự luận" value={`${essayScore}/${ESSAY_MAX_SCORE}`} />
-        ) : null}
-        {showPart2 ? (
-          <ScoreCard
-            label="Trắc nghiệm"
-            value={`${mcqScore}/${MCQ_MAX_SCORE}`}
-            hint={`${correctCount}/${totalQuestions} câu đúng`}
-          />
-        ) : null}
-        <ScoreCard
-          label="Tổng điểm"
-          value={`${totalScore}/${maxTotal || TOTAL_MAX_SCORE}`}
-          highlight
-        />
-      </div>
-      ) : null}
-
-      {showEssay ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex flex-wrap items-center gap-2">
-              <span>{practice ? "Phần 1 · Nghị luận" : "Phần 1 · Chấm nghị luận"}</span>
-              <TopicBadge topic={essayTopic} />
-              {essayFlagged ? <Badge>Đã đánh dấu</Badge> : null}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <MathText className="font-exam text-lg leading-8 text-muted-foreground" text={essayPrompt} />
-            <div className="rounded-lg bg-muted/50 p-4 font-exam whitespace-pre-wrap text-lg leading-8">
-              {essayText.trim() || "Không có bài làm."}
-            </div>
-            <p className="text-sm leading-6">{essayFeedback}</p>
-            <SolutionReveal
-              solution={essaySolution}
-              textClassName="font-exam text-lg leading-8"
+        {showScores ? (
+          <div className="grid gap-3 sm:grid-cols-3">
+            {showEssayScore ? (
+              <ScoreCard
+                label="Tự luận"
+                value={`${essayScore}/${ESSAY_MAX_SCORE}`}
+              />
+            ) : null}
+            {showPart2 ? (
+              <ScoreCard
+                label="Trắc nghiệm"
+                value={`${mcqScore}/${MCQ_MAX_SCORE}`}
+                hint={`${correctCount}/${totalQuestions} câu đúng`}
+              />
+            ) : null}
+            <ScoreCard
+              label="Tổng điểm"
+              value={`${totalScore}/${maxTotal || TOTAL_MAX_SCORE}`}
+              highlight
             />
-          </CardContent>
-        </Card>
-      ) : null}
+          </div>
+        ) : null}
 
-      {showPart2 ? (
-      <Card>
-        <CardHeader>
-          <CardTitle>Phần 2 · Chi tiết trắc nghiệm</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {blocks.map((block, blockIndex) => (
-            <div key={`result-block-${blockIndex}`} className="space-y-4">
-              {block.kind === "cluster" ? (
-                <div className="space-y-2">
-                  <p className="font-exam text-lg font-semibold">{block.header}</p>
-                  {block.passage ? (
-                    <MathText
-                      className="font-exam rounded-lg bg-muted/50 p-3 text-lg leading-8"
-                      text={block.passage}
-                    />
+        {showEssay ? (
+          <Card id="essay">
+            <CardHeader>
+              <CardTitle className="flex flex-wrap items-center justify-between gap-2">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span>
+                    {practice
+                      ? "Phần 1 · Nghị luận"
+                      : "Phần 1 · Chấm nghị luận"}
+                  </span>
+                  <TopicBadge topic={essayTopic} />
+                </span>
+                <MarkButton
+                  marked={essayMarked}
+                  onClick={() => {
+                    const next = !essayMarked;
+                    setEssayMarked(next);
+                    persistMark({
+                      kind: "essay",
+                      fingerprint: essayFingerprint,
+                      marked: next,
+                    });
+                  }}
+                />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <MathText
+                className="font-exam text-lg leading-8 text-muted-foreground"
+                text={essayPrompt}
+              />
+              <div className="rounded-lg bg-muted/50 p-4 font-exam whitespace-pre-wrap text-lg leading-8">
+                {essayText.trim() || "Không có bài làm."}
+              </div>
+              <p className="text-sm leading-6">{essayFeedback}</p>
+              <SolutionReveal
+                solution={essaySolution}
+                textClassName="font-exam text-lg leading-8"
+              />
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {showPart2 ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Phần 2 · Chi tiết trắc nghiệm</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {blocks.map((block, blockIndex) => (
+                <div key={`result-block-${blockIndex}`} className="space-y-4">
+                  {block.kind === "cluster" ? (
+                    <div className="space-y-2">
+                      <p className="font-exam text-lg font-semibold">
+                        {block.header}
+                      </p>
+                      {block.passage ? (
+                        <MathText
+                          className="font-exam rounded-lg bg-muted/50 p-3 text-lg leading-8"
+                          text={block.passage}
+                        />
+                      ) : null}
+                    </div>
                   ) : null}
+                  {block.kind === "fill" ? (
+                    <p className="font-exam text-lg font-semibold">
+                      {block.header}
+                    </p>
+                  ) : null}
+                  {block.questions.map((question) => {
+                    const item = detailByNumber.get(question.originalNumber);
+                    if (!item) return null;
+                    return (
+                      <ResultQuestion
+                        key={item.originalNumber}
+                        item={item}
+                        marked={markedSet.has(item.originalNumber)}
+                        onToggleMark={() => {
+                          const next = !markedSet.has(item.originalNumber);
+                          setMarkedNumbers((current) =>
+                            next
+                              ? [...current, item.originalNumber]
+                              : current.filter(
+                                  (number) => number !== item.originalNumber,
+                                ),
+                          );
+                          persistMark({
+                            kind: "question",
+                            fingerprint: item.fingerprint,
+                            marked: next,
+                          });
+                        }}
+                      />
+                    );
+                  })}
                 </div>
-              ) : null}
-              {block.kind === "fill" ? (
-                <p className="font-exam text-lg font-semibold">{block.header}</p>
-              ) : null}
-              {block.questions.map((question) => {
-                const item = detailByNumber.get(question.originalNumber);
-                if (!item) return null;
-                return (
-                  <ResultQuestion key={item.originalNumber} item={item} />
-                );
-              })}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-      ) : null}
+              ))}
+            </CardContent>
+          </Card>
+        ) : null}
+      </div>
+
+      <QuestionToc
+        items={[
+          ...(showEssay
+            ? [tocItem("#essay", "TL", essayText.trim() ? "filled" : "empty", essayMarked)]
+            : []),
+          ...(showPart2
+            ? detail.map((item) =>
+                tocItem(
+                  `#q-${item.displayIndex}`,
+                  String(item.displayIndex),
+                  item.isCorrect ? "correct" : "wrong",
+                  markedSet.has(item.originalNumber),
+                ),
+              )
+            : []),
+        ]}
+      />
     </div>
   );
 }
 
-function ResultQuestion({ item }: { item: McqDetailItem }) {
+function ResultQuestion({
+  item,
+  marked,
+  onToggleMark,
+}: {
+  item: McqDetailItem;
+  marked: boolean;
+  onToggleMark: () => void;
+}) {
   return (
-    <div className="rounded-lg border p-4">
+    <div id={`q-${item.displayIndex}`} className="rounded-lg border p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
         <p className="flex flex-wrap items-center gap-2 text-lg font-medium">
           <span>
@@ -195,11 +312,13 @@ function ResultQuestion({ item }: { item: McqDetailItem }) {
             </span>
           </span>
           <TopicBadge topic={item.topic} />
-          {item.marked ? <Badge>Đã đánh dấu</Badge> : null}
         </p>
-        <Badge variant={item.isCorrect ? "secondary" : "destructive"}>
-          {item.isCorrect ? "Đúng" : "Sai"} · {item.points}đ
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={item.isCorrect ? "secondary" : "destructive"}>
+            {item.isCorrect ? "Đúng" : "Sai"} · {item.points}đ
+          </Badge>
+          <MarkButton marked={marked} onClick={onToggleMark} />
+        </div>
       </div>
       <MathText className="mb-3 font-exam text-lg leading-8" text={item.stem} />
       {isMcq(item.type) && item.options

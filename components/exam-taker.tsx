@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bookmark, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { ExamTimer } from "@/components/exam-timer";
+import { MarkButton } from "@/components/mark-button";
 import { MathText } from "@/components/math-text";
+import { QuestionToc, tocItem } from "@/components/question-toc";
 import { SolutionReveal, TopicBadge } from "@/components/question-meta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,7 @@ import {
   sectionModeLabel,
 } from "@/lib/exam/constants";
 import { isFillMatch } from "@/lib/exam/grade";
+import { persistQuestionMark } from "@/lib/exam/persist-mark";
 import { toDisplayBlocks } from "@/lib/exam/shuffle";
 import {
   isAttemptMode,
@@ -215,16 +218,12 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
     fingerprint?: string;
     marked: boolean;
   }) {
-    if (!data || !params.fingerprint) return;
-    await fetch("/api/question-marks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        kind: params.kind,
-        fingerprint: params.fingerprint,
-        examCode: data.exam.examCode,
-        marked: params.marked,
-      }),
+    if (!data) return;
+    await persistQuestionMark({
+      kind: params.kind,
+      fingerprint: params.fingerprint,
+      examCode: data.exam.examCode,
+      marked: params.marked,
     });
   }
 
@@ -415,69 +414,26 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
         ) : null}
       </div>
 
-      <aside className="lg:sticky lg:top-20 h-fit rounded-xl border bg-card p-3">
-        <p className="mb-2 text-xs font-medium text-muted-foreground">Mục lục</p>
-        <div className="grid grid-cols-5 gap-1.5">
-          {showEssay ? (
-            <a
-              href="#essay"
-              className={cn(
-                "flex h-8 items-center justify-center rounded-md text-xs",
-                essayText.trim() ? "bg-primary text-primary-foreground" : "bg-muted",
-                essayFlagged && "ring-2 ring-amber-500",
-              )}
-            >
-              TL
-            </a>
-          ) : null}
-          {showPart2
-            ? data.exam.questions.map((question) => {
-                const filled = Boolean(
-                  answers[String(question.originalNumber)]?.trim(),
-                );
-                const marked = flaggedSet.has(question.originalNumber);
-                return (
-                  <a
-                    key={question.originalNumber}
-                    href={`#q-${question.displayIndex}`}
-                    className={cn(
-                      "flex h-8 items-center justify-center rounded-md text-xs",
-                      filled ? "bg-primary text-primary-foreground" : "bg-muted",
-                      marked && "ring-2 ring-amber-500",
-                    )}
-                  >
-                    {question.displayIndex}
-                  </a>
-                );
-              })
-            : null}
-        </div>
-      </aside>
+      <QuestionToc
+        items={[
+          ...(showEssay
+            ? [tocItem("#essay", "TL", essayText.trim() ? "filled" : "empty", essayFlagged)]
+            : []),
+          ...(showPart2
+            ? data.exam.questions.map((question) =>
+                tocItem(
+                  `#q-${question.displayIndex}`,
+                  String(question.displayIndex),
+                  Boolean(answers[String(question.originalNumber)]?.trim())
+                    ? "filled"
+                    : "empty",
+                  flaggedSet.has(question.originalNumber),
+                ),
+              )
+            : []),
+        ]}
+      />
     </div>
-  );
-}
-
-function MarkButton({
-  marked,
-  disabled,
-  onClick,
-}: {
-  marked: boolean;
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <Button
-      type="button"
-      variant={marked ? "default" : "outline"}
-      size="sm"
-      disabled={disabled}
-      onClick={onClick}
-      aria-pressed={marked}
-    >
-      <Bookmark className={cn("size-4", marked && "fill-current")} />
-      {marked ? "Đã đánh dấu" : "Đánh dấu"}
-    </Button>
   );
 }
 

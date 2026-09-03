@@ -64,6 +64,26 @@ export async function setQuestionMark(params: {
   return { marked: true };
 }
 
+export async function setQuestionMarks(params: {
+  userId: string;
+  examCode: ExamCode;
+  fingerprints: string[];
+}) {
+  const unique = Array.from(new Set(params.fingerprints.filter(Boolean)));
+  if (unique.length === 0) return;
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from("question_marks").upsert(
+    unique.map((fingerprint) => ({
+      user_id: params.userId,
+      kind: "question" as const,
+      fingerprint,
+      exam_code: params.examCode,
+    })),
+    { onConflict: "user_id,kind,fingerprint" },
+  );
+  if (error) throw new Error(error.message);
+}
+
 export function markSet(marks: QuestionMark[], kind: MarkKind): Set<string> {
   return new Set(
     marks.filter((mark) => mark.kind === kind).map((mark) => mark.fingerprint),

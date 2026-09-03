@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireOwnedAttempt } from "@/lib/auth/attempt";
 import { pointsPerQuestion, PRACTICE_ESSAY_FEEDBACK } from "@/lib/exam/constants";
+import { questionFingerprint } from "@/lib/exam/fingerprint";
 import { gradeEssay } from "@/lib/exam/grade-essay";
 import { gradeMultipleChoice, roundTotal } from "@/lib/exam/grade";
 import {
@@ -11,8 +12,9 @@ import {
   parseQuestions,
   parseShuffle,
 } from "@/lib/exam/json";
+import { setQuestionMarks } from "@/lib/exam/marks";
 import { toDisplayQuestions } from "@/lib/exam/shuffle";
-import { isAttemptMode, isSectionMode } from "@/lib/exam/types";
+import { isAttemptMode, isExamCode, isSectionMode } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -22,8 +24,8 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, { params }: Params) {
   const { id } = await params;
-  const { attempt, response } = await requireOwnedAttempt(id);
-  if (!attempt) return response;
+  const { user, attempt, response } = await requireOwnedAttempt(id);
+  if (!attempt || !user) return response;
   const body = (await request.json().catch(() => ({}))) as {
     essayText?: string;
     answers?: Record<string, string>;
@@ -39,7 +41,7 @@ export async function POST(request: Request, { params }: Params) {
 
   const { data: exam, error: examError } = await supabase
     .from("exams")
-    .select("essay_prompt, questions, answer_key")
+    .select("essay_prompt, questions, answer_key, exam_code")
     .eq("id", attempt.exam_id)
     .single();
 
@@ -97,13 +99,22 @@ export async function POST(request: Request, { params }: Params) {
           });
 
   const total = roundTotal(essay.score, mcq.mcqScore);
+  const submittedFlagged = body.flagged ?? parseFlagged(attempt.flagged);
+  const wrongItems = mcq.detail.filter((item) => !item.isCorrect);
+  const flagged = Array.from(
+    new Set([
+      ...submittedFlagged,
+      ...wrongItems.map((item) => item.originalNumber),
+    ]),
+  );
+  const examCode = isExamCode(exam.exam_code) ? exam.exam_code : null;
 
   const { error: updateError } = await supabase
     .from("attempts")
     .update({
       essay_text: essayText,
       answers: asJson(answers),
-      flagged: asJson(body.flagged ?? parseFlagged(attempt.flagged)),
+      flagged: asJson(flagged),
       essay_flagged:
         typeof body.essayFlagged === "boolean"
           ? body.essayFlagged
@@ -119,6 +130,21 @@ export async function POST(request: Request, { params }: Params) {
 
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
+  if (examCode && wrongItems.length > 0) {
+    await setQuestionMarks({
+      userId: user.id,
+      examCode,
+      fingerprints: wrongItems.map((item) =>
+        questionFingerprint({
+          examCode,
+          type: item.type,
+          stem: item.stem,
+          options: item.options,
+        }),
+      ),
+    });
   }
 
   return NextResponse.json({ resultUrl: `/attempts/${id}/result` });

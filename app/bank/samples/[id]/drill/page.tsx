@@ -80,6 +80,7 @@ export default async function MarkedDrillPage({
           filtered.answerKey,
           shuffle,
         ),
+        marked: true,
       };
     },
   );

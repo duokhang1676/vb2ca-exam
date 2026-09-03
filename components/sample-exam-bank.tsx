@@ -28,6 +28,7 @@ import {
   EditToolbar,
   useBankSave,
 } from "@/components/bank-item-editor";
+import { MarkButton } from "@/components/mark-button";
 import { MathText } from "@/components/math-text";
 import { SolutionReveal, TopicBadge } from "@/components/question-meta";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OPTION_LETTERS, questionTypeLabel, sectionModeShortLabel } from "@/lib/exam/constants";
+import { persistQuestionMark } from "@/lib/exam/persist-mark";
 import type { SampleGroup, SampleGroupItem } from "@/lib/exam/sample-groups";
 import { toDisplayBlocks } from "@/lib/exam/shuffle";
 import {
@@ -63,6 +65,8 @@ export type BankSampleView = {
   answerKey: AnswerKey;
   essayMarked?: boolean;
   markedNumbers?: number[];
+  essayFingerprint?: string;
+  questionFingerprints?: Record<number, string>;
 };
 
 type Slot = {
@@ -676,6 +680,45 @@ function SampleExamCard({
   const marked = new Set(sample.markedNumbers ?? []);
   const hasMarked =
     Boolean(sample.essayMarked) || (sample.markedNumbers?.length ?? 0) > 0;
+  const markedCount =
+    (sample.markedNumbers?.length ?? 0) + (sample.essayMarked ? 1 : 0);
+  const canMark = signedIn && !editing;
+
+  function persistMark(params: {
+    kind: "essay" | "question";
+    fingerprint?: string;
+    marked: boolean;
+  }) {
+    void persistQuestionMark({
+      kind: params.kind,
+      fingerprint: params.fingerprint,
+      examCode: sample.examCode,
+      marked: params.marked,
+    });
+  }
+
+  function toggleEssayMark() {
+    const next = !sample.essayMarked;
+    onSaved({ ...sample, essayMarked: next });
+    persistMark({
+      kind: "essay",
+      fingerprint: sample.essayFingerprint,
+      marked: next,
+    });
+  }
+
+  function toggleQuestionMark(originalNumber: number) {
+    const current = new Set(sample.markedNumbers ?? []);
+    const nextMarked = !current.has(originalNumber);
+    if (nextMarked) current.add(originalNumber);
+    else current.delete(originalNumber);
+    onSaved({ ...sample, markedNumbers: Array.from(current) });
+    persistMark({
+      kind: "question",
+      fingerprint: sample.questionFingerprints?.[originalNumber],
+      marked: nextMarked,
+    });
+  }
 
   function resetDraft() {
     setTitle(sample.title);
@@ -823,6 +866,9 @@ function SampleExamCard({
             ) : (
               <Badge variant="secondary">Số {sample.number}</Badge>
             )}
+            {markedCount > 0 ? (
+              <Badge variant="outline">Đánh dấu {markedCount}</Badge>
+            ) : null}
           </span>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -912,7 +958,15 @@ function SampleExamCard({
                 ) : null}
                 <p className="text-sm font-medium">Phần 1 · Nghị luận</p>
                 <TopicBadge topic={essayTopic} />
-                {sample.essayMarked ? <Badge>Đã đánh dấu</Badge> : null}
+                {canMark && essayPrompt.trim() ? (
+                  <MarkButton
+                    marked={Boolean(sample.essayMarked)}
+                    disabled={busy}
+                    onClick={toggleEssayMark}
+                  />
+                ) : sample.essayMarked ? (
+                  <Badge>Đã đánh dấu</Badge>
+                ) : null}
               </div>
               {editing ? (
                 <BankEssayFields
@@ -974,20 +1028,29 @@ function SampleExamCard({
                           Câu {question.displayIndex} · {questionTypeLabel(question.type)}
                         </span>
                         <TopicBadge topic={question.topic} />
-                        {isMarked ? <Badge>Đã đánh dấu</Badge> : null}
+                        {!canMark && isMarked ? <Badge>Đã đánh dấu</Badge> : null}
                       </span>
-                      {editable ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={busy}
-                          onClick={() => void onDeleteQuestion(question.originalNumber)}
-                        >
-                          {busy ? <LoaderCircle className="animate-spin" /> : <Trash2 />}
-                          Xóa câu
-                        </Button>
-                      ) : null}
+                      <span className="flex flex-wrap items-center gap-2">
+                        {canMark ? (
+                          <MarkButton
+                            marked={isMarked}
+                            disabled={busy}
+                            onClick={() => toggleQuestionMark(question.originalNumber)}
+                          />
+                        ) : null}
+                        {editable ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={busy}
+                            onClick={() => void onDeleteQuestion(question.originalNumber)}
+                          >
+                            {busy ? <LoaderCircle className="animate-spin" /> : <Trash2 />}
+                            Xóa câu
+                          </Button>
+                        ) : null}
+                      </span>
                     </p>
                     {editing ? (
                       <BankQuestionFields

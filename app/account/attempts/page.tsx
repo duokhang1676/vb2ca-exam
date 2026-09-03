@@ -6,13 +6,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getAuthUser } from "@/lib/auth/session";
 import { attemptModeLabel, sectionModeShortLabel } from "@/lib/exam/constants";
 import { parseFlagged } from "@/lib/exam/json";
-import { isAttemptMode, isSectionMode } from "@/lib/exam/types";
+import {
+  isAttemptMode,
+  isSectionMode,
+  type McqDetailItem,
+} from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
 function formatWhen(value: string): string {
   return new Date(value).toLocaleString("vi-VN");
+}
+
+function countWrongQuestions(value: unknown): number {
+  if (!Array.isArray(value)) return 0;
+  return value.filter(
+    (item): item is McqDetailItem =>
+      Boolean(item) &&
+      typeof item === "object" &&
+      (item as McqDetailItem).isCorrect === false,
+  ).length;
 }
 
 export default async function AttemptHistoryPage() {
@@ -22,7 +36,7 @@ export default async function AttemptHistoryPage() {
   const supabase = getSupabaseAdmin();
   const { data: rows } = await supabase
     .from("attempts")
-    .select("id, started_at, submitted_at, total_score, section_mode, attempt_mode, flagged, essay_flagged, exams(title, exam_code)")
+    .select("id, started_at, submitted_at, total_score, section_mode, attempt_mode, flagged, essay_flagged, mcq_detail, exams(title, exam_code)")
     .eq("user_id", user.id)
     .order("started_at", { ascending: false });
 
@@ -53,6 +67,9 @@ export default async function AttemptHistoryPage() {
         const markedCount =
           parseFlagged(attempt.flagged).length +
           (attempt.essay_flagged ? 1 : 0);
+        const wrongCount = submitted
+          ? countWrongQuestions(attempt.mcq_detail)
+          : 0;
         return (
           <Card key={attempt.id} className="transition-colors hover:border-primary">
             <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
@@ -75,6 +92,9 @@ export default async function AttemptHistoryPage() {
                 ) : null}
                 {markedCount > 0 ? (
                   <Badge variant="outline">Đánh dấu {markedCount}</Badge>
+                ) : null}
+                {submitted && sectionMode !== "part1" ? (
+                  <Badge variant="outline">Sai {wrongCount}</Badge>
                 ) : null}
                 {submitted ? (
                   <Badge variant="secondary">

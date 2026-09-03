@@ -101,22 +101,27 @@ export default async function BankPage({
 
   const sampleViews = samples.map((sample) => {
     const examCode = isExamCode(sample.examCode) ? sample.examCode : "CA1";
-    const markedNumbers = sample.questions
-      .filter((question) =>
-        questionMarks.has(
-          questionFingerprint({
-            examCode,
-            type: question.type,
-            stem: question.stem,
-            options: question.options,
-          }),
-        ),
-      )
-      .map((question) => question.originalNumber);
+    const essayFp = essayFingerprint(sample.essayPrompt);
+    const questionFingerprints: Record<number, string> = {};
+    const markedNumbers: number[] = [];
+    for (const question of sample.questions) {
+      const fingerprint = questionFingerprint({
+        examCode,
+        type: question.type,
+        stem: question.stem,
+        options: question.options,
+      });
+      questionFingerprints[question.originalNumber] = fingerprint;
+      if (questionMarks.has(fingerprint)) {
+        markedNumbers.push(question.originalNumber);
+      }
+    }
     return {
       ...sample,
       id: sample.id ?? "",
-      essayMarked: essayMarks.has(essayFingerprint(sample.essayPrompt)),
+      essayFingerprint: essayFp,
+      questionFingerprints,
+      essayMarked: essayMarks.has(essayFp),
       markedNumbers,
     };
   });
