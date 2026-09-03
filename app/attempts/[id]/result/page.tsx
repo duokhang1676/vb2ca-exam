@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { ResultsView } from "@/components/results-view";
 import { getAuthUser } from "@/lib/auth/session";
-import { parseQuestions } from "@/lib/exam/json";
+import { parseFlagged, parseQuestions } from "@/lib/exam/json";
 import { isAttemptMode, isSectionMode, type McqDetailItem } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -41,6 +41,8 @@ export default async function ResultPage({
       { topic: question.topic, solution: question.solution },
     ]),
   );
+  const flagged = new Set(parseFlagged(attempt.flagged));
+  const essayFlagged = Boolean(attempt.essay_flagged);
   const rawDetail = (attempt.mcq_detail as McqDetailItem[] | null) ?? [];
   const detail = rawDetail.map((item) => {
     const meta = metaByNumber.get(item.originalNumber);
@@ -48,6 +50,7 @@ export default async function ResultPage({
       ...item,
       topic: meta?.topic,
       solution: meta?.solution,
+      marked: flagged.has(item.originalNumber),
     };
   });
   const sectionMode = isSectionMode(attempt.section_mode)
@@ -73,6 +76,7 @@ export default async function ResultPage({
       detail={detail}
       sectionMode={sectionMode}
       attemptMode={attemptMode}
+      essayFlagged={essayFlagged}
     />
   );
 }

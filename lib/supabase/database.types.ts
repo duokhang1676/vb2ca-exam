@@ -250,6 +250,9 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          practice_insight: Json | null
+          practice_insight_at: string | null
+          practice_insight_hash: string | null
           updated_at: string
         }
         Insert: {
@@ -257,6 +260,9 @@ export type Database = {
           created_at?: string
           display_name?: string
           id: string
+          practice_insight?: Json | null
+          practice_insight_at?: string | null
+          practice_insight_hash?: string | null
           updated_at?: string
         }
         Update: {
@@ -264,6 +270,9 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
+          practice_insight?: Json | null
+          practice_insight_at?: string | null
+          practice_insight_hash?: string | null
           updated_at?: string
         }
         Relationships: []

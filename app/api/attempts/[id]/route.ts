@@ -136,13 +136,6 @@ export async function DELETE(_request: Request, { params }: Params) {
   const { user, attempt, response } = await requireOwnedAttempt(id);
   if (!attempt || !user) return response;
 
-  if (attempt.submitted_at) {
-    return NextResponse.json(
-      { error: "Không thể xóa bài đã nộp." },
-      { status: 409 },
-    );
-  }
-
   const supabase = getSupabaseAdmin();
   const { error } = await supabase
     .from("attempts")

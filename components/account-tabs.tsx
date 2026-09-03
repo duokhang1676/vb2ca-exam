@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const TABS = [
   { href: "/account", label: "Hồ sơ" },
   { href: "/account/attempts", label: "Lịch sử làm bài" },
+  { href: "/account/review", label: "Ôn tập" },
   { href: "/account/contributions", label: "Lịch sử đóng góp" },
 ];
 

@@ -46,6 +46,11 @@ export const essayGradeSchema = z.object({
   feedback: z.string().min(1),
 });
 
+export const practiceInsightSchema = z.object({
+  evaluation: z.string().min(1).max(800),
+  suggestions: z.array(z.string().min(1).max(200)).min(1).max(5),
+});
+
 export const nearDuplicateSchema = z.object({
   duplicateNewIndexes: z.array(z.number().int().min(0)),
 });
@@ -55,3 +60,4 @@ export type ParsedCluster = z.infer<typeof parsedClusterSchema>;
 export type ParsedEssay = z.infer<typeof parsedEssaySchema>;
 export type ParsedQuestions = z.infer<typeof parsedQuestionsSchema>;
 export type EssayGrade = z.infer<typeof essayGradeSchema>;
+export type PracticeInsight = z.infer<typeof practiceInsightSchema>;

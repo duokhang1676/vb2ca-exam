@@ -86,6 +86,7 @@ export type McqDetailItem = {
   passage?: string;
   topic?: string;
   solution?: string;
+  marked?: boolean;
 };
 
 export type GradeResult = {

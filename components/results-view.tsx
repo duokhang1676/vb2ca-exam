@@ -38,6 +38,7 @@ export function ResultsView({
   detail,
   sectionMode = "full",
   attemptMode = "exam",
+  essayFlagged = false,
 }: {
   title: string;
   essayPrompt: string;
@@ -53,6 +54,7 @@ export function ResultsView({
   detail: McqDetailItem[];
   sectionMode?: SectionMode;
   attemptMode?: AttemptMode;
+  essayFlagged?: boolean;
 }) {
   const mode = isSectionMode(sectionMode) ? sectionMode : "full";
   const practice =
@@ -126,6 +128,7 @@ export function ResultsView({
             <CardTitle className="flex flex-wrap items-center gap-2">
               <span>{practice ? "Phần 1 · Nghị luận" : "Phần 1 · Chấm nghị luận"}</span>
               <TopicBadge topic={essayTopic} />
+              {essayFlagged ? <Badge>Đã đánh dấu</Badge> : null}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -192,6 +195,7 @@ function ResultQuestion({ item }: { item: McqDetailItem }) {
             </span>
           </span>
           <TopicBadge topic={item.topic} />
+          {item.marked ? <Badge>Đã đánh dấu</Badge> : null}
         </p>
         <Badge variant={item.isCorrect ? "secondary" : "destructive"}>
           {item.isCorrect ? "Đúng" : "Sai"} · {item.points}đ

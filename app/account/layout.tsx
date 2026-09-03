@@ -10,7 +10,7 @@ export default function AccountLayout({
       <div>
         <h1 className="text-2xl font-semibold">Tài khoản</h1>
         <p className="text-sm text-muted-foreground">
-          Thông tin cá nhân, bài đã làm và các lần đóng góp ngân hàng.
+          Thông tin cá nhân, bài đã làm, ôn tập và đóng góp ngân hàng.
         </p>
       </div>
       <AccountTabs />

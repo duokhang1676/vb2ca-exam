@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DeleteAttemptButton } from "@/components/delete-attempt-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getAuthUser } from "@/lib/auth/session";
 import { attemptModeLabel, sectionModeShortLabel } from "@/lib/exam/constants";
+import { parseFlagged } from "@/lib/exam/json";
 import { isAttemptMode, isSectionMode } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -20,7 +22,7 @@ export default async function AttemptHistoryPage() {
   const supabase = getSupabaseAdmin();
   const { data: rows } = await supabase
     .from("attempts")
-    .select("id, started_at, submitted_at, total_score, section_mode, attempt_mode, exams(title, exam_code)")
+    .select("id, started_at, submitted_at, total_score, section_mode, attempt_mode, flagged, essay_flagged, exams(title, exam_code)")
     .eq("user_id", user.id)
     .order("started_at", { ascending: false });
 
@@ -48,38 +50,46 @@ export default async function AttemptHistoryPage() {
         const attemptMode = isAttemptMode(attempt.attempt_mode)
           ? attempt.attempt_mode
           : "exam";
+        const markedCount =
+          parseFlagged(attempt.flagged).length +
+          (attempt.essay_flagged ? 1 : 0);
         return (
-          <Link key={attempt.id} href={href}>
-            <Card className="transition-colors hover:border-primary">
-              <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
-                <div>
-                  <p className="font-medium">{exam?.title ?? "Bài thi"}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {formatWhen(attempt.started_at)}
-                    {submitted && attempt.submitted_at
-                      ? ` · Nộp ${formatWhen(attempt.submitted_at)}`
-                      : ""}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {exam?.exam_code ? (
-                    <Badge variant="outline">{exam.exam_code}</Badge>
-                  ) : null}
-                  <Badge variant="outline">{sectionModeShortLabel(sectionMode)}</Badge>
-                  {attemptMode === "practice" ? (
-                    <Badge variant="outline">{attemptModeLabel("practice")}</Badge>
-                  ) : null}
-                  {submitted ? (
-                    <Badge variant="secondary">
-                      {Number(attempt.total_score ?? 0)} điểm
-                    </Badge>
-                  ) : (
-                    <Badge>Đang làm</Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+          <Card key={attempt.id} className="transition-colors hover:border-primary">
+            <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+              <Link href={href} className="min-w-0 flex-1">
+                <p className="font-medium">{exam?.title ?? "Bài thi"}</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatWhen(attempt.started_at)}
+                  {submitted && attempt.submitted_at
+                    ? ` · Nộp ${formatWhen(attempt.submitted_at)}`
+                    : ""}
+                </p>
+              </Link>
+              <div className="flex flex-wrap items-center gap-2">
+                {exam?.exam_code ? (
+                  <Badge variant="outline">{exam.exam_code}</Badge>
+                ) : null}
+                <Badge variant="outline">{sectionModeShortLabel(sectionMode)}</Badge>
+                {attemptMode === "practice" ? (
+                  <Badge variant="outline">{attemptModeLabel("practice")}</Badge>
+                ) : null}
+                {markedCount > 0 ? (
+                  <Badge variant="outline">Đánh dấu {markedCount}</Badge>
+                ) : null}
+                {submitted ? (
+                  <Badge variant="secondary">
+                    {Number(attempt.total_score ?? 0)} điểm
+                  </Badge>
+                ) : (
+                  <Badge>Đang làm</Badge>
+                )}
+                <DeleteAttemptButton
+                  attemptId={attempt.id}
+                  submitted={submitted}
+                />
+              </div>
+            </CardContent>
+          </Card>
         );
       })}
     </div>
