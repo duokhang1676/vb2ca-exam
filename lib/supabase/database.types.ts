@@ -618,6 +618,125 @@ export type Database = {
         }
         Relationships: []
       }
+      nlxh_section_attempts: {
+        Row: {
+          answers: Json
+          created_at: string
+          essay_id: string | null
+          essay_prompt: string | null
+          feedback: Json | null
+          hint_counts: Json
+          id: string
+          scores: Json | null
+          section_pack_id: string | null
+          sections: string[]
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          essay_id?: string | null
+          essay_prompt?: string | null
+          feedback?: Json | null
+          hint_counts?: Json
+          id?: string
+          scores?: Json | null
+          section_pack_id?: string | null
+          sections: string[]
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          essay_id?: string | null
+          essay_prompt?: string | null
+          feedback?: Json | null
+          hint_counts?: Json
+          id?: string
+          scores?: Json | null
+          section_pack_id?: string | null
+          sections?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nlxh_section_attempts_essay_id_fkey"
+            columns: ["essay_id"]
+            isOneToOne: false
+            referencedRelation: "essays"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nlxh_section_attempts_section_pack_id_fkey"
+            columns: ["section_pack_id"]
+            isOneToOne: false
+            referencedRelation: "nlxh_section_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nlxh_section_pack_drafts: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          payload: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payload: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payload?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      nlxh_section_packs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          essay_fingerprint: string | null
+          essay_id: string | null
+          essay_prompt: string | null
+          hints: Json
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          essay_fingerprint?: string | null
+          essay_id?: string | null
+          essay_prompt?: string | null
+          hints: Json
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          essay_fingerprint?: string | null
+          essay_id?: string | null
+          essay_prompt?: string | null
+          hints?: Json
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nlxh_section_packs_essay_id_fkey"
+            columns: ["essay_id"]
+            isOneToOne: false
+            referencedRelation: "essays"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_path: string | null

@@ -170,7 +170,10 @@ export function NlxhDashboard() {
 
       <NlxhGuides />
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Button variant="outline" asChild>
+          <Link href="/nlxh/section">Luyện tập theo phần</Link>
+        </Button>
         <Button variant="outline" asChild>
           <Link href="/nlxh/daily">15 phút mỗi ngày</Link>
         </Button>
