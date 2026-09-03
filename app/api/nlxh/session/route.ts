@@ -5,6 +5,7 @@ import {
   loadDailySession,
   loadFreeSession,
   loadGuidedSession,
+  loadReviewSession,
   parseLevel,
 } from "@/lib/nlxh/session";
 import { isPracticeMode } from "@/lib/nlxh/types";
@@ -22,6 +23,14 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const mode = url.searchParams.get("mode") ?? "guided";
     const skill = url.searchParams.get("skill");
+    if (mode === "review") {
+      const stepId = url.searchParams.get("stepId");
+      if (!stepId) {
+        return NextResponse.json({ error: "Thiếu bước cần xem lại." }, { status: 400 });
+      }
+      const task = await loadReviewSession({ userId: user.id, stepId });
+      return NextResponse.json({ task });
+    }
     if (mode === "daily" && isPracticeMode(skill)) {
       const task = await loadFreeSession({
         userId: user.id,

@@ -10,17 +10,21 @@ export default async function NlxhLearnPage({
     skill?: string;
     essayId?: string;
     level?: string;
+    stepId?: string;
   }>;
 }) {
   const params = await searchParams;
   const mode =
-    params.mode === "free" || params.mode === "daily" ? params.mode : "guided";
+    params.mode === "free" || params.mode === "daily" || params.mode === "review"
+      ? params.mode
+      : "guided";
   return (
     <NlxhLearn
       mode={mode}
       skill={params.skill}
       essayId={params.essayId}
       level={params.level}
+      stepId={params.stepId}
     />
   );
 }

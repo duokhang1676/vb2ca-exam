@@ -165,6 +165,7 @@ export type Database = {
           prompt: string
           solution: string | null
           source_filename: string | null
+          title: string | null
           topic: string | null
         }
         Insert: {
@@ -176,6 +177,7 @@ export type Database = {
           prompt: string
           solution?: string | null
           source_filename?: string | null
+          title?: string | null
           topic?: string | null
         }
         Update: {
@@ -187,6 +189,7 @@ export type Database = {
           prompt?: string
           solution?: string | null
           source_filename?: string | null
+          title?: string | null
           topic?: string | null
         }
         Relationships: [
@@ -277,6 +280,36 @@ export type Database = {
           output_tokens?: number | null
           source?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      nlxh_guides: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          mime: string
+          original_name: string
+          storage_path: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          mime: string
+          original_name: string
+          storage_path: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          mime?: string
+          original_name?: string
+          storage_path?: string
+          title?: string
         }
         Relationships: []
       }

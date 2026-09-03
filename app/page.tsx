@@ -3,16 +3,24 @@ import { HomeExamPanel } from "@/components/home-exam-panel";
 import { Button } from "@/components/ui/button";
 import { getAuthUser } from "@/lib/auth/session";
 import { listSampleExams } from "@/lib/exam/sample";
+import { isSectionMode } from "@/lib/exam/types";
+import { listEssays } from "@/lib/nlxh/store";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sectionMode?: string }>;
+}) {
   const user = await getAuthUser();
   const signedIn = Boolean(user);
-  const [ca1Samples, ca4Samples] = await Promise.all([
+  const { sectionMode } = await searchParams;
+  const [ca1Samples, ca4Samples, essays] = await Promise.all([
     listSampleExams("CA1"),
     listSampleExams("CA4"),
+    listEssays(),
   ]);
 
   return (
@@ -43,6 +51,11 @@ export default async function HomePage() {
       <HomeExamPanel
         signedIn={signedIn}
         samples={{ CA1: ca1Samples, CA4: ca4Samples }}
+        essays={essays.map((essay) => ({
+          id: essay.id,
+          title: essay.title?.trim() || essay.prompt.slice(0, 80) || "Nghị luận",
+        }))}
+        initialSectionMode={isSectionMode(sectionMode) ? sectionMode : "full"}
       />
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Đóng góp đề minh họa</h2>

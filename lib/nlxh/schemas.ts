@@ -108,6 +108,7 @@ export const attemptAnswerSchema = z.object({
   items: z.array(z.string().max(400)).max(12).optional(),
   selectedIds: z.array(z.string().max(40)).max(8).optional(),
   keywords: z.array(z.string().max(40)).max(8).optional(),
+  keywordText: z.string().max(400).optional(),
 });
 
 export type PackPayload = z.infer<typeof packSchema>;

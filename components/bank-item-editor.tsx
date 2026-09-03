@@ -68,28 +68,58 @@ export function EditToolbar({
 
 export function BankEssayFields({
   prompt,
+  title,
   topic,
   solution,
   disabled,
   onChange,
 }: {
   prompt: string;
+  title?: string;
   topic: string;
   solution: string;
   disabled: boolean;
-  onChange: (next: { prompt: string; topic: string; solution: string }) => void;
+  onChange: (next: {
+    prompt: string;
+    title?: string;
+    topic: string;
+    solution: string;
+  }) => void;
 }) {
+  const next = (patch: {
+    prompt?: string;
+    title?: string;
+    topic?: string;
+    solution?: string;
+  }) =>
+    onChange({
+      prompt: patch.prompt ?? prompt,
+      title: patch.title ?? title,
+      topic: patch.topic ?? topic,
+      solution: patch.solution ?? solution,
+    });
+
   return (
     <div className="grid gap-3">
+      {title !== undefined ? (
+        <div className="grid max-w-md gap-2">
+          <Label>Tên đề</Label>
+          <Input
+            className="font-exam"
+            disabled={disabled}
+            value={title}
+            placeholder="Tên ngắn để chọn khi tạo phần 1"
+            onChange={(event) => next({ title: event.target.value })}
+          />
+        </div>
+      ) : null}
       <div className="grid gap-2">
         <Label>Đề nghị luận</Label>
         <Textarea
           className="min-h-40 font-exam text-base"
           disabled={disabled}
           value={prompt}
-          onChange={(event) =>
-            onChange({ prompt: event.target.value, topic, solution })
-          }
+          onChange={(event) => next({ prompt: event.target.value })}
         />
       </div>
       <div className="grid max-w-md gap-2">
@@ -99,9 +129,7 @@ export function BankEssayFields({
           disabled={disabled}
           value={topic}
           placeholder="Để trống nếu chưa có"
-          onChange={(event) =>
-            onChange({ prompt, topic: event.target.value, solution })
-          }
+          onChange={(event) => next({ topic: event.target.value })}
         />
       </div>
       <div className="grid gap-2">
@@ -111,9 +139,7 @@ export function BankEssayFields({
           disabled={disabled}
           value={solution}
           placeholder="Để trống nếu chưa có"
-          onChange={(event) =>
-            onChange({ prompt, topic, solution: event.target.value })
-          }
+          onChange={(event) => next({ solution: event.target.value })}
         />
       </div>
     </div>

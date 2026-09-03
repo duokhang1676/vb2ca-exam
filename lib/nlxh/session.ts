@@ -22,6 +22,7 @@ import {
   getAnalysis,
   getEnrollment,
   getEssay,
+  getLastStepScore,
   getSeed,
   listEssays,
   listProgress,
@@ -45,6 +46,7 @@ export type SessionTask = {
   enrollmentStatus: "active" | "completed";
   progressIndex: number;
   progressTotal: number;
+  lastScore?: number | null;
 };
 
 async function pickEssay(preferredId?: string | null): Promise<EssayRow | null> {
@@ -336,6 +338,87 @@ export async function completeFramework(userId: string): Promise<string | null> 
   enrollment.currentEssayId = essay?.id ?? enrollment.currentEssayId;
   await saveEnrollment(enrollment);
   return enrollment.currentStepId;
+}
+
+export async function loadReviewSession(params: {
+  userId: string;
+  stepId: string;
+}): Promise<SessionTask> {
+  const enrollment = await getEnrollment(params.userId);
+  if (!enrollment) {
+    throw new Error("Chưa bắt đầu lộ trình luyện nghị luận.");
+  }
+  const essay = await pickEssay(enrollment.currentEssayId);
+  const analysisPack = essay
+    ? await ensureAnalysis(essay, params.userId)
+    : { analysis: null, needsPack: false };
+  const steps = visibleSteps(analysisPack.analysis);
+  const currentIndex = Math.max(
+    0,
+    steps.findIndex((step) => step.id === enrollment.currentStepId),
+  );
+  const target = stepById(params.stepId);
+  const targetIndex = steps.findIndex((step) => step.id === params.stepId);
+  const unlocked =
+    enrollment.status === "completed" ||
+    (targetIndex >= 0 && targetIndex <= currentIndex);
+  if (!target || targetIndex < 0 || !unlocked) {
+    throw new Error("Chưa mở khóa phần luyện này.");
+  }
+
+  const lastScore = await getLastStepScore({
+    userId: params.userId,
+    stepId: target.id,
+  });
+
+  if (target.skill === "framework") {
+    return {
+      pathMode: "review",
+      stepId: target.id,
+      skill: "framework",
+      level: 0,
+      title: target.title,
+      instruction: target.instruction,
+      essay,
+      analysis: analysisPack.analysis,
+      seed: null,
+      needsPack: !essay,
+      enrollmentStatus: enrollment.status,
+      progressIndex: targetIndex,
+      progressTotal: steps.length,
+      lastScore,
+    };
+  }
+
+  if (!essay) {
+    throw new Error("Ngân hàng chưa có đề nghị luận.");
+  }
+
+  const level = target.level === 0 ? 1 : target.level;
+  const seedPack = await ensureSeed({
+    essay,
+    analysis: analysisPack.analysis,
+    mode: target.skill,
+    level,
+    userId: params.userId,
+  });
+
+  return {
+    pathMode: "review",
+    stepId: target.id,
+    skill: target.skill,
+    level,
+    title: target.title,
+    instruction: target.instruction,
+    essay,
+    analysis: analysisPack.analysis,
+    seed: seedPack.seed,
+    needsPack: analysisPack.needsPack || seedPack.needsPack,
+    enrollmentStatus: enrollment.status,
+    progressIndex: targetIndex,
+    progressTotal: steps.length,
+    lastScore,
+  };
 }
 
 export function parseLevel(value: unknown): PracticeLevel {

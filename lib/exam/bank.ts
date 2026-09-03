@@ -154,6 +154,7 @@ export async function importEssays(
       toInsert.map((item) => ({
         prompt: item.prompt,
         fingerprint: item.fingerprint,
+        title: item.prompt.slice(0, 80),
         topic: item.topic,
         solution: item.solution,
         source_filename: sourceFilename ?? null,
@@ -491,6 +492,7 @@ export async function existingQuestionContentFingerprints(
 export type UpdatedEssay = {
   id: string;
   prompt: string;
+  title: string | null;
   topic: string | null;
   solution: string | null;
 };
@@ -568,7 +570,7 @@ async function writeClusterFingerprint(clusterId: string, fingerprint: string) {
 
 export async function updateEssay(
   id: string,
-  input: { prompt: string; topic?: string; solution?: string },
+  input: { prompt: string; title?: string; topic?: string; solution?: string },
 ): Promise<UpdatedEssay> {
   const trimmed = input.prompt.trim();
   if (!trimmed) {
@@ -578,6 +580,7 @@ export async function updateEssay(
   }
 
   const fingerprint = essayFingerprint(trimmed);
+  const title = nullableText(input.title) ?? trimmed.slice(0, 80);
   const topic = nullableText(input.topic);
   const solution = nullableText(input.solution);
   const supabase = getSupabaseAdmin();
@@ -599,9 +602,9 @@ export async function updateEssay(
 
   const { data, error } = await supabase
     .from("essays")
-    .update({ prompt: trimmed, fingerprint, topic, solution })
+    .update({ prompt: trimmed, fingerprint, title, topic, solution })
     .eq("id", id)
-    .select("id, prompt, topic, solution")
+    .select("id, prompt, title, topic, solution")
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) {
@@ -615,6 +618,7 @@ export async function updateEssay(
   return {
     id: data.id,
     prompt: data.prompt,
+    title: data.title,
     topic: data.topic,
     solution: data.solution,
   };

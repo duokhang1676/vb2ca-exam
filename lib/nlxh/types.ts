@@ -28,7 +28,7 @@ export const PRACTICE_MODES = [
 
 export type PracticeMode = (typeof PRACTICE_MODES)[number];
 
-export const PATH_MODES = ["guided", "free", "daily", "remedial"] as const;
+export const PATH_MODES = ["guided", "free", "daily", "remedial", "review"] as const;
 export type PathMode = (typeof PATH_MODES)[number];
 
 export const MASTERY_LEVELS = [
@@ -132,6 +132,7 @@ export type PracticeAnswer = {
   items?: string[];
   selectedIds?: string[];
   keywords?: string[];
+  keywordText?: string;
 };
 
 export type SkillProgress = {

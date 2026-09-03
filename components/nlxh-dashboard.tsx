@@ -14,14 +14,24 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import type { SessionTask } from "@/lib/nlxh/session";
 import { PRACTICE_MODE_LABELS, type SkillProgress } from "@/lib/nlxh/types";
+import { NlxhGuides } from "@/components/nlxh-guides";
+
+type StepRow = {
+  id: string;
+  title: string;
+  skill: string;
+  level: number;
+  lastScore: number | null;
+};
 
 type ProgressResponse = {
   enrollment?: {
     currentStepId: string;
     status: string;
   };
+  currentStepId?: string;
   progress?: SkillProgress[];
-  steps?: { id: string; title: string; skill: string; level: number }[];
+  steps?: StepRow[];
   error?: string;
 };
 
@@ -45,6 +55,13 @@ export function NlxhDashboard() {
   const percent = task
     ? Math.round((task.progressIndex / Math.max(task.progressTotal, 1)) * 100)
     : 0;
+  const currentStepId =
+    progress?.currentStepId ?? progress?.enrollment?.currentStepId ?? task?.stepId;
+  const completed = progress?.enrollment?.status === "completed";
+  const currentIndex = Math.max(
+    0,
+    (progress?.steps ?? []).findIndex((step) => step.id === currentStepId),
+  );
 
   return (
     <div className="mx-auto grid max-w-3xl gap-6">
@@ -52,7 +69,7 @@ export function NlxhDashboard() {
         <h1 className="text-2xl font-semibold">Luyện nghị luận xã hội</h1>
         <p className="text-sm text-muted-foreground">
           Hệ thống chỉ một nhiệm vụ mỗi lần: làm xong, đạt yêu cầu, rồi sang phần tiếp.
-          Mục tiêu cuối là viết được một bài nghị luận hoàn chỉnh.
+          Có thể xem và làm lại các phần đã mở.
         </p>
       </div>
 
@@ -96,6 +113,62 @@ export function NlxhDashboard() {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Các phần luyện tập</CardTitle>
+          <CardDescription>
+            Phần đã mở có thể xem lại. Phần phía trước vẫn khóa theo lộ trình.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-2">
+          {(progress?.steps ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">Đang tải danh sách phần...</p>
+          ) : (
+            (progress?.steps ?? []).map((step, index) => {
+              const status = completed
+                ? "done"
+                : index < currentIndex
+                  ? "done"
+                  : index === currentIndex
+                    ? "current"
+                    : "locked";
+              return (
+                <div
+                  key={step.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm"
+                >
+                  <div>
+                    <p className={status === "locked" ? "text-muted-foreground" : ""}>
+                      {index + 1}. {step.title}
+                    </p>
+                    {step.lastScore != null ? (
+                      <p className="text-xs text-muted-foreground">
+                        Điểm gần nhất: {step.lastScore}/10
+                      </p>
+                    ) : null}
+                  </div>
+                  {status === "locked" ? (
+                    <Badge variant="outline">Chưa mở</Badge>
+                  ) : status === "current" ? (
+                    <Button size="sm" asChild>
+                      <Link href="/nlxh/learn">Tiếp tục</Link>
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="outline" asChild>
+                      <Link href={`/nlxh/learn?mode=review&stepId=${step.id}`}>
+                        Xem / làm lại
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </CardContent>
+      </Card>
+
+      <NlxhGuides />
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Button variant="outline" asChild>

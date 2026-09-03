@@ -84,7 +84,11 @@ async function advancePath(params: {
   rewrite: boolean;
   pathCompleted: boolean;
 }> {
-  if (params.pathMode === "free" || params.pathMode === "daily") {
+  if (
+    params.pathMode === "free" ||
+    params.pathMode === "daily" ||
+    params.pathMode === "review"
+  ) {
     return {
       advanced: false,
       nextStepId: null,

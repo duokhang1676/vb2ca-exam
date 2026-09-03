@@ -34,15 +34,25 @@ function sampleLabel(sample: SampleExamOption): string {
   return sample.title;
 }
 
+export type EssayOption = {
+  id: string;
+  title: string;
+};
+
 export function HomeExamPanel({
   signedIn,
   samples,
+  essays,
+  initialSectionMode = "full",
 }: {
   signedIn: boolean;
   samples: Record<ExamCode, SampleExamOption[]>;
+  essays: EssayOption[];
+  initialSectionMode?: SectionMode;
 }) {
   const router = useRouter();
   const [examCode, setExamCode] = useState<ExamCode>("CA1");
+  const [essayId, setEssayId] = useState("");
   const [selectedByCode, setSelectedByCode] = useState<Record<ExamCode, string>>(
     {
       CA1: samples.CA1[0] ? sampleValue(samples.CA1[0]) : "",
@@ -52,7 +62,7 @@ export function HomeExamPanel({
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [sampling, setSampling] = useState(false);
-  const [sectionMode, setSectionMode] = useState<SectionMode>("full");
+  const [sectionMode, setSectionMode] = useState<SectionMode>(initialSectionMode);
   const [attemptMode, setAttemptMode] = useState<AttemptMode>("exam");
   const [shuffleSample, setShuffleSample] = useState(false);
   const [showTopic, setShowTopic] = useState(false);
@@ -80,7 +90,12 @@ export function HomeExamPanel({
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ examCode, sectionMode: mode, ...createBody }),
+      body: JSON.stringify({
+        examCode,
+        sectionMode: mode,
+        ...(mode === "part1" && essayId ? { essayId } : {}),
+        ...createBody,
+      }),
     });
     if (response.status === 401) {
       router.push("/login?next=/");
@@ -171,6 +186,25 @@ export function HomeExamPanel({
             ))}
           </div>
         </div>
+        {sectionMode === "part1" ? (
+          <div className="grid gap-2">
+            <Label htmlFor="part1-essay">Đề nghị luận</Label>
+            <select
+              id="part1-essay"
+              disabled={busy}
+              value={essayId}
+              onChange={(event) => setEssayId(event.target.value)}
+              className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+            >
+              <option value="">Ngẫu nhiên</option>
+              {essays.map((essay) => (
+                <option key={essay.id} value={essay.id}>
+                  {essay.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
         <div className="grid gap-2">
           <Label>Chế độ làm bài</Label>
           <div className="grid gap-2 sm:grid-cols-2">

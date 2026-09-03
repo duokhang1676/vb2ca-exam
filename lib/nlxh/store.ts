@@ -19,6 +19,7 @@ export type EssayRow = {
   id: string;
   prompt: string;
   fingerprint: string;
+  title: string | null;
   topic: string | null;
   solution: string | null;
 };
@@ -52,7 +53,7 @@ export async function listEssays(): Promise<EssayRow[]> {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("essays")
-    .select("id, prompt, fingerprint, topic, solution")
+    .select("id, prompt, fingerprint, title, topic, solution")
     .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
   return data ?? [];
@@ -62,7 +63,7 @@ export async function getEssay(id: string): Promise<EssayRow | null> {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("essays")
-    .select("id, prompt, fingerprint, topic, solution")
+    .select("id, prompt, fingerprint, title, topic, solution")
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -228,6 +229,43 @@ export async function listProgress(userId: string): Promise<SkillProgress[]> {
       },
     ];
   });
+}
+
+export async function getLastStepScore(params: {
+  userId: string;
+  stepId: string;
+}): Promise<number | null> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("nlxh_practice_attempts")
+    .select("score")
+    .eq("user_id", params.userId)
+    .eq("step_id", params.stepId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.score == null ? null : Number(data.score);
+}
+
+export async function listLatestStepScores(
+  userId: string,
+): Promise<Record<string, number>> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("nlxh_practice_attempts")
+    .select("step_id, score, created_at")
+    .eq("user_id", userId)
+    .not("step_id", "is", null)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  const scores: Record<string, number> = {};
+  for (const row of data ?? []) {
+    if (!row.step_id || scores[row.step_id] != null) continue;
+    if (row.score == null) continue;
+    scores[row.step_id] = Number(row.score);
+  }
+  return scores;
 }
 
 export async function recordUsage(params: {

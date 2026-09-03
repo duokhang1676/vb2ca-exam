@@ -127,6 +127,7 @@ export type BankEssay = {
   fingerprint: string;
   sourceFilename: string | null;
   createdAt: string;
+  title?: string;
   topic?: string;
   solution?: string;
 };

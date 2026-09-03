@@ -32,3 +32,10 @@ export async function extractDocxText(bytes: Uint8Array): Promise<string> {
   }
   return text;
 }
+
+export async function convertDocxToHtml(bytes: Uint8Array): Promise<string> {
+  const result = await mammoth.convertToHtml({
+    buffer: Buffer.from(bytes),
+  });
+  return result.value.trim();
+}

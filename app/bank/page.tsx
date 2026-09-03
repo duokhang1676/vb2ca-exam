@@ -32,7 +32,7 @@ export default async function BankPage({
     await Promise.all([
       supabase
         .from("essays")
-        .select("id, prompt, source_filename, fingerprint, topic, solution")
+        .select("id, prompt, source_filename, fingerprint, title, topic, solution")
         .order("created_at", { ascending: true }),
       supabase
         .from("questions")
@@ -56,6 +56,7 @@ export default async function BankPage({
     prompt: row.prompt,
     sourceFilename: row.source_filename,
     fingerprint: row.fingerprint,
+    title: row.title ?? undefined,
     topic: row.topic ?? undefined,
     solution: row.solution ?? undefined,
     marked: essayMarks.has(row.fingerprint),

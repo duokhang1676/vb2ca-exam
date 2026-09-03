@@ -18,6 +18,7 @@ export async function PATCH(request: Request, { params }: Params) {
   try {
     const body = (await request.json().catch(() => ({}))) as {
       prompt?: unknown;
+      title?: unknown;
       topic?: unknown;
       solution?: unknown;
     };
@@ -31,6 +32,7 @@ export async function PATCH(request: Request, { params }: Params) {
     }
     const essay = await updateEssay(id, {
       prompt: body.prompt,
+      title: typeof body.title === "string" ? body.title : "",
       topic: typeof body.topic === "string" ? body.topic : "",
       solution: typeof body.solution === "string" ? body.solution : "",
     });

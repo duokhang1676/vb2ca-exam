@@ -65,12 +65,13 @@ function toQuestion(
 export async function assembleRandomExam(
   examCode: ExamCode,
   sectionMode: SectionMode = "full",
+  essayId?: string,
 ) {
   const supabase = getSupabaseAdmin();
   const spec = EXAM_SPECS[examCode];
 
   const [essaysResult, questionsResult, clustersResult] = await Promise.all([
-    supabase.from("essays").select("prompt, topic, solution"),
+    supabase.from("essays").select("id, title, prompt, topic, solution"),
     supabase
       .from("questions")
       .select(
@@ -102,8 +103,17 @@ export async function assembleRandomExam(
     );
   }
 
+  const requestedEssay =
+    sectionMode !== "part2" && essayId
+      ? essays.find((essay) => essay.id === essayId) ?? null
+      : null;
+  if (sectionMode !== "part2" && essayId && !requestedEssay) {
+    throw new Error("Không tìm thấy đề nghị luận đã chọn.");
+  }
   const pickedEssay =
-    sectionMode === "part2" ? null : pickRandom(essays, 1)[0] ?? null;
+    sectionMode === "part2"
+      ? null
+      : requestedEssay ?? pickRandom(essays, 1)[0] ?? null;
   const essayPrompt = pickedEssay?.prompt ?? "";
   const clusteredStems = new Set(
     bank
@@ -182,11 +192,15 @@ export async function assembleRandomExam(
       : sectionMode === "part2"
         ? " — Phần 2"
         : "";
+  const chosenTitle = optionalText(pickedEssay?.title);
+  const examTitle = requestedEssay
+    ? `${examCode} — ${chosenTitle ?? "Nghị luận"}${sectionNote}`
+    : belowSpec
+      ? `${examCode} — Đề ngẫu nhiên (${questions.length}/${spec.total} câu)${sectionNote}`
+      : `${examCode} — Đề ngẫu nhiên${sectionNote}`;
 
   return persistExam({
-    title: belowSpec
-      ? `${examCode} — Đề ngẫu nhiên (${questions.length}/${spec.total} câu)${sectionNote}`
-      : `${examCode} — Đề ngẫu nhiên${sectionNote}`,
+    title: examTitle,
     essayPrompt,
     essayTopic: optionalText(pickedEssay?.topic),
     essaySolution: optionalText(pickedEssay?.solution),

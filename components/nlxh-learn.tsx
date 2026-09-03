@@ -30,7 +30,21 @@ function storageKey(task: SessionTask): string {
 }
 
 function emptyAnswer(): PracticeAnswer {
-  return { text: "", fields: {}, items: ["", "", ""], selectedIds: [], keywords: [] };
+  return {
+    text: "",
+    fields: {},
+    items: ["", "", ""],
+    selectedIds: [],
+    keywords: [],
+    keywordText: "",
+  };
+}
+
+function parseKeywords(text: string): string[] {
+  return text
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 export function NlxhLearn({
@@ -38,11 +52,13 @@ export function NlxhLearn({
   skill,
   essayId,
   level,
+  stepId,
 }: {
-  mode?: "guided" | "free" | "daily";
+  mode?: "guided" | "free" | "daily" | "review";
   skill?: string;
   essayId?: string;
   level?: string;
+  stepId?: string;
 }) {
   const [task, setTask] = useState<SessionTask | null>(null);
   const [answer, setAnswer] = useState<PracticeAnswer>(emptyAnswer());
@@ -63,6 +79,7 @@ export function NlxhLearn({
     if (skill) params.set("skill", skill);
     if (essayId) params.set("essayId", essayId);
     if (level) params.set("level", level);
+    if (stepId) params.set("stepId", stepId);
     const response = await fetch(`/api/nlxh/session?${params}`);
     const data = (await response.json()) as { task?: SessionTask; error?: string };
     if (!response.ok || !data.task) {
@@ -73,13 +90,21 @@ export function NlxhLearn({
     setTask(data.task);
     const saved = localStorage.getItem(storageKey(data.task));
     try {
-      setAnswer(saved ? (JSON.parse(saved) as PracticeAnswer) : emptyAnswer());
+      const parsed = saved
+        ? (JSON.parse(saved) as PracticeAnswer)
+        : emptyAnswer();
+      setAnswer({
+        ...emptyAnswer(),
+        ...parsed,
+        keywordText:
+          parsed.keywordText ?? (parsed.keywords ?? []).join(", "),
+      });
     } catch {
       setAnswer(emptyAnswer());
     }
     setHintIndex(0);
     setLoading(false);
-  }, [mode, skill, essayId, level]);
+  }, [mode, skill, essayId, level, stepId]);
 
   useEffect(() => {
     load().catch(() => {
@@ -135,7 +160,10 @@ export function NlxhLearn({
         level: task.level,
         pathMode: task.pathMode,
         stepId: task.stepId,
-        answer,
+        answer: {
+          ...answer,
+          keywords: parseKeywords(answer.keywordText ?? ""),
+        },
         usedHintCount: hintIndex,
         durationSeconds: Math.round((Date.now() - startedAt) / 1000),
         previousWeaknesses: result?.feedback.weaknesses,
@@ -214,8 +242,14 @@ export function NlxhLearn({
   return (
     <div className="mx-auto grid max-w-3xl gap-6">
       <div>
-        <p className="text-sm text-muted-foreground">
-          Bước {task.progressIndex + 1}/{task.progressTotal}
+        <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span>
+            Bước {task.progressIndex + 1}/{task.progressTotal}
+          </span>
+          {task.pathMode === "review" ? <Badge variant="secondary">Làm lại</Badge> : null}
+          {task.lastScore != null ? (
+            <span>Điểm lần trước: {task.lastScore}/10</span>
+          ) : null}
         </p>
         <h1 className="text-2xl font-semibold">{task.title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{task.instruction}</p>
@@ -372,14 +406,11 @@ export function NlxhLearn({
                 <div className="grid gap-1">
                   <Label>Từ khóa (cách nhau bởi dấu phẩy)</Label>
                   <Textarea
-                    value={(answer.keywords ?? []).join(", ")}
+                    value={answer.keywordText ?? ""}
                     onChange={(event) =>
                       setAnswer({
                         ...answer,
-                        keywords: event.target.value
-                          .split(",")
-                          .map((item) => item.trim())
-                          .filter(Boolean),
+                        keywordText: event.target.value,
                       })
                     }
                   />
@@ -465,10 +496,15 @@ export function NlxhLearn({
                   Viết lại
                 </Button>
               ) : null}
-              {result.advanced && result.nextStepId ? (
+              {task.pathMode === "review" ? (
+                <Button variant="outline" asChild>
+                  <Link href="/nlxh">Về lộ trình</Link>
+                </Button>
+              ) : null}
+              {task.pathMode !== "review" && result.advanced && result.nextStepId ? (
                 <Button onClick={() => load()}>Phần tiếp</Button>
               ) : null}
-              {result.pathCompleted ? (
+              {task.pathMode !== "review" && result.pathCompleted ? (
                 <Button asChild>
                   <Link href="/?sectionMode=part1">Thi thử phần 1</Link>
                 </Button>

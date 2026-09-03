@@ -35,6 +35,7 @@ export type BankEssayView = {
   prompt: string;
   sourceFilename: string | null;
   fingerprint: string;
+  title?: string;
   topic?: string;
   solution?: string;
   marked?: boolean;
@@ -343,29 +344,35 @@ function EssayCard({
 }) {
   const [editing, setEditing] = useState(false);
   const [prompt, setPrompt] = useState(essay.prompt);
+  const [title, setTitle] = useState(essay.title ?? "");
   const [topic, setTopic] = useState(essay.topic ?? "");
   const [solution, setSolution] = useState(essay.solution ?? "");
   const { busy, alertNode, setAlert, save } = useBankSave();
+  const displayTitle =
+    (essay.title ?? "").trim() || essay.prompt.slice(0, 80) || "Nghị luận";
 
   async function onSave() {
     const data = await save<{
       prompt: string;
+      title: string | null;
       topic: string | null;
       solution: string | null;
     }>(() =>
       fetch(`/api/bank/essays/${essay.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, topic, solution }),
+        body: JSON.stringify({ prompt, title, topic, solution }),
       }),
     );
     if (!data) return;
     onSaved({
       ...essay,
       prompt: data.prompt,
+      title: data.title ?? undefined,
       topic: data.topic ?? undefined,
       solution: data.solution ?? undefined,
     });
+    setTitle(data.title ?? "");
     setEditing(false);
   }
 
@@ -399,7 +406,7 @@ function EssayCard({
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-sm">
           <span className="flex flex-wrap items-center gap-2">
-            <span>NL-{essay.id.slice(0, 8).toUpperCase()}</span>
+            <span>{displayTitle}</span>
             <Badge variant="secondary">Nghị luận {index + 1}</Badge>
             <TopicBadge topic={essay.topic} />
             {essay.marked ? (
@@ -417,6 +424,7 @@ function EssayCard({
             busy={busy}
             onEdit={() => {
               setPrompt(essay.prompt);
+              setTitle(essay.title ?? "");
               setTopic(essay.topic ?? "");
               setSolution(essay.solution ?? "");
               setAlert(null);
@@ -424,6 +432,7 @@ function EssayCard({
             }}
             onCancel={() => {
               setPrompt(essay.prompt);
+              setTitle(essay.title ?? "");
               setTopic(essay.topic ?? "");
               setSolution(essay.solution ?? "");
               setAlert(null);
@@ -439,11 +448,13 @@ function EssayCard({
         {editing ? (
           <BankEssayFields
             prompt={prompt}
+            title={title}
             topic={topic}
             solution={solution}
             disabled={busy}
             onChange={(next) => {
               setPrompt(next.prompt);
+              setTitle(next.title ?? "");
               setTopic(next.topic);
               setSolution(next.solution);
             }}
