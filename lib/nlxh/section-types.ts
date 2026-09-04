@@ -159,6 +159,8 @@ export type SectionHistoryItem = {
 
 export type SectionPackRow = {
   id: string;
+  title: string;
+  serialNumber: number;
   essayId: string | null;
   essayPrompt: string;
   createdAt: string;

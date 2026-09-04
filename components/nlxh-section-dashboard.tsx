@@ -227,7 +227,7 @@ export function NlxhSectionDashboard() {
               <option value="">Không dùng đề chatbot</option>
               {packs.map((pack) => (
                 <option key={pack.id} value={pack.id}>
-                  {pack.essayPrompt || "Đề chatbot"}
+                  {pack.title}
                 </option>
               ))}
             </select>

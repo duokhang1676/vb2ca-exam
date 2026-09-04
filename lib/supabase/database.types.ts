@@ -708,6 +708,8 @@ export type Database = {
           essay_prompt: string | null
           hints: Json
           id: string
+          serial_number: number
+          title: string
         }
         Insert: {
           created_at?: string
@@ -717,6 +719,8 @@ export type Database = {
           essay_prompt?: string | null
           hints: Json
           id?: string
+          serial_number?: number
+          title?: string
         }
         Update: {
           created_at?: string
@@ -726,6 +730,8 @@ export type Database = {
           essay_prompt?: string | null
           hints?: Json
           id?: string
+          serial_number?: number
+          title?: string
         }
         Relationships: [
           {

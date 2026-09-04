@@ -131,11 +131,13 @@ export async function listSectionPacks(): Promise<SectionPackRow[]> {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("nlxh_section_packs")
-    .select("id, essay_id, essay_prompt, created_at")
-    .order("created_at", { ascending: false });
+    .select("id, title, serial_number, essay_id, essay_prompt, created_at")
+    .order("serial_number", { ascending: true });
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => ({
     id: row.id,
+    title: row.title || `Đề NLXH số ${row.serial_number}`,
+    serialNumber: row.serial_number,
     essayId: row.essay_id,
     essayPrompt: String(row.essay_prompt ?? "").slice(0, 180),
     createdAt: row.created_at,
@@ -146,7 +148,7 @@ export async function getSectionPack(id: string) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("nlxh_section_packs")
-    .select("id, essay_id, essay_prompt, hints")
+    .select("id, title, serial_number, essay_id, essay_prompt, hints")
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -155,10 +157,24 @@ export async function getSectionPack(id: string) {
   if (!hints.success) return null;
   return {
     id: data.id,
+    title: data.title || `Đề NLXH số ${data.serial_number}`,
+    serialNumber: data.serial_number,
     essayId: data.essay_id as string | null,
     essayPrompt: String(data.essay_prompt ?? ""),
     hints: hints.data,
   };
+}
+
+export async function nextSectionPackSerial(): Promise<number> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("nlxh_section_packs")
+    .select("serial_number")
+    .order("serial_number", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data?.serial_number ?? 0) + 1;
 }
 
 export function parseSectionPackJson(raw: string): SectionPackPayload {
@@ -212,6 +228,8 @@ export async function commitSectionPack(userId: string, pack: SectionPackPayload
   const matched = pack.essayFingerprint
     ? essays.find((essay) => essay.fingerprint === pack.essayFingerprint)
     : essays.find((essay) => essay.prompt.trim() === pack.essayPrompt.trim());
+  const serialNumber = await nextSectionPackSerial();
+  const title = `Đề NLXH số ${serialNumber}`;
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("nlxh_section_packs")
@@ -221,15 +239,72 @@ export async function commitSectionPack(userId: string, pack: SectionPackPayload
       essay_fingerprint: pack.essayFingerprint ?? matched?.fingerprint ?? null,
       hints: asJson(pack.hints),
       created_by: userId,
+      title,
+      serial_number: serialNumber,
     })
-    .select("id")
+    .select("id, title, serial_number")
     .single();
   if (error || !data) throw new Error(error?.message || "Không nạp được gói đề.");
   return {
     packId: data.id,
+    title: data.title,
+    serialNumber: data.serial_number,
     essayId: matched?.id ?? null,
     matched: Boolean(matched),
   };
+}
+
+export async function updateSectionPack(
+  id: string,
+  patch: {
+    title?: string;
+    essayPrompt?: string;
+    hints?: SectionPackPayload["hints"];
+  },
+) {
+  const current = await getSectionPack(id);
+  if (!current) throw new Error("Không tìm thấy đề.");
+  const updates: {
+    title?: string;
+    essay_prompt?: string;
+    hints?: ReturnType<typeof asJson>;
+  } = {};
+  if (typeof patch.title === "string") {
+    const title = patch.title.trim();
+    if (!title) throw new Error("Tên đề không được để trống.");
+    if (title.length > 120) throw new Error("Tên đề tối đa 120 ký tự.");
+    updates.title = title;
+  }
+  if (typeof patch.essayPrompt === "string") {
+    const essayPrompt = patch.essayPrompt.trim();
+    if (essayPrompt.length < 10) throw new Error("Đề bài quá ngắn.");
+    if (essayPrompt.length > 8000) throw new Error("Đề bài quá dài.");
+    updates.essay_prompt = essayPrompt;
+  }
+  if (patch.hints) {
+    const hints = sectionHintsSchema.safeParse(patch.hints);
+    if (!hints.success) throw new Error("Gợi ý không khớp schema (mỗi phần đúng 3 gợi ý).");
+    updates.hints = asJson(hints.data);
+  }
+  if (Object.keys(updates).length === 0) return current;
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from("nlxh_section_packs").update(updates).eq("id", id);
+  if (error) throw new Error(error.message);
+  const next = await getSectionPack(id);
+  if (!next) throw new Error("Không đọc được đề sau khi cập nhật.");
+  return next;
+}
+
+export async function deleteSectionPack(id: string) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("nlxh_section_packs")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Không tìm thấy đề.");
 }
 
 export function pickRandomEssayId(essayIds: string[]): string | null {
