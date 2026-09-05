@@ -1,15 +1,9 @@
 import { QuestionBank } from "@/components/question-bank";
 import { getAuthUser } from "@/lib/auth/session";
 import { essayFingerprint, questionFingerprint } from "@/lib/exam/fingerprint";
-import { listUserMarks, markSet, isMarkedFingerprint } from "@/lib/exam/marks";
+import { listUserMarks, markSet } from "@/lib/exam/marks";
 import { listSampleExamDetails } from "@/lib/exam/sample";
-import {
-  isClusterKind,
-  isExamCode,
-  normalizeQuestionType,
-  type ExamCode,
-  type McqOptions,
-} from "@/lib/exam/types";
+import { isExamCode } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -28,25 +22,14 @@ export default async function BankPage({
   const user = await getAuthUser();
   const signedIn = Boolean(user);
   const supabase = getSupabaseAdmin();
-  const [essaysResult, questionsResult, clustersResult, samples, marks] =
-    await Promise.all([
-      supabase
-        .from("essays")
-        .select("id, prompt, source_filename, fingerprint, title, topic, solution")
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("questions")
-        .select(
-          "id, exam_code, type, stem, options, answer, cluster_id, cluster_position, fingerprint, topic, solution",
-        )
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("question_clusters")
-        .select("id, exam_code, kind, passage")
-        .order("created_at", { ascending: true }),
-      listSampleExamDetails(),
-      user ? listUserMarks(user.id) : Promise.resolve([]),
-    ]);
+  const [essaysResult, samples, marks] = await Promise.all([
+    supabase
+      .from("essays")
+      .select("id, prompt, source_filename, fingerprint, title, topic, solution")
+      .order("created_at", { ascending: true }),
+    listSampleExamDetails(),
+    user ? listUserMarks(user.id) : Promise.resolve([]),
+  ]);
 
   const essayMarks = markSet(marks, "essay");
   const questionMarks = markSet(marks, "question");
@@ -62,52 +45,14 @@ export default async function BankPage({
     marked: essayMarks.has(row.fingerprint),
   }));
 
-  const questions = (questionsResult.data ?? []).map((row) => {
-    const examCode = row.exam_code as ExamCode;
-    const type = normalizeQuestionType(row.type);
-    const options = (row.options as McqOptions | null) ?? undefined;
-    const fingerprint = questionFingerprint({
-      examCode,
-      type,
-      stem: row.stem,
-      options,
-    });
-    return {
-      id: row.id,
-      examCode,
-      type,
-      stem: row.stem,
-      options,
-      answer: row.answer,
-      clusterId: row.cluster_id,
-      clusterPosition: row.cluster_position,
-      fingerprint,
-      topic: row.topic ?? undefined,
-      solution: row.solution ?? undefined,
-      marked: isMarkedFingerprint(questionMarks, row.fingerprint, fingerprint),
-    };
-  });
-
-  const clusters = (clustersResult.data ?? []).map((row) => ({
-    id: row.id,
-    examCode: row.exam_code as ExamCode,
-    kind: isClusterKind(row.kind) ? row.kind : "passage",
-    passage: row.passage,
-    questions: questions
-      .filter((question) => question.clusterId === row.id)
-      .sort(
-        (a, b) => (a.clusterPosition ?? 0) - (b.clusterPosition ?? 0),
-      ),
-  }));
-
   const sampleViews = samples.map((sample) => {
-    const examCode = isExamCode(sample.examCode) ? sample.examCode : "CA1";
+    const code = isExamCode(sample.examCode) ? sample.examCode : "CA1";
     const essayFp = essayFingerprint(sample.essayPrompt);
     const questionFingerprints: Record<number, string> = {};
     const markedNumbers: number[] = [];
     for (const question of sample.questions) {
       const fingerprint = questionFingerprint({
-        examCode,
+        examCode: code,
         type: question.type,
         stem: question.stem,
         options: question.options,
@@ -130,11 +75,15 @@ export default async function BankPage({
   const addedCount = Number(added ?? "");
   const skippedCount = Number(skipped ?? "");
   const showImport =
-    Number.isFinite(addedCount) && Number.isFinite(skippedCount) && (added != null || skipped != null);
-  const initialTab =
-    tab === "sample" || tab === "CA1" || tab === "CA4" || tab === "essay"
-      ? tab
-      : "essay";
+    Number.isFinite(addedCount) &&
+    Number.isFinite(skippedCount) &&
+    (added != null || skipped != null);
+  const initialTab = tab === "sample" || isExamCode(tab) ? "sample" : "essay";
+  const initialExamCode = isExamCode(tab)
+    ? tab
+    : isExamCode(examCode)
+      ? examCode
+      : "CA1";
 
   return (
     <div className="space-y-4">
@@ -147,12 +96,10 @@ export default async function BankPage({
       ) : null}
       <QuestionBank
         essays={essays}
-        questions={questions}
-        clusters={clusters}
         samples={sampleViews}
         signedIn={signedIn}
         initialTab={initialTab}
-        initialExamCode={isExamCode(examCode) ? examCode : "CA1"}
+        initialExamCode={initialExamCode}
       />
     </div>
   );

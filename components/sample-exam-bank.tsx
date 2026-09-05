@@ -79,6 +79,23 @@ function itemKey(examId: string, mode: SectionMode) {
   return `${examId}::${mode}`;
 }
 
+function slotQuestionCount(sample: BankSampleView, sectionMode: SectionMode) {
+  return sectionMode === "part1" ? 0 : sample.questions.length;
+}
+
+function containerQuestionCount(
+  slots: Slot[],
+  sampleMap: Map<string, BankSampleView>,
+  containerId: string,
+) {
+  return slots
+    .filter((slot) => slot.containerId === containerId)
+    .reduce((total, slot) => {
+      const sample = sampleMap.get(slot.examId);
+      return total + (sample ? slotQuestionCount(sample, slot.sectionMode) : 0);
+    }, 0);
+}
+
 function parseItemKey(id: string): { examId: string; sectionMode: SectionMode } | null {
   const separator = id.lastIndexOf("::");
   if (separator <= 0) return null;
@@ -459,6 +476,7 @@ export function SampleExamBank({
             <DropColumn
               id={UNGROUPED}
               title="Chưa nhóm"
+              questionCount={containerQuestionCount(slots, sampleMap, UNGROUPED)}
               empty={ungroupedIds.length === 0}
               emptyText="Kéo đề minh họa ra đây."
             >
@@ -484,6 +502,7 @@ export function SampleExamBank({
                       onDelete={() => void removeGroup(group.id)}
                     />
                   }
+                  questionCount={containerQuestionCount(slots, sampleMap, group.id)}
                   empty={ids.length === 0}
                   emptyText="Kéo đề hoặc từng phần vào nhóm này."
                 >
@@ -517,12 +536,14 @@ export function SampleExamBank({
 function DropColumn({
   id,
   title,
+  questionCount,
   empty,
   emptyText,
   children,
 }: {
   id: string;
   title: ReactNode;
+  questionCount: number;
   empty: boolean;
   emptyText: string;
   children: ReactNode;
@@ -545,6 +566,7 @@ function DropColumn({
         ) : (
           title
         )}
+        <Badge variant="outline">{questionCount} câu</Badge>
       </div>
       {children}
       {empty ? <p className="text-xs text-muted-foreground">{emptyText}</p> : null}
@@ -858,6 +880,9 @@ function SampleExamCard({
               <span>{sample.title}</span>
             )}
             <Badge variant="outline">{sample.examCode}</Badge>
+            {sectionMode !== "part1" && sample.questions.length > 0 ? (
+              <Badge variant="outline">{sample.questions.length} câu</Badge>
+            ) : null}
             {sectionMode !== "full" ? (
               <Badge>{sectionModeShortLabel(sectionMode)}</Badge>
             ) : null}
