@@ -157,6 +157,19 @@ export type SectionHistoryItem = {
   total: number | null;
 };
 
+export type SectionAttemptDetail = {
+  id: string;
+  createdAt: string;
+  essayPrompt: string;
+  sections: SectionKey[];
+  answers: Partial<Record<SectionKey, string>>;
+  scores: Partial<Record<SectionKey, number>>;
+  feedback: Partial<Record<SectionKey, string>>;
+  total: number | null;
+  overall: string;
+  suggestions: string;
+};
+
 export type SectionPackRow = {
   id: string;
   title: string;

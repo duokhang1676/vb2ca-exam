@@ -8,6 +8,7 @@ import {
   sectionPackSchema,
   SECTION_CONFIG,
   SECTION_KEYS,
+  type SectionAttemptDetail,
   type SectionGradeResult,
   type SectionHistoryItem,
   type SectionKey,
@@ -25,6 +26,11 @@ function asRecord(value: unknown): Record<string, unknown> {
 function numberFromRecord(record: Record<string, unknown>, key: string): number | null {
   const value = record[key];
   return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function stringFromRecord(record: Record<string, unknown>, key: string): string {
+  const value = record[key];
+  return typeof value === "string" ? value : "";
 }
 
 export async function getSectionStats(userId: string): Promise<SectionStats[]> {
@@ -68,24 +74,69 @@ export async function getSectionHistory(
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("nlxh_section_attempts")
-    .select("id, essay_prompt, scores, created_at")
+    .select("id, essay_prompt, scores, created_at, sections")
     .eq("user_id", userId)
-    .contains("sections", [section])
-    .order("created_at", { ascending: false })
-    .limit(limit);
+    .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((row) => {
-    const scores = asRecord(row.scores);
-    return {
-      id: row.id,
-      createdAt: row.created_at,
-      essayPrompt: String(row.essay_prompt ?? "").slice(0, 180),
-      score: numberFromRecord(scores, section),
-      maxScore: SECTION_CONFIG[section].maxScore,
-      total: numberFromRecord(scores, "total"),
-    };
-  });
+  return (data ?? [])
+    .filter((row) => parseSectionKeys(row.sections).includes(section))
+    .slice(0, limit)
+    .map((row) => {
+      const scores = asRecord(row.scores);
+      return {
+        id: row.id,
+        createdAt: row.created_at,
+        essayPrompt: String(row.essay_prompt ?? "").slice(0, 180),
+        score: numberFromRecord(scores, section),
+        maxScore: SECTION_CONFIG[section].maxScore,
+        total: numberFromRecord(scores, "total"),
+      };
+    });
+}
+
+export async function getSectionAttempt(
+  userId: string,
+  id: string,
+): Promise<SectionAttemptDetail | null> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("nlxh_section_attempts")
+    .select("id, essay_prompt, sections, answers, scores, feedback, created_at")
+    .eq("user_id", userId)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+
+  const sections = parseSectionKeys(data.sections);
+  const answersRecord = asRecord(data.answers);
+  const scoresRecord = asRecord(data.scores);
+  const feedbackRecord = asRecord(data.feedback);
+  const answers: Partial<Record<SectionKey, string>> = {};
+  const scores: Partial<Record<SectionKey, number>> = {};
+  const feedback: Partial<Record<SectionKey, string>> = {};
+  for (const section of SECTION_KEYS) {
+    const answer = stringFromRecord(answersRecord, section);
+    if (answer) answers[section] = answer;
+    const score = numberFromRecord(scoresRecord, section);
+    if (score != null) scores[section] = score;
+    const note = stringFromRecord(feedbackRecord, section);
+    if (note) feedback[section] = note;
+  }
+
+  return {
+    id: data.id,
+    createdAt: data.created_at,
+    essayPrompt: String(data.essay_prompt ?? ""),
+    sections,
+    answers,
+    scores,
+    feedback,
+    total: numberFromRecord(scoresRecord, "total"),
+    overall: stringFromRecord(feedbackRecord, "overall"),
+    suggestions: stringFromRecord(feedbackRecord, "suggestions"),
+  };
 }
 
 export async function insertSectionAttempt(params: {
