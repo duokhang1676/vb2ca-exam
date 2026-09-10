@@ -20,16 +20,20 @@ import {
   attemptModeLabel,
   questionTypeLabel,
   sectionModeLabel,
+  sequentialPhaseLabel,
 } from "@/lib/exam/constants";
+import { isSequentialFull } from "@/lib/exam/phase";
 import { isFillMatch } from "@/lib/exam/grade";
 import { persistQuestionMark } from "@/lib/exam/persist-mark";
 import { toDisplayBlocks } from "@/lib/exam/shuffle";
 import {
   isAttemptMode,
+  isAttemptPhase,
   isMcq,
   isSectionMode,
   type AttemptAnswers,
   type AttemptMode,
+  type AttemptPhase,
   type DisplayQuestion,
   type ExamCode,
   type SectionMode,
@@ -47,6 +51,8 @@ type ExamPayload = {
     essayFlagged: boolean;
     sectionMode: SectionMode;
     attemptMode?: AttemptMode;
+    currentPhase?: AttemptPhase;
+    part2StartedAt?: string | null;
     showTopic?: boolean;
     endsAt: number | null;
     serverNow: number;
@@ -71,8 +77,10 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
   const [flagged, setFlagged] = useState<number[]>([]);
   const [essayFlagged, setEssayFlagged] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
   const [exiting, setExiting] = useState(false);
   const submittingRef = useRef(false);
+  const advancingRef = useRef(false);
   const exitingRef = useRef(false);
   const snapshotRef = useRef({
     essayText: "",
@@ -80,6 +88,47 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
     flagged: [] as number[],
     essayFlagged: false,
   });
+
+  const applyPayload = useCallback((json: ExamPayload) => {
+    const sectionMode = isSectionMode(json.attempt.sectionMode)
+      ? json.attempt.sectionMode
+      : "full";
+    const attemptMode = isAttemptMode(json.attempt.attemptMode)
+      ? json.attempt.attemptMode
+      : "exam";
+    const currentPhase = isAttemptPhase(json.attempt.currentPhase)
+      ? json.attempt.currentPhase
+      : sectionMode === "part2"
+        ? "part2"
+        : "part1";
+    const flaggedNumbers = Array.from(
+      new Set<number>([
+        ...(json.attempt.flagged ?? []),
+        ...((json.exam.questions ?? [])
+          .filter(
+            (question: { marked?: boolean; originalNumber: number }) =>
+              question.marked,
+          )
+          .map(
+            (question: { originalNumber: number }) => question.originalNumber,
+          ) as number[]),
+      ]),
+    );
+    setData({
+      ...json,
+      attempt: { ...json.attempt, sectionMode, attemptMode, currentPhase },
+    });
+    setEssayText(json.attempt.essayText);
+    setAnswers(json.attempt.answers ?? {});
+    setFlagged(flaggedNumbers);
+    setEssayFlagged(Boolean(json.attempt.essayFlagged));
+    snapshotRef.current = {
+      essayText: json.attempt.essayText,
+      answers: json.attempt.answers ?? {},
+      flagged: flaggedNumbers,
+      essayFlagged: Boolean(json.attempt.essayFlagged),
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,45 +143,16 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
         router.replace(`/attempts/${attemptId}/result`);
         return;
       }
-      if (!cancelled) {
-        const sectionMode = isSectionMode(json.attempt.sectionMode)
-          ? json.attempt.sectionMode
-          : "full";
-        const attemptMode = isAttemptMode(json.attempt.attemptMode)
-          ? json.attempt.attemptMode
-          : "exam";
-        const flaggedNumbers = Array.from(
-          new Set<number>([
-            ...(json.attempt.flagged ?? []),
-            ...((json.exam.questions ?? [])
-              .filter((question: { marked?: boolean; originalNumber: number }) => question.marked)
-              .map((question: { originalNumber: number }) => question.originalNumber) as number[]),
-          ]),
-        );
-        setData({
-          ...json,
-          attempt: { ...json.attempt, sectionMode, attemptMode },
-        });
-        setEssayText(json.attempt.essayText);
-        setAnswers(json.attempt.answers);
-        setFlagged(flaggedNumbers);
-        setEssayFlagged(Boolean(json.attempt.essayFlagged));
-        snapshotRef.current = {
-          essayText: json.attempt.essayText,
-          answers: json.attempt.answers,
-          flagged: flaggedNumbers,
-          essayFlagged: Boolean(json.attempt.essayFlagged),
-        };
-      }
+      if (!cancelled) applyPayload(json);
     }
     load().catch(() => setError("Không tải được bài làm."));
     return () => {
       cancelled = true;
     };
-  }, [attemptId, router]);
+  }, [attemptId, applyPayload, router]);
 
   const save = useCallback(async () => {
-    if (submittingRef.current || exitingRef.current) return;
+    if (submittingRef.current || exitingRef.current || advancingRef.current) return;
     const payload = {
       essayText: snapshotRef.current.essayText,
       answers: snapshotRef.current.answers,
@@ -158,7 +178,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
   }, [save]);
 
   const exitWithoutSaving = useCallback(async () => {
-    if (submittingRef.current || exitingRef.current) return;
+    if (submittingRef.current || exitingRef.current || advancingRef.current) return;
     if (
       !window.confirm(
         "Thoát mà không lưu lịch sử làm bài? Bài đang làm sẽ bị xóa và không hiện trong lịch sử.",
@@ -187,7 +207,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
   }, [attemptId, router]);
 
   const submit = useCallback(async () => {
-    if (submittingRef.current || exitingRef.current) return;
+    if (submittingRef.current || exitingRef.current || advancingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
     try {
@@ -213,6 +233,58 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
     }
   }, [attemptId, router]);
 
+  const advance = useCallback(
+    async (options?: { skipConfirm?: boolean }) => {
+      if (submittingRef.current || exitingRef.current || advancingRef.current) {
+        return;
+      }
+      if (
+        !options?.skipConfirm &&
+        !window.confirm(
+          "Kết thúc phần 1? Bạn sẽ không thể quay lại chỉnh bài nghị luận.",
+        )
+      ) {
+        return;
+      }
+      advancingRef.current = true;
+      submittingRef.current = true;
+      setAdvancing(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/attempts/${attemptId}/advance`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            essayText: snapshotRef.current.essayText,
+            flagged: snapshotRef.current.flagged,
+            essayFlagged: snapshotRef.current.essayFlagged,
+          }),
+        });
+        const json = await response.json();
+        if (!response.ok) {
+          throw new Error(json.error || "Không chuyển được sang phần 2.");
+        }
+        applyPayload(json);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Không chuyển được sang phần 2.",
+        );
+      } finally {
+        advancingRef.current = false;
+        submittingRef.current = false;
+        setAdvancing(false);
+      }
+    },
+    [attemptId, applyPayload],
+  );
+
+  const expirePart1 = useCallback(() => {
+    void advance({ skipConfirm: true });
+  }, [advance]);
+
   async function persistMark(params: {
     kind: "essay" | "question";
     fingerprint?: string;
@@ -229,9 +301,14 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
 
   const answeredCount = useMemo(() => {
     if (!data) return 0;
-    const sectionMode = data.attempt.sectionMode;
-    const essayDone =
-      sectionMode === "part2" ? 0 : essayText.trim() ? 1 : 0;
+    const currentPhase = isAttemptPhase(data.attempt.currentPhase)
+      ? data.attempt.currentPhase
+      : "part1";
+    const showEssay =
+      data.attempt.sectionMode !== "part2" &&
+      !(isSequentialFull(data.attempt.sectionMode) && currentPhase === "part2") &&
+      Boolean(data.exam.essayPrompt.trim());
+    const essayDone = showEssay && essayText.trim() ? 1 : 0;
     const mcqDone = data.exam.questions.filter((q) =>
       Boolean(answers[String(q.originalNumber)]?.trim()),
     ).length;
@@ -254,15 +331,24 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
   const attemptMode = isAttemptMode(data.attempt.attemptMode)
     ? data.attempt.attemptMode
     : "exam";
+  const currentPhase = isAttemptPhase(data.attempt.currentPhase)
+    ? data.attempt.currentPhase
+    : sectionMode === "part2"
+      ? "part2"
+      : "part1";
   const practice = attemptMode === "practice";
-  const showEssay =
-    sectionMode !== "part2" && Boolean(data.exam.essayPrompt.trim());
-  const showPart2 = sectionMode !== "part1" && data.exam.questions.length > 0;
+  const sequentialFull = isSequentialFull(sectionMode);
+  const inSequentialPart1 = sequentialFull && currentPhase === "part1";
+  const showEssay = Boolean(data.exam.essayPrompt.trim());
+  const showPart2 = data.exam.questions.length > 0;
   const totalItems =
     (showEssay ? 1 : 0) + (showPart2 ? data.exam.questions.length : 0);
   const blocks = toDisplayBlocks(data.exam.questions);
   const flaggedSet = new Set(flagged);
-  const locked = submitting || exiting;
+  const locked = submitting || exiting || advancing;
+  const scopeLabel = sequentialFull
+    ? sequentialPhaseLabel(currentPhase)
+    : sectionModeLabel(sectionMode, attemptMode);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_220px]">
@@ -271,17 +357,17 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
           <div>
             <h1 className="text-lg font-semibold">{data.exam.title}</h1>
             <p className="text-xs text-muted-foreground">
-              {attemptModeLabel(attemptMode)} ·{" "}
-              {sectionModeLabel(sectionMode, attemptMode)} · Đã trả lời{" "}
+              {attemptModeLabel(attemptMode)} · {scopeLabel} · Đã trả lời{" "}
               {answeredCount}/{totalItems} phần
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             {practice || data.attempt.endsAt == null ? null : (
               <ExamTimer
+                key={`${currentPhase}-${data.attempt.endsAt}`}
                 endsAt={data.attempt.endsAt}
                 serverNow={data.attempt.serverNow}
-                onExpire={submit}
+                onExpire={inSequentialPart1 ? expirePart1 : submit}
               />
             )}
             <Button
@@ -292,14 +378,21 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
               {exiting ? <LoaderCircle className="animate-spin" /> : null}
               {exiting ? "Đang thoát..." : "Thoát"}
             </Button>
-            <Button onClick={submit} disabled={locked}>
-              {submitting ? <LoaderCircle className="animate-spin" /> : null}
-              {submitting
-                ? "Đang chấm..."
-                : practice
-                  ? "Kết thúc luyện tập"
-                  : "Nộp bài"}
-            </Button>
+            {inSequentialPart1 ? (
+              <Button onClick={() => void advance()} disabled={locked}>
+                {advancing ? <LoaderCircle className="animate-spin" /> : null}
+                {advancing ? "Đang chuyển sang phần 2..." : "Xong phần 1"}
+              </Button>
+            ) : (
+              <Button onClick={submit} disabled={locked}>
+                {submitting ? <LoaderCircle className="animate-spin" /> : null}
+                {submitting
+                  ? "Đang chấm..."
+                  : practice
+                    ? "Kết thúc luyện tập"
+                    : "Nộp bài"}
+              </Button>
+            )}
           </div>
         </div>
 

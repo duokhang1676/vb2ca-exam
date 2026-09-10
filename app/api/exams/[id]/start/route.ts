@@ -6,6 +6,7 @@ import {
   createIdentityShuffle,
   createShuffle,
 } from "@/lib/exam/shuffle";
+import { initialPhase } from "@/lib/exam/phase";
 import { isAttemptMode, isSectionMode, sectionModesForParts } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -66,6 +67,7 @@ export async function POST(request: Request, { params }: Params) {
       flagged: asJson([]),
       essay_flagged: false,
       section_mode: sectionMode,
+      current_phase: initialPhase(sectionMode),
       show_topic: showTopic,
       attempt_mode: attemptMode,
     })

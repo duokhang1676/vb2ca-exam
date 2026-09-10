@@ -32,7 +32,7 @@ export async function SiteHeader() {
                 <Link href="/bank">Ngân hàng câu hỏi</Link>
               </Button>
               <p className="hidden text-muted-foreground sm:block">
-                Nghị luận 30đ · Trắc nghiệm 70đ · 150 phút
+                Nghị luận 30đ · Trắc nghiệm 70đ · 60 + 90 phút
               </p>
             </>
           ) : null}

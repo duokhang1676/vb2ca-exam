@@ -5,6 +5,7 @@ export type ExamSource = "random" | "sample";
 export type ClusterKind = "passage" | "situation";
 export type QuestionSection = "independent" | "cluster" | "fill";
 export type SectionMode = "full" | "part1" | "part2";
+export type AttemptPhase = "part1" | "part2";
 export type AttemptMode = "exam" | "practice";
 export type MarkKind = "essay" | "question";
 
@@ -146,6 +147,10 @@ export function isExamCode(value: unknown): value is ExamCode {
 
 export function isSectionMode(value: unknown): value is SectionMode {
   return value === "full" || value === "part1" || value === "part2";
+}
+
+export function isAttemptPhase(value: unknown): value is AttemptPhase {
+  return value === "part1" || value === "part2";
 }
 
 export function sectionModesForParts(

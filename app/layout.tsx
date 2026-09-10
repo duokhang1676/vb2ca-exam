@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Ôn thi VB2CA",
   description:
-    "Ngân hàng câu hỏi Văn bằng 2 Công an: đóng góp đề, tạo bài thi CA1/CA4 ngẫu nhiên, làm bài 150 phút, chấm tự luận bằng AI.",
+    "Ngân hàng câu hỏi Văn bằng 2 Công an: đóng góp đề, tạo bài thi CA1/CA4 ngẫu nhiên, làm bài 60 phút nghị luận rồi 90 phút trắc nghiệm, chấm tự luận bằng AI.",
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",

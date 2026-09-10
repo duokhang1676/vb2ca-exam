@@ -16,6 +16,7 @@ export type Database = {
         Row: {
           answers: Json
           attempt_mode: string
+          current_phase: string
           essay_feedback: string | null
           essay_flagged: boolean
           essay_score: number | null
@@ -25,6 +26,7 @@ export type Database = {
           id: string
           mcq_detail: Json | null
           mcq_score: number | null
+          part2_started_at: string | null
           section_mode: string
           show_topic: boolean
           shuffle: Json
@@ -36,6 +38,7 @@ export type Database = {
         Insert: {
           answers?: Json
           attempt_mode?: string
+          current_phase?: string
           essay_feedback?: string | null
           essay_flagged?: boolean
           essay_score?: number | null
@@ -45,6 +48,7 @@ export type Database = {
           id?: string
           mcq_detail?: Json | null
           mcq_score?: number | null
+          part2_started_at?: string | null
           section_mode?: string
           show_topic?: boolean
           shuffle: Json
@@ -56,6 +60,7 @@ export type Database = {
         Update: {
           answers?: Json
           attempt_mode?: string
+          current_phase?: string
           essay_feedback?: string | null
           essay_flagged?: boolean
           essay_score?: number | null
@@ -65,6 +70,7 @@ export type Database = {
           id?: string
           mcq_detail?: Json | null
           mcq_score?: number | null
+          part2_started_at?: string | null
           section_mode?: string
           show_topic?: boolean
           shuffle?: Json

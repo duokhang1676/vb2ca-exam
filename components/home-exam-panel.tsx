@@ -142,7 +142,8 @@ export function HomeExamPanel({
           và phần 2 từ ngân hàng ({spec.independentMcq} trắc nghiệm +{" "}
           {spec.clusters} cụm × {spec.clusterSize} + {spec.fill} điền,{" "}
           {spec.total} câu). Hoặc chọn một đề minh họa có sẵn. Thi thử có thời gian
-          (toàn bộ 150 phút; phần 1: 50 phút; phần 2: 100 phút). Luyện tập không
+          (toàn bộ: 60 phút nghị luận rồi 90 phút trắc nghiệm, không quay lại phần 1;
+          phần 1 riêng: 60 phút; phần 2 riêng: 90 phút). Luyện tập không
           giới hạn thời gian và hiện đáp án, lời giải ngay sau khi trả lời.
         </CardDescription>
       </CardHeader>

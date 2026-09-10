@@ -13,6 +13,7 @@ import {
   parseShuffle,
 } from "@/lib/exam/json";
 import { setQuestionMarks } from "@/lib/exam/marks";
+import { isEssayLocked, isSequentialFull, resolvePhase } from "@/lib/exam/phase";
 import { toDisplayQuestions } from "@/lib/exam/shuffle";
 import { isAttemptMode, isExamCode, isSectionMode } from "@/lib/exam/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
@@ -52,6 +53,16 @@ export async function POST(request: Request, { params }: Params) {
   const sectionMode = isSectionMode(attempt.section_mode)
     ? attempt.section_mode
     : "full";
+  const currentPhase = resolvePhase({
+    sectionMode,
+    currentPhase: attempt.current_phase,
+  });
+  if (isSequentialFull(sectionMode) && currentPhase === "part1") {
+    return NextResponse.json(
+      { error: "Hãy hoàn thành phần 1 trước khi nộp bài." },
+      { status: 409 },
+    );
+  }
   const attemptMode = isAttemptMode(attempt.attempt_mode)
     ? attempt.attempt_mode
     : "exam";
@@ -59,7 +70,9 @@ export async function POST(request: Request, { params }: Params) {
     ...parseAnswers(attempt.answers),
     ...(body.answers ?? {}),
   };
-  const essayText = body.essayText ?? attempt.essay_text ?? "";
+  const essayText = isEssayLocked(sectionMode, currentPhase)
+    ? (attempt.essay_text ?? "")
+    : (body.essayText ?? attempt.essay_text ?? "");
   const questions = parseQuestions(exam.questions);
   const shuffle = parseShuffle(attempt.shuffle);
   const displayQuestions =

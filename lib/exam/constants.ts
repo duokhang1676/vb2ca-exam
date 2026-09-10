@@ -1,8 +1,8 @@
-import type { AttemptMode, ClusterKind, ExamCode, SectionMode } from "./types";
+import type { AttemptMode, AttemptPhase, ClusterKind, ExamCode, SectionMode } from "./types";
 
-export const EXAM_DURATION_MS = 150 * 60 * 1000;
-export const PART1_DURATION_MS = 50 * 60 * 1000;
-export const PART2_DURATION_MS = 100 * 60 * 1000;
+export const PART1_DURATION_MS = 60 * 60 * 1000;
+export const PART2_DURATION_MS = 90 * 60 * 1000;
+export const EXAM_DURATION_MS = PART1_DURATION_MS + PART2_DURATION_MS;
 
 export const SECTION_DURATION_MS: Record<SectionMode, number> = {
   full: EXAM_DURATION_MS,
@@ -80,13 +80,17 @@ export function sectionModeLabel(
     if (mode === "part2") return "Phần 2 · Trắc nghiệm";
     return "Toàn bộ đề";
   }
-  if (mode === "part1") return "Phần 1 · Nghị luận (50 phút)";
-  if (mode === "part2") return "Phần 2 · Trắc nghiệm (100 phút)";
-  return "Toàn bộ đề (150 phút)";
+  if (mode === "part1") return "Phần 1 · Nghị luận (60 phút)";
+  if (mode === "part2") return "Phần 2 · Trắc nghiệm (90 phút)";
+  return "Toàn bộ đề (60 + 90 phút)";
 }
 
 export function attemptModeLabel(mode: AttemptMode): string {
   return mode === "practice" ? "Luyện tập" : "Thi thử";
+}
+
+export function sequentialPhaseLabel(phase: AttemptPhase): string {
+  return phase === "part1" ? "Phần 1/2 · Nghị luận" : "Phần 2/2 · Trắc nghiệm";
 }
 
 export function sectionModeShortLabel(mode: SectionMode): string {
