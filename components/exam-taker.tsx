@@ -16,8 +16,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   AUTOSAVE_INTERVAL_MS,
+  ESSAY_WORD_COUNT_STORAGE_KEY,
   OPTION_LETTERS,
   attemptModeLabel,
+  countEssayWords,
   questionTypeLabel,
   sectionModeLabel,
   sequentialPhaseLabel,
@@ -79,6 +81,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [advancing, setAdvancing] = useState(false);
   const [exiting, setExiting] = useState(false);
+  const [showWordCount, setShowWordCount] = useState(true);
   const submittingRef = useRef(false);
   const advancingRef = useRef(false);
   const exitingRef = useRef(false);
@@ -169,6 +172,20 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
   useEffect(() => {
     snapshotRef.current = { essayText, answers, flagged, essayFlagged };
   }, [essayText, answers, flagged, essayFlagged]);
+
+  useEffect(() => {
+    setShowWordCount(localStorage.getItem(ESSAY_WORD_COUNT_STORAGE_KEY) !== "0");
+  }, []);
+
+  const essayWordCount = useMemo(() => countEssayWords(essayText), [essayText]);
+
+  function toggleWordCount() {
+    setShowWordCount((current) => {
+      const next = !current;
+      localStorage.setItem(ESSAY_WORD_COUNT_STORAGE_KEY, next ? "1" : "0");
+      return next;
+    });
+  }
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -440,6 +457,18 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
                   className="min-h-64 font-exam text-lg leading-8"
                   disabled={locked}
                 />
+                <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+                  {showWordCount ? <span>{essayWordCount} chữ</span> : null}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground"
+                    onClick={toggleWordCount}
+                  >
+                    {showWordCount ? "Ẩn số từ" : "Hiện số từ"}
+                  </Button>
+                </div>
               </div>
               {practice ? (
                 <SolutionReveal

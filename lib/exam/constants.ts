@@ -14,6 +14,14 @@ export const MCQ_MAX_SCORE = 70;
 export const TOTAL_MAX_SCORE = 100;
 export const OPTION_LETTERS = ["A", "B", "C", "D"] as const;
 export const AUTOSAVE_INTERVAL_MS = 30_000;
+export const ESSAY_WORD_COUNT_STORAGE_KEY = "vb2ca-essay-word-count";
+
+export function countEssayWords(text: string): number {
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+}
 export const EXAM_CODES = ["CA1", "CA4"] as const;
 export const NEAR_DUP_JACCARD = 0.55;
 export const CLUSTER_SIZE = 3;
