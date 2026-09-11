@@ -368,7 +368,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
     : sectionModeLabel(sectionMode, attemptMode);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_220px]">
+    <div className={cn("grid gap-6", showPart2 && "lg:grid-cols-[1fr_220px]")}>
       <div className="space-y-6">
         <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b bg-background/95 py-3 backdrop-blur">
           <div>
@@ -454,7 +454,7 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
                   value={essayText}
                   onChange={(event) => setEssayText(event.currentTarget.value)}
                   placeholder="Nhập bài nghị luận tại đây..."
-                  className="min-h-64 font-exam text-lg leading-8"
+                  className="min-h-64 font-exam text-lg leading-8 md:text-lg"
                   disabled={locked}
                 />
                 <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
@@ -536,25 +536,20 @@ export function ExamTaker({ attemptId }: { attemptId: string }) {
         ) : null}
       </div>
 
-      <QuestionToc
-        items={[
-          ...(showEssay
-            ? [tocItem("#essay", "TL", essayText.trim() ? "filled" : "empty", essayFlagged)]
-            : []),
-          ...(showPart2
-            ? data.exam.questions.map((question) =>
-                tocItem(
-                  `#q-${question.displayIndex}`,
-                  String(question.displayIndex),
-                  Boolean(answers[String(question.originalNumber)]?.trim())
-                    ? "filled"
-                    : "empty",
-                  flaggedSet.has(question.originalNumber),
-                ),
-              )
-            : []),
-        ]}
-      />
+      {showPart2 ? (
+        <QuestionToc
+          items={data.exam.questions.map((question) =>
+            tocItem(
+              `#q-${question.displayIndex}`,
+              String(question.displayIndex),
+              Boolean(answers[String(question.originalNumber)]?.trim())
+                ? "filled"
+                : "empty",
+              flaggedSet.has(question.originalNumber),
+            ),
+          )}
+        />
+      ) : null}
     </div>
   );
 }
