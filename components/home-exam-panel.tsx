@@ -28,10 +28,13 @@ function sampleValue(sample: SampleExamOption): string {
 }
 
 function sampleLabel(sample: SampleExamOption): string {
-  if (sample.hasPart1 && sample.hasPart2) return sample.title;
-  if (sample.hasPart1) return `${sample.title} (phần 1)`;
-  if (sample.hasPart2) return `${sample.title} (phần 2)`;
-  return sample.title;
+  let label = sample.title;
+  if (sample.hasPart1 && !sample.hasPart2) label = `${sample.title} (phần 1)`;
+  else if (!sample.hasPart1 && sample.hasPart2) label = `${sample.title} (phần 2)`;
+  if (sample.markedCount && sample.markedCount > 0) {
+    return `${label} · ${sample.markedCount} đánh dấu`;
+  }
+  return label;
 }
 
 export type EssayOption = {

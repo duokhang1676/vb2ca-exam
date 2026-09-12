@@ -15,7 +15,9 @@ import {
   isOfficialSampleTitle,
   parseGeneratedSampleNumber,
 } from "./constants";
+import { essayFingerprint, questionFingerprint } from "./fingerprint";
 import { asJson, optionalText, parseAnswerKeyJson, parseQuestions } from "./json";
+import { listUserMarks, markSet } from "./marks";
 import { parseAnswerKey } from "./parse-answers";
 import { parseExamPdf } from "./parse-pdf";
 import { persistExam } from "./persist-exam";
@@ -158,29 +160,73 @@ export async function ensureBankReady(examCode: ExamCode): Promise<void> {
   await seedBankFromSample(examCode);
 }
 
+function sampleMarkedCount(params: {
+  examCode: ExamCode;
+  essayPrompt: string;
+  questions: Question[];
+  essayMarks: Set<string>;
+  questionMarks: Set<string>;
+}): number {
+  let count = 0;
+  const prompt = params.essayPrompt.trim();
+  if (prompt && params.essayMarks.has(essayFingerprint(prompt))) {
+    count += 1;
+  }
+  for (const question of params.questions) {
+    const fingerprint = questionFingerprint({
+      examCode: params.examCode,
+      type: question.type,
+      stem: question.stem,
+      options: question.options,
+    });
+    if (params.questionMarks.has(fingerprint)) count += 1;
+  }
+  return count;
+}
+
 export async function listSampleExams(
   examCode: ExamCode,
+  options?: { userId?: string },
 ): Promise<SampleExamOption[]> {
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("exams")
-    .select("id, title, created_at, essay_prompt, questions")
-    .eq("exam_code", examCode)
-    .eq("source", "sample")
-    .order("created_at", { ascending: false });
+  const [{ data, error }, marks] = await Promise.all([
+    supabase
+      .from("exams")
+      .select("id, title, created_at, essay_prompt, questions")
+      .eq("exam_code", examCode)
+      .eq("source", "sample")
+      .order("created_at", { ascending: false }),
+    options?.userId ? listUserMarks(options.userId) : Promise.resolve([]),
+  ]);
   if (error) throw new Error(error.message);
+
+  const essayMarks = markSet(marks, "essay");
+  const questionMarks = markSet(marks, "question");
+  const includeMarks = Boolean(options?.userId);
 
   const byTitle = new Map<
     string,
-    { id: string; title: string; hasPart1: boolean; hasPart2: boolean }
+    {
+      id: string;
+      title: string;
+      hasPart1: boolean;
+      hasPart2: boolean;
+      essayPrompt: string;
+      questions: Question[];
+    }
   >();
   for (const row of data ?? []) {
     if (isOfficialSampleTitle(row.title, examCode)) continue;
     if (!byTitle.has(row.title)) {
+      const questions = Array.isArray(row.questions)
+        ? parseQuestions(row.questions)
+        : [];
       byTitle.set(row.title, {
         id: row.id,
         title: row.title,
         ...samplePartsFromRow(row),
+        essayPrompt: row.essay_prompt ?? "",
+        questions,
       });
     }
   }
@@ -190,25 +236,26 @@ export async function listSampleExams(
 
   for (const row of byTitle.values()) {
     const number = parseGeneratedSampleNumber(row.title, examCode);
-    if (number != null) {
-      generated.push({
-        id: row.id,
-        title: row.title,
-        kind: "generated",
-        number,
-        hasPart1: row.hasPart1,
-        hasPart2: row.hasPart2,
-      });
-    } else {
-      other.push({
-        id: row.id,
-        title: row.title,
-        kind: "generated",
-        number: 0,
-        hasPart1: row.hasPart1,
-        hasPart2: row.hasPart2,
-      });
-    }
+    const markedCount = includeMarks
+      ? sampleMarkedCount({
+          examCode,
+          essayPrompt: row.essayPrompt,
+          questions: row.questions,
+          essayMarks,
+          questionMarks,
+        })
+      : undefined;
+    const option: SampleExamOption = {
+      id: row.id,
+      title: row.title,
+      kind: "generated",
+      number: number ?? 0,
+      hasPart1: row.hasPart1,
+      hasPart2: row.hasPart2,
+      ...(markedCount != null ? { markedCount } : {}),
+    };
+    if (number != null) generated.push(option);
+    else other.push(option);
   }
 
   generated.sort((a, b) => a.number - b.number);

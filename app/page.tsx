@@ -17,9 +17,10 @@ export default async function HomePage({
   const user = await getAuthUser();
   const signedIn = Boolean(user);
   const { sectionMode } = await searchParams;
+  const markOptions = user?.id ? { userId: user.id } : undefined;
   const [ca1Samples, ca4Samples, essays] = await Promise.all([
-    listSampleExams("CA1"),
-    listSampleExams("CA4"),
+    listSampleExams("CA1", markOptions),
+    listSampleExams("CA4", markOptions),
     listEssays(),
   ]);
 

@@ -16,6 +16,7 @@ export type SampleExamOption = {
   number: number;
   hasPart1: boolean;
   hasPart2: boolean;
+  markedCount?: number;
 };
 
 export type McqOptions = Record<OptionLetter, string>;
