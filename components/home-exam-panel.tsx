@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { LoaderCircle } from "lucide-react";
+import { ChevronDown, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,14 +27,123 @@ function sampleValue(sample: SampleExamOption): string {
   return sample.id ?? "";
 }
 
-function sampleLabel(sample: SampleExamOption): string {
-  let label = sample.title;
-  if (sample.hasPart1 && !sample.hasPart2) label = `${sample.title} (phần 1)`;
-  else if (!sample.hasPart1 && sample.hasPart2) label = `${sample.title} (phần 2)`;
-  if (sample.markedCount && sample.markedCount > 0) {
-    return `${label} · ${sample.markedCount} đánh dấu`;
+function sampleTitle(sample: SampleExamOption): string {
+  if (sample.hasPart1 && !sample.hasPart2) return `${sample.title} (phần 1)`;
+  if (!sample.hasPart1 && sample.hasPart2) return `${sample.title} (phần 2)`;
+  return sample.title;
+}
+
+function SampleExamPicker({
+  id,
+  options,
+  value,
+  disabled,
+  onChange,
+}: {
+  id: string;
+  options: SampleExamOption[];
+  value: string;
+  disabled: boolean;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const selected =
+    options.find((sample) => sampleValue(sample) === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [options]);
+
+  if (options.length === 0) {
+    return (
+      <div
+        id={id}
+        className="flex h-8 items-center rounded-lg border border-input px-2.5 text-sm text-muted-foreground dark:bg-input/30"
+      >
+        Chưa có đề minh họa
+      </div>
+    );
   }
-  return label;
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        id={id}
+        type="button"
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        className="flex h-8 w-full min-w-0 items-center gap-2 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+      >
+        <span className="min-w-0 flex-1 truncate text-left">
+          {selected ? sampleTitle(selected) : "Chọn đề minh họa"}
+        </span>
+        {selected?.markedCount && selected.markedCount > 0 ? (
+          <span className="shrink-0 text-muted-foreground">
+            {selected.markedCount} đánh dấu
+          </span>
+        ) : null}
+        <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
+      </button>
+      {open ? (
+        <ul
+          role="listbox"
+          className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-lg border bg-background py-1 shadow-md"
+        >
+          {options.map((sample) => {
+            const idValue = sampleValue(sample);
+            const active = idValue === value;
+            return (
+              <li key={idValue}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={active}
+                  className={cn(
+                    "flex w-full items-center gap-3 px-2.5 py-1.5 text-sm",
+                    active
+                      ? "bg-primary/5 text-foreground"
+                      : "text-foreground hover:bg-muted",
+                  )}
+                  onClick={() => {
+                    onChange(idValue);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="min-w-0 flex-1 truncate text-left">
+                    {sampleTitle(sample)}
+                  </span>
+                  {sample.markedCount && sample.markedCount > 0 ? (
+                    <span className="shrink-0 text-muted-foreground">
+                      {sample.markedCount} đánh dấu
+                    </span>
+                  ) : null}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </div>
+  );
 }
 
 export type EssayOption = {
@@ -298,28 +407,18 @@ export function HomeExamPanel({
             </Button>
             <div className="grid gap-2">
               <Label htmlFor="sample-exam">Đề minh họa</Label>
-              <select
+              <SampleExamPicker
                 id="sample-exam"
-                disabled={busy || options.length === 0}
+                options={options}
                 value={selectedId}
-                onChange={(event) =>
+                disabled={busy || options.length === 0}
+                onChange={(next) =>
                   setSelectedByCode((current) => ({
                     ...current,
-                    [examCode]: event.target.value,
+                    [examCode]: next,
                   }))
                 }
-                className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
-              >
-                {options.length === 0 ? (
-                  <option value="">Chưa có đề minh họa</option>
-                ) : (
-                  options.map((sample) => (
-                    <option key={sampleValue(sample)} value={sampleValue(sample)}>
-                      {sampleLabel(sample)}
-                    </option>
-                  ))
-                )}
-              </select>
+              />
               <Label>Thứ tự câu hỏi</Label>
               <div className="grid gap-2 sm:grid-cols-2">
                 <button
